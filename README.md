@@ -1,1 +1,1 @@
-# GhostMeter
+# GhostMeter - Analyseur de conversations
