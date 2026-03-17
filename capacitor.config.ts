@@ -1,6 +1,5 @@
-import { CapacitorConfig } from '@capacitor/cli';
-
-const config: CapacitorConfig = {
+// Capacitor config for mobile app - not needed for Vercel deployment
+const config = {
   appId: 'app.ghostmeter.app',
   appName: 'GhostMeter',
   webDir: 'out',
