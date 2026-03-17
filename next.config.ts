@@ -73,7 +73,6 @@ const nextConfig: NextConfig = {
   },
   
   // Output configuration for PWA
-  output: 'standalone',
   
   // Environment variables validation
   env: {
