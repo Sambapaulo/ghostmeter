@@ -1,51 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import fs from 'fs'
-import path from 'path'
-
-const SETTINGS_PATH = path.join(process.cwd(), 'data', 'settings.json')
-
-interface PromoCode {
-  code: string
-  discount: number
-  discountType: 'percent' | 'fixed'
-  active: boolean
-  maxUses: number
-  currentUses: number
-  createdAt: string
-}
-
-interface Settings {
-  premiumPrice: number
-  premiumCurrency: string
-  premiumPeriod: string
-  freeAnalysesPerDay: number
-  adminPassword: string
-  promoCodes: PromoCode[]
-}
-
-function getSettings(): Settings {
-  try {
-    const data = fs.readFileSync(SETTINGS_PATH, 'utf-8')
-    return JSON.parse(data)
-  } catch {
-    return {
-      premiumPrice: 4,
-      premiumCurrency: '€',
-      premiumPeriod: 'mois',
-      freeAnalysesPerDay: 3,
-      adminPassword: 'ghostmeter2024',
-      promoCodes: []
-    }
-  }
-}
-
-function saveSettings(settings: Settings) {
-  const dir = path.dirname(SETTINGS_PATH)
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true })
-  }
-  fs.writeFileSync(SETTINGS_PATH, JSON.stringify(settings, null, 2))
-}
+import { getSettings, saveSettings, Settings, PromoCode } from '@/lib/kv'
 
 export async function POST(request: NextRequest) {
   try {
@@ -53,10 +7,13 @@ export async function POST(request: NextRequest) {
     const { code } = body
     
     if (!code) {
-      return NextResponse.json({ success: false, error: 'Code manquant' }, { status: 400 })
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Code manquant' 
+      }, { status: 400 })
     }
 
-    const settings = getSettings()
+    const settings = await getSettings()
     const promoIndex = settings.promoCodes.findIndex(
       p => p.code.toUpperCase() === code.toUpperCase()
     )
@@ -84,6 +41,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
+    // Calculate discounted price
     let discountedPrice = settings.premiumPrice
     let discountAmount = 0
 
@@ -95,8 +53,9 @@ export async function POST(request: NextRequest) {
       discountedPrice = Math.max(0, settings.premiumPrice - promo.discount)
     }
 
+    // Increment usage
     settings.promoCodes[promoIndex].currentUses += 1
-    saveSettings(settings)
+    await saveSettings(settings)
 
     return NextResponse.json({
       success: true,
@@ -110,7 +69,12 @@ export async function POST(request: NextRequest) {
         ? '🎉 Premium gratuit !' 
         : `✨ ${promo.discount}${promo.discountType === 'percent' ? '%' : settings.premiumCurrency} de réduction !`
     })
+    
   } catch (error) {
-    return NextResponse.json({ success: false, error: 'Erreur serveur' }, { status: 500 })
+    console.error('Validate Promo Error:', error)
+    return NextResponse.json({ 
+      success: false, 
+      error: 'Erreur serveur' 
+    }, { status: 500 })
   }
 }
