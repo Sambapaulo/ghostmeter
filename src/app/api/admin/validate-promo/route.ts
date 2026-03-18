@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSettings, saveSettings, Settings, PromoCode } from '@/lib/kv'
 
+// POST - Validate and apply promo code
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { code } = body
     
     if (!code) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Code manquant' 
-      }, { status: 400 })
+      return NextResponse.json({ success: false, error: 'Code manquant' }, { status: 400 })
     }
 
     const settings = await getSettings()
@@ -37,7 +35,7 @@ export async function POST(request: NextRequest) {
     if (promo.currentUses >= promo.maxUses) {
       return NextResponse.json({ 
         success: false, 
-        error: 'Ce code promo a atteint sa limite' 
+        error: 'Ce code promo a atteint sa limite d\'utilisation' 
       }, { status: 400 })
     }
 
@@ -69,12 +67,7 @@ export async function POST(request: NextRequest) {
         ? '🎉 Premium gratuit !' 
         : `✨ ${promo.discount}${promo.discountType === 'percent' ? '%' : settings.premiumCurrency} de réduction !`
     })
-    
   } catch (error) {
-    console.error('Validate Promo Error:', error)
-    return NextResponse.json({ 
-      success: false, 
-      error: 'Erreur serveur' 
-    }, { status: 500 })
+    return NextResponse.json({ success: false, error: 'Erreur serveur' }, { status: 500 })
   }
 }

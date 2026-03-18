@@ -1,82 +1,90 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getSettings, saveSettings, Settings } from '@/lib/kv'
+import { NextResponse } from 'next/server'
+
+// Types
+export interface Settings {
+  premiumPrice: number
+  premiumCurrency: string
+  premiumPeriod: string
+  freeAnalysesPerDay: number
+  adminPassword: string
+  promoCodes: PromoCode[]
+}
+
+export interface PromoCode {
+  code: string
+  discount: number
+  discountType: 'percent' | 'fixed'
+  active: boolean
+  maxUses: number
+  currentUses: number
+  createdAt: string
+}
+
+const KV_SETTINGS_KEY = 'ghostmeter:settings'
+
+const defaultSettings: Settings = {
+  premiumPrice: 4,
+  premiumCurrency: '€',
+  premiumPeriod: 'mois',
+  freeAnalysesPerDay: 3,
+  adminPassword: 'ghostmeter2024',
+  promoCodes: []
+}
+
+// Check if we're on Vercel with KV available
+function useKV(): boolean {
+  return !!process.env.KV_REST_API_URL && !!process.env.KV_REST_API_TOKEN
+}
+
+// Get KV client dynamically
+async function getKV() {
+  if (!useKV()) return null
+  try {
+    const { kv } = await import('@vercel/kv')
+    return kv
+  } catch {
+    return null
+  }
+}
+
+// Get settings from KV or return defaults
+export async function getSettings(): Promise<Settings> {
+  // Try Vercel KV
+  if (useKV()) {
+    try {
+      const kv = await getKV()
+      if (kv) {
+        const settings = await kv.get(KV_SETTINGS_KEY)
+        if (settings) {
+          return settings as Settings
+        }
+      }
+    } catch (error) {
+      console.error('KV get error:', error)
+    }
+  }
+
+  // Return defaults
+  return { ...defaultSettings }
+}
+
+// Save settings to KV
+export async function saveSettings(settings: Settings): Promise<boolean> {
+  if (useKV()) {
+    try {
+      const kv = await getKV()
+      if (kv) {
+        await kv.set(KV_SETTINGS_KEY, settings)
+        return true
+      }
+    } catch (error) {
+      console.error('KV set error:', error)
+    }
+  }
+  return false
+}
 
 // Get admin password from environment variable
-function getAdminPassword(): string {
+export function getAdminPassword(): string {
   return process.env.ADMIN_PASSWORD || 'ghostmeter2024'
-}
-
-// GET - Fetch settings
-export async function GET() {
-  try {
-    const settings = await getSettings()
-    return NextResponse.json({
-      success: true,
-      settings: {
-        ...settings,
-        adminPassword: '••••••••'
-      }
-    })
-  } catch (error) {
-    console.error('GET Settings Error:', error)
-    return NextResponse.json({ 
-      success: false, 
-      error: 'Failed to load settings' 
-    }, { status: 500 })
-  }
-}
-
-// POST - Login or update settings
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json()
-    const currentSettings = await getSettings()
-    const adminPassword = getAdminPassword()
-
-    // LOGIN ACTION
-    if (body.action === 'login') {
-      if (body.password === adminPassword) {
-        return NextResponse.json({
-          success: true,
-          settings: {
-            ...currentSettings,
-            adminPassword: '••••••••'
-          }
-        })
-      } else {
-        return NextResponse.json({ 
-          success: false, 
-          error: 'Mot de passe incorrect' 
-        }, { status: 401 })
-      }
-    }
-
-    // UPDATE SETTINGS
-    if (body.action === 'update') {
-      const newSettings = body.settings as Settings
-      
-      const saved = await saveSettings(newSettings)
-      
-      if (saved) {
-        return NextResponse.json({ success: true })
-      } else {
-        return NextResponse.json({ 
-          success: false, 
-          error: 'Impossible de sauvegarder (KV non configuré)' 
-        }, { status: 500 })
-      }
-    }
-
-    return NextResponse.json({ 
-      success: false, 
-      error: 'Action invalide' 
-    }, { status: 400 })
-    
-  } catch (error) {
-    console.error('POST Settings Error:', error)
-    return NextResponse.json({ 
-      success: false, 
-      error: 'Erreur serveur' 
-    }, { status: 500 })
-  }
 }
