@@ -4,15 +4,6 @@ import path from 'path'
 
 const SETTINGS_PATH = path.join(process.cwd(), 'data', 'settings.json')
 
-interface Settings {
-  premiumPrice: number
-  premiumCurrency: string
-  premiumPeriod: string
-  freeAnalysesPerDay: number
-  adminPassword: string
-  promoCodes: PromoCode[]
-}
-
 interface PromoCode {
   code: string
   discount: number
@@ -21,6 +12,19 @@ interface PromoCode {
   maxUses: number
   currentUses: number
   createdAt: string
+}
+
+interface Settings {
+  premiumPrice: number
+  premiumCurrency: string
+  premiumPeriod: string
+  freeAnalysesPerDay: number
+  promoCodes: PromoCode[]
+}
+
+// Get admin password from environment variable (secure)
+function getAdminPassword(): string {
+  return process.env.ADMIN_PASSWORD || 'ghostmeter2024'
 }
 
 function getSettings(): Settings {
@@ -33,7 +37,6 @@ function getSettings(): Settings {
       premiumCurrency: '€',
       premiumPeriod: 'mois',
       freeAnalysesPerDay: 3,
-      adminPassword: 'ghostmeter2024',
       promoCodes: []
     }
   }
@@ -47,6 +50,7 @@ function saveSettings(settings: Settings) {
   fs.writeFileSync(SETTINGS_PATH, JSON.stringify(settings, null, 2))
 }
 
+// GET - Fetch settings
 export async function GET() {
   try {
     const settings = getSettings()
@@ -62,13 +66,16 @@ export async function GET() {
   }
 }
 
+// POST - Login or update settings
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const currentSettings = getSettings()
+    const adminPassword = getAdminPassword()
 
+    // LOGIN ACTION
     if (body.action === 'login') {
-      if (body.password === currentSettings.adminPassword) {
+      if (body.password === adminPassword) {
         return NextResponse.json({
           success: true,
           settings: {
@@ -81,12 +88,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // UPDATE SETTINGS
     if (body.action === 'update') {
-      const newSettings = body.settings
-      if (newSettings.adminPassword === '••••••••' || !newSettings.adminPassword) {
-        newSettings.adminPassword = currentSettings.adminPassword
-      }
-      saveSettings(newSettings)
+      saveSettings(body.settings)
       return NextResponse.json({ success: true })
     }
 
