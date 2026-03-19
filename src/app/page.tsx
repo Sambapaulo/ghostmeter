@@ -3,8 +3,13 @@
 import { useState, useEffect } from 'react'
 import { 
   Sparkles, Crown, RefreshCw, Share2, Menu, X, History, 
-  Trash2, ChevronRight, Check, Heart, AlertTriangle, Ghost, Gift, Tag
+  Trash2, ChevronRight, Check, Heart, AlertTriangle, Ghost, Gift, Tag,
+  Camera, Upload
 } from 'lucide-react'
+import dynamic from 'next/dynamic'
+
+// Dynamically import OCRUploader to avoid SSR issues with Tesseract.js
+const OCRUploader = dynamic(() => import('@/components/OCRUploader'), { ssr: false })
 
 // Types
 interface AnalysisResult {
@@ -139,6 +144,7 @@ export default function Home() {
   const [showMenu, setShowMenu] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
   const [showPremium, setShowPremium] = useState(false)
+  const [showOCR, setShowOCR] = useState(false)
   
   // Promo code
   const [promoCode, setPromoCode] = useState('')
@@ -316,6 +322,12 @@ export default function Home() {
     return score >= 70 ? '#ef4444' : score >= 40 ? '#eab308' : '#22c55e'
   }
 
+  // Handle OCR text extraction
+  const handleOCRText = (text: string) => {
+    setConversation(text)
+    setShowOCR(false)
+  }
+
   // MENU DRAWER
   const MenuDrawer = () => (
     <div className={`fixed inset-0 z-50 transition-all ${showMenu ? 'visible' : 'invisible'}`}>
@@ -367,7 +379,7 @@ export default function Home() {
         </div>
         
         <div className="absolute bottom-4 left-4 text-xs text-gray-400">
-          Version 1.1.0
+          Version 1.2.0
         </div>
       </div>
     </div>
@@ -530,6 +542,15 @@ export default function Home() {
         <HistoryModal />
         <PremiumModal />
         
+        {/* OCR Modal */}
+        {showOCR && (
+          <OCRUploader 
+            onTextExtracted={handleOCRText} 
+            onClose={() => setShowOCR(false)} 
+          />
+        )}
+        
+        {/* Header */}
         <div className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-lg border-b border-gray-100">
           <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
             <button onClick={() => setShowMenu(true)} className="p-2 hover:bg-gray-100 rounded-full">
@@ -546,6 +567,7 @@ export default function Home() {
           </div>
         </div>
         
+        {/* Content */}
         <div className="pt-20 pb-8 px-4 flex flex-col items-center justify-center min-h-screen">
           <div className="text-center mb-6">
             <GhostLogo size={80} />
@@ -561,6 +583,7 @@ export default function Home() {
               Colle ta conversation
             </h2>
 
+            {/* Platform selector */}
             <div className="flex gap-2 overflow-x-auto pb-3 mb-2">
               {platforms.map(p => (
                 <button key={p.id} onClick={() => setSelectedPlatform(p.id)}
@@ -570,6 +593,7 @@ export default function Home() {
               ))}
             </div>
 
+            {/* Context selector */}
             <div className="mb-4">
               <p className="text-xs text-gray-400 mb-2">Type de relation :</p>
               <div className="flex gap-2 overflow-x-auto pb-2">
@@ -582,18 +606,34 @@ export default function Home() {
               </div>
             </div>
 
-            <textarea
-              value={conversation}
-              onChange={(e) => setConversation(e.target.value)}
-              placeholder="Colle ta conversation ici...
+            {/* Textarea with OCR Button */}
+            <div className="relative">
+              <textarea
+                value={conversation}
+                onChange={(e) => setConversation(e.target.value)}
+                placeholder="Colle ta conversation ici...
 
 Exemple:
 Toi: Hey ! Tu fais quoi ? 😊
 Lui/Elle: Rien de spécial, et toi ?
 Toi: Je pensais aller au ciné ?"
-              className="w-full h-40 p-3 border border-gray-200 rounded-xl resize-none text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 mb-4"
-            />
+                className="w-full h-40 p-3 border border-gray-200 rounded-xl resize-none text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 mb-2"
+              />
+              {/* OCR Screenshot Button */}
+              <button
+                onClick={() => setShowOCR(true)}
+                className="absolute bottom-2 right-2 p-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors flex items-center gap-1 text-xs font-medium"
+                title="Importer une capture d'écran"
+              >
+                <Camera className="w-4 h-4" />
+                <span className="hidden sm:inline">Screenshot</span>
+              </button>
+            </div>
+            <p className="text-xs text-gray-400 mb-4 text-center">
+              💡 Collez votre texte ou importez une capture d'écran
+            </p>
 
+            {/* Analyze button */}
             <button
               onClick={handleAnalyze}
               disabled={conversation.trim().length < 20 || isLoading || (!isPremium && remaining <= 0)}
@@ -644,6 +684,7 @@ Toi: Je pensais aller au ciné ?"
         <HistoryModal />
         <PremiumModal />
         
+        {/* Header */}
         <div className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-lg border-b border-gray-100">
           <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
             <button onClick={() => setShowMenu(true)} className="p-2 hover:bg-gray-100 rounded-full">
@@ -655,14 +696,17 @@ Toi: Je pensais aller au ciné ?"
           </div>
         </div>
         
+        {/* Content */}
         <div className="pt-20 pb-8 p-4">
           <div className="max-w-lg mx-auto">
+            {/* Punchline */}
             <div className="text-center mb-6">
               <div className="inline-block bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-full text-lg font-bold shadow-lg">
                 "{analysis.punchline}"
               </div>
             </div>
 
+            {/* Badges */}
             <div className="flex flex-wrap gap-2 justify-center mb-6">
               {analysis.badges.map((badge, i) => (
                 <span key={i} className="px-3 py-1 bg-purple-100 rounded-full text-sm">{badge}</span>
@@ -674,6 +718,7 @@ Toi: Je pensais aller au ciné ?"
               )}
             </div>
 
+            {/* Scores */}
             <div className="bg-white rounded-2xl shadow-xl p-6 mb-4">
               <div className="grid grid-cols-3 gap-4 justify-items-center">
                 <ScoreCircle score={analysis.interestScore} label="Intérêt" icon="❤️" color={getScoreColor(analysis.interestScore, 'good')} />
@@ -689,11 +734,13 @@ Toi: Je pensais aller au ciné ?"
               </div>
             </div>
 
+            {/* Advice */}
             <div className="bg-white rounded-2xl shadow-xl p-6 mb-4">
               <h3 className="font-semibold mb-2">💬 Conseil</h3>
               <p className="text-gray-600">{analysis.advice}</p>
             </div>
 
+            {/* Highlights */}
             <div className="bg-white rounded-2xl shadow-xl p-6 mb-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -713,6 +760,7 @@ Toi: Je pensais aller au ciné ?"
               </div>
             </div>
 
+            {/* Buttons */}
             <div className="grid grid-cols-3 gap-2">
               <button onClick={() => { setAnalysis(null); setAppState('home') }} className="py-3 bg-gray-100 rounded-xl font-medium hover:bg-gray-200 transition-colors">
                 <RefreshCw className="w-4 h-4 mx-auto mb-1" /> Nouveau
