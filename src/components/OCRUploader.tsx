@@ -14,21 +14,16 @@ export default function OCRUploader({ onTextExtracted, onClose }: OCRUploaderPro
   const [preview, setPreview] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const abortControllerRef = useRef<AbortController | null>(null)
 
   const resetState = useCallback(() => {
     setIsProcessing(false)
     setProgress(0)
     setError(null)
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort()
-      abortControllerRef.current = null
-    }
   }, [])
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    e.target.value = '' // Reset input to allow same file again
+    e.target.value = ''
     if (!file) return
 
     if (!file.type.startsWith('image/')) {
@@ -45,7 +40,6 @@ export default function OCRUploader({ onTextExtracted, onClose }: OCRUploaderPro
     
     const reader = new FileReader()
     reader.onload = (ev) => setPreview(ev.target?.result as string)
-    reader.onerror = () => setError('Erreur lors de la lecture de l''image')
     reader.readAsDataURL(file)
 
     processImage(file)
@@ -56,28 +50,38 @@ export default function OCRUploader({ onTextExtracted, onClose }: OCRUploaderPro
     setProgress(10)
     setError(null)
 
-    abortControllerRef.current = new AbortController()
-
     try {
       const formData = new FormData()
       formData.append('image', file)
 
+      setProgress(20)
+
+      // Add cache-busting parameter for WebView compatibility
+      const cacheBuster = `?t=${Date.now()}&r=${Math.random().toString(36).substring(7)}`
+
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 60000) // 60s timeout
+
       setProgress(30)
-      
-      const response = await fetch('/api/ocr', {
+
+      const response = await fetch(`/api/ocr${cacheBuster}`, {
         method: 'POST',
         body: formData,
-        signal: abortControllerRef.current.signal
+        signal: controller.signal,
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
       })
 
-      setProgress(70)
-      
+      clearTimeout(timeoutId)
+      setProgress(60)
+
       const data = await response.json()
+      setProgress(80)
 
-      setProgress(90)
-
-      if (!data.success) {
-        throw new Error(data.error || data.details || 'Erreur OCR')
+      if (!response.ok || !data.success) {
+        throw new Error(data.details || data.error || 'Erreur serveur')
       }
 
       const text = data.text?.trim() || ''
@@ -89,14 +93,16 @@ export default function OCRUploader({ onTextExtracted, onClose }: OCRUploaderPro
       }
 
       setProgress(100)
+      setIsProcessing(false)
       onTextExtracted(text)
     } catch (err: any) {
-      if (err.name === 'AbortError') return
       console.error('OCR Error:', err)
-      setError('Erreur: ' + (err.message || 'Réessayez'))
-    } finally {
       setIsProcessing(false)
-      abortControllerRef.current = null
+      if (err.name === 'AbortError') {
+        setError('Délai dépassé. Réessayez.')
+      } else {
+        setError('Erreur: ' + (err.message || 'Connexion impossible'))
+      }
     }
   }
 
