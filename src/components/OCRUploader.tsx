@@ -15,112 +15,83 @@ export default function OCRUploader({ onTextExtracted, onClose }: OCRUploaderPro
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const resetState = useCallback(() => {
+  const resetAll = useCallback(() => {
     setIsProcessing(false)
     setProgress(0)
     setError(null)
+    setPreview(null)
   }, [])
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     e.target.value = ''
-    if (!file) return
-
-    if (!file.type.startsWith('image/')) {
-      setError('Veuillez sélectionner une image')
-      return
-    }
-
-    if (file.size > 10 * 1024 * 1024) {
-      setError('L''image est trop volumineuse (max 10MB)')
-      return
-    }
-
-    resetState()
     
-    const reader = new FileReader()
-    reader.onload = (ev) => setPreview(ev.target?.result as string)
-    reader.readAsDataURL(file)
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      setError('Sélectionnez une image')
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image trop grande (max 5MB)')
+      return
+    }
 
-    processImage(file)
+    setError(null)
+    setProgress(0)
+
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string
+      setPreview(dataUrl)
+      processImage(dataUrl)
+    }
+    reader.onerror = () => setError('Erreur lecture image')
+    reader.readAsDataURL(file)
   }
 
-  const processImage = async (file: File) => {
+  const processImage = async (dataUrl: string) => {
     setIsProcessing(true)
     setProgress(10)
-    setError(null)
 
     try {
-      const formData = new FormData()
-      formData.append('image', file)
-
       setProgress(20)
 
-      // Add cache-busting parameter for WebView compatibility
-      const cacheBuster = `?t=${Date.now()}&r=${Math.random().toString(36).substring(7)}`
-
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 60000) // 60s timeout
-
-      setProgress(30)
-
-      const response = await fetch(`/api/ocr${cacheBuster}`, {
+      const response = await fetch('/api/ocr', {
         method: 'POST',
-        body: formData,
-        signal: controller.signal,
-        headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        }
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: dataUrl })
       })
 
-      clearTimeout(timeoutId)
-      setProgress(60)
+      setProgress(50)
 
       const data = await response.json()
+      
       setProgress(80)
 
-      if (!response.ok || !data.success) {
-        throw new Error(data.details || data.error || 'Erreur serveur')
-      }
-
-      const text = data.text?.trim() || ''
-      
-      if (text.length < 10) {
-        setError('Aucun texte détecté. Essayez une capture plus claire.')
-        setIsProcessing(false)
-        return
+      if (!data.success) {
+        throw new Error(data.error || 'Erreur serveur')
       }
 
       setProgress(100)
       setIsProcessing(false)
-      onTextExtracted(text)
+      onTextExtracted(data.text)
+      
     } catch (err: any) {
-      console.error('OCR Error:', err)
+      console.error('OCR error:', err)
+      setError(err.message || 'Erreur analyse')
       setIsProcessing(false)
-      if (err.name === 'AbortError') {
-        setError('Délai dépassé. Réessayez.')
-      } else {
-        setError('Erreur: ' + (err.message || 'Connexion impossible'))
-      }
     }
-  }
-
-  const handleClose = () => {
-    resetState()
-    setPreview(null)
-    onClose()
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+      <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
         <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-4 text-white flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Camera className="w-5 h-5" />
-            <h3 className="font-semibold">Importer une capture</h3>
+            <span className="font-semibold">Importer une capture</span>
           </div>
-          <button onClick={handleClose} className="p-1 hover:bg-white/20 rounded-full">
+          <button onClick={() => { resetAll(); onClose(); }} className="p-1 hover:bg-white/20 rounded-full">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -134,44 +105,38 @@ export default function OCRUploader({ onTextExtracted, onClose }: OCRUploaderPro
 
           {preview ? (
             <div className="relative mb-4">
-              <img src={preview} alt="Preview" className="w-full h-48 object-contain rounded-xl border border-gray-200" />
+              <img src={preview} alt="" className="w-full h-48 object-contain rounded-xl border" />
               {isProcessing && (
                 <div className="absolute inset-0 bg-black/50 rounded-xl flex flex-col items-center justify-center">
                   <Loader2 className="w-8 h-8 text-white animate-spin mb-2" />
-                  <p className="text-white text-sm">Analyse... {progress}%</p>
+                  <span className="text-white text-sm">{progress}%</span>
                 </div>
               )}
             </div>
           ) : (
             <div 
-              className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition-all"
+              className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-purple-400 transition-all"
               onClick={() => fileInputRef.current?.click()}
             >
-              <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-              <p className="text-gray-600 font-medium mb-1">Cliquez pour importer</p>
-              <p className="text-gray-400 text-sm">Capture d'écran de conversation</p>
+              <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+              <p className="text-gray-600">Cliquez pour importer</p>
             </div>
           )}
 
-          <div className="mt-4 space-y-2">
-            <p className="text-xs text-gray-500 flex items-center gap-2">
-              <span className="w-5 h-5 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-xs font-bold">1</span>
-              Capturez votre conversation
-            </p>
-            <p className="text-xs text-gray-500 flex items-center gap-2">
-              <span className="w-5 h-5 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-xs font-bold">2</span>
-              Importez l'image
-            </p>
-            <p className="text-xs text-gray-500 flex items-center gap-2">
-              <span className="w-5 h-5 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-xs font-bold">3</span>
-              Le texte sera extrait
-            </p>
+          <div className="mt-4 space-y-1 text-xs text-gray-500">
+            <p>1️⃣ Capturez votre conversation</p>
+            <p>2️⃣ Importez l'image</p>
+            <p>3️⃣ Le texte sera extrait</p>
           </div>
 
           <div className="mt-6 flex gap-2">
-            <button onClick={handleClose} className="flex-1 py-3 border border-gray-200 rounded-xl font-medium hover:bg-gray-50">Annuler</button>
-            <button onClick={() => fileInputRef.current?.click()} disabled={isProcessing} className="flex-1 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2">
-              {isProcessing ? (<><Loader2 className="w-4 h-4 animate-spin" />Analyse...</>) : (<><Upload className="w-4 h-4" />Importer</>)}
+            <button onClick={() => { resetAll(); onClose(); }} className="flex-1 py-3 border rounded-xl hover:bg-gray-50">Annuler</button>
+            <button 
+              onClick={() => fileInputRef.current?.click()} 
+              disabled={isProcessing} 
+              className="flex-1 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isProcessing ? <><Loader2 className="w-4 h-4 animate-spin"/>Analyse...</> : <><Upload className="w-4 h-4"/>Importer</>}
             </button>
           </div>
         </div>
