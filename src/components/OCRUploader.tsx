@@ -2,7 +2,6 @@
 
 import { useState, useRef } from 'react'
 import { Upload, Camera, X, Loader2, Image as ImageIcon } from 'lucide-react'
-import Tesseract from 'tesseract.js'
 
 interface OCRUploaderProps {
   onTextExtracted: (text: string) => void
@@ -26,7 +25,7 @@ export default function OCRUploader({ onTextExtracted, onClose }: OCRUploaderPro
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      setError('L\'image est trop volumineuse (max 10MB)')
+      setError('L''image est trop volumineuse (max 10MB)')
       return
     }
 
@@ -43,40 +42,44 @@ export default function OCRUploader({ onTextExtracted, onClose }: OCRUploaderPro
 
   const processImage = async (file: File) => {
     setIsProcessing(true)
-    setProgress(0)
+    setProgress(10)
+    setError(null)
 
     try {
-      const result = await Tesseract.recognize(
-        file,
-        'fra+eng',
-        {
-          logger: (m) => {
-            if (m.status === 'recognizing text') {
-              setProgress(Math.round(m.progress * 100))
-            }
-          },
-        }
-      )
+      const formData = new FormData()
+      formData.append('image', file)
 
-      const extractedText = result.data.text.trim()
+      setProgress(30)
       
-      if (extractedText.length < 10) {
-        setError('Aucun texte détecté dans l\'image. Essayez une capture plus claire.')
+      const response = await fetch('/api/ocr', {
+        method: 'POST',
+        body: formData
+      })
+
+      setProgress(70)
+      
+      const data = await response.json()
+
+      setProgress(90)
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.details || data.error || 'Erreur OCR')
+      }
+
+      const text = data.text.trim()
+      
+      if (text.length < 10) {
+        setError('Aucun texte détecté dans l''image. Essayez une capture plus claire.')
         setIsProcessing(false)
         return
       }
 
-      const cleanedText = extractedText
-        .replace(/\s+/g, ' ')
-        .replace(/[|]/g, ' ')
-        .replace(/[}{\[\]]/g, '')
-        .trim()
-      
-      onTextExtracted(cleanedText)
+      setProgress(100)
+      onTextExtracted(text)
       setIsProcessing(false)
     } catch (err) {
       console.error('OCR Error:', err)
-      setError('Erreur lors de l\'analyse de l\'image. Réessayez.')
+      setError('Erreur lors de l''analyse: ' + (err instanceof Error ? err.message : 'Réessayez'))
       setIsProcessing(false)
     }
   }
@@ -92,9 +95,7 @@ export default function OCRUploader({ onTextExtracted, onClose }: OCRUploaderPro
         if (file) {
           setError(null)
           const reader = new FileReader()
-          reader.onload = (ev) => {
-            setPreview(ev.target?.result as string)
-          }
+          reader.onload = (ev) => setPreview(ev.target?.result as string)
           reader.readAsDataURL(file)
           processImage(file)
         }
@@ -109,9 +110,7 @@ export default function OCRUploader({ onTextExtracted, onClose }: OCRUploaderPro
     if (file && file.type.startsWith('image/')) {
       setError(null)
       const reader = new FileReader()
-      reader.onload = (ev) => {
-        setPreview(ev.target?.result as string)
-      }
+      reader.onload = (ev) => setPreview(ev.target?.result as string)
       reader.readAsDataURL(file)
       processImage(file)
     }
@@ -130,10 +129,7 @@ export default function OCRUploader({ onTextExtracted, onClose }: OCRUploaderPro
             <Camera className="w-5 h-5" />
             <h3 className="font-semibold">Importer une capture</h3>
           </div>
-          <button 
-            onClick={onClose}
-            className="p-1 hover:bg-white/20 rounded-full transition-colors"
-          >
+          <button onClick={onClose} className="p-1 hover:bg-white/20 rounded-full">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -147,15 +143,11 @@ export default function OCRUploader({ onTextExtracted, onClose }: OCRUploaderPro
 
           {preview ? (
             <div className="relative mb-4">
-              <img 
-                src={preview} 
-                alt="Preview" 
-                className="w-full h-48 object-contain rounded-xl border border-gray-200"
-              />
+              <img src={preview} alt="Preview" className="w-full h-48 object-contain rounded-xl border border-gray-200" />
               {isProcessing && (
                 <div className="absolute inset-0 bg-black/50 rounded-xl flex flex-col items-center justify-center">
                   <Loader2 className="w-8 h-8 text-white animate-spin mb-2" />
-                  <p className="text-white text-sm">Analyse en cours... {progress}%</p>
+                  <p className="text-white text-sm">Analyse... {progress}%</p>
                 </div>
               )}
             </div>
@@ -165,12 +157,8 @@ export default function OCRUploader({ onTextExtracted, onClose }: OCRUploaderPro
               onClick={() => fileInputRef.current?.click()}
             >
               <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-              <p className="text-gray-600 font-medium mb-1">
-                Cliquez ou glissez une image
-              </p>
-              <p className="text-gray-400 text-sm">
-                Capture d'écran de conversation
-              </p>
+              <p className="text-gray-600 font-medium mb-1">Cliquez ou glissez une image</p>
+              <p className="text-gray-400 text-sm">Capture d'écran de conversation</p>
             </div>
           )}
 
@@ -181,7 +169,7 @@ export default function OCRUploader({ onTextExtracted, onClose }: OCRUploaderPro
             </p>
             <p className="text-xs text-gray-500 flex items-center gap-2">
               <span className="w-5 h-5 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-xs font-bold">2</span>
-              Importez-la ici (ou faites Ctrl+V pour coller)
+              Importez-la ici (ou Ctrl+V pour coller)
             </p>
             <p className="text-xs text-gray-500 flex items-center gap-2">
               <span className="w-5 h-5 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-xs font-bold">3</span>
@@ -190,39 +178,14 @@ export default function OCRUploader({ onTextExtracted, onClose }: OCRUploaderPro
           </div>
 
           <div className="mt-6 flex gap-2">
-            <button
-              onClick={onClose}
-              className="flex-1 py-3 border border-gray-200 rounded-xl font-medium hover:bg-gray-50 transition-colors"
-            >
-              Annuler
-            </button>
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isProcessing}
-              className="flex-1 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium hover:opacity-90 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Analyse...
-                </>
-              ) : (
-                <>
-                  <Upload className="w-4 h-4" />
-                  Importer
-                </>
-              )}
+            <button onClick={onClose} className="flex-1 py-3 border border-gray-200 rounded-xl font-medium hover:bg-gray-50">Annuler</button>
+            <button onClick={() => fileInputRef.current?.click()} disabled={isProcessing} className="flex-1 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2">
+              {isProcessing ? (<><Loader2 className="w-4 h-4 animate-spin" />Analyse...</>) : (<><Upload className="w-4 h-4" />Importer</>)}
             </button>
           </div>
         </div>
 
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleFileSelect}
-          className="hidden"
-        />
+        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
       </div>
     </div>
   )
