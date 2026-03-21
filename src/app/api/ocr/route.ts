@@ -1,43 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Tesseract from 'tesseract.js';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    console.log('Received body keys:', Object.keys(body));
-    console.log('imageBase64 length:', body.imageBase64?.length);
-    
     const { imageBase64 } = body;
 
     if (!imageBase64) {
-      console.log('ERROR: imageBase64 is missing');
-      return NextResponse.json({ 
-        success: false,
-        error: 'Image requise',
-        receivedKeys: Object.keys(body)
-      }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'Image requise' }, { status: 400 });
     }
 
-    const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
-    const buffer = Buffer.from(base64Data, 'base64');
+    // Utiliser OCR.space API (gratuit, 25k requetes/mois)
+    const formData = new URLSearchParams();
+    formData.append('base64Image', imageBase64);
+    formData.append('language', 'fre');
+    formData.append('isOverlayRequired', 'false');
+    formData.append('OCREngine', '2');
 
-    console.log('Buffer size:', buffer.length);
+    const response = await fetch('https://api.ocr.space/parse/image', {
+      method: 'POST',
+      headers: {
+        'apikey': 'K88889378888957', // Cle publique de demo
+      },
+      body: formData
+    });
 
-    const result = await Tesseract.recognize(buffer, 'fra+eng');
-
-    const extractedText = result.data.text.trim();
-    console.log('Extracted text length:', extractedText.length);
-
-    if (extractedText.length < 10) {
-      return NextResponse.json({
-        success: false,
-        error: 'Aucun texte detecte'
+    const data = await response.json();
+    
+    if (data.OCRExitCode === 1 && data.ParsedResults?.[0]?.ParsedText) {
+      const text = data.ParsedResults[0].ParsedText.trim();
+      return NextResponse.json({ success: true, text });
+    } else {
+      return NextResponse.json({ 
+        success: false, 
+        error: data.ErrorMessage?.[0] || 'Aucun texte detecte' 
       });
     }
-
-    const cleanedText = extractedText.replace(/\s+/g, ' ').trim();
-
-    return NextResponse.json({ success: true, text: cleanedText });
 
   } catch (error: any) {
     console.error('OCR Error:', error);
