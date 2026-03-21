@@ -195,7 +195,7 @@ export default function OCRUploader({ onTextExtracted, onClose }: OCRUploaderPro
           accept="image/jpeg,image/png,image/jpg,image/*" 
           onChange={handleFileSelect} 
           className="hidden"
-          capture="environment"
+          
         />
       </div>
     </div>
