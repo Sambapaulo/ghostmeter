@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { App } from '@capacitor/app'
 import { 
   Sparkles, Crown, RefreshCw, Share2, Menu, X, History, 
   Trash2, ChevronRight, Check, Ghost, Tag, Camera, ClipboardPaste
@@ -335,3 +336,4 @@ export default function Home() {
   }
   return null
 }
+
