@@ -1,16 +1,31 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { App } from '@capacitor/app'
-import { LocalNotifications } from '@capacitor/local-notifications'
-import { Capacitor } from '@capacitor/core'
-import { 
-  Sparkles, Crown, RefreshCw, Share2, Menu, X, History, 
+import {
+  Sparkles, Crown, RefreshCw, Share2, Menu, X, History,
   Trash2, ChevronRight, ChevronLeft, Check, Ghost, Tag, Camera, ClipboardPaste, LogOut, Mail, Info, FileText, CreditCard, Loader2, MessageCircle, Send, MessageSquare, Copy, Heart, Sun, Moon, Plus, Bell, BellOff, AlertCircle
 } from 'lucide-react'
 import dynamic from 'next/dynamic'
 
 const OCRUploader = dynamic(() => import('@/components/OCRUploader'), { ssr: false })
+
+// Dynamic imports for Capacitor - only loaded on client side
+let App: any = null
+let LocalNotifications: any = null
+let Capacitor: any = null
+
+// Load Capacitor modules only on client side
+if (typeof window !== 'undefined') {
+  try {
+    App = require('@capacitor/app').App
+  } catch (e) {}
+  try {
+    LocalNotifications = require('@capacitor/local-notifications').LocalNotifications
+  } catch (e) {}
+  try {
+    Capacitor = require('@capacitor/core').Capacitor
+  } catch (e) {}
+}
 
 // Global flag to track if we're in APK - set after initial detection
 let _isAPK: boolean | null = null

@@ -7,6 +7,28 @@ const nextConfig: NextConfig = {
   // Production optimizations
   poweredByHeader: false,
   
+  // Webpack config to handle Capacitor (mobile-only packages)
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      // Mark Capacitor packages as external on server side
+      config.externals = config.externals || [];
+      if (Array.isArray(config.externals)) {
+        config.externals.push(
+          '@capacitor/app',
+          '@capacitor/local-notifications',
+          '@capacitor/core',
+          '@capacitor/android',
+          '@capacitor/ios',
+          '@capacitor/haptics',
+          '@capacitor/keyboard',
+          '@capacitor/splash-screen',
+          '@capacitor/status-bar'
+        );
+      }
+    }
+    return config;
+  },
+  
   // Image optimization
   images: {
     remotePatterns: [
