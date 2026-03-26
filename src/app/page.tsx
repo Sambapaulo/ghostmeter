@@ -1887,36 +1887,6 @@ export default function Home() {
             </button>
           </div>
 
-          {/* Notifications Toggle - Available in both web and APK */}
-          <div className="border-t border-gray-100 dark:border-gray-700 mt-2 pt-4">
-            <button 
-              onClick={toggleNotifications}
-              className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
-            >
-              {notificationsEnabled ? (
-                <Bell className="w-5 h-5 text-pink-500" />
-              ) : (
-                <BellOff className="w-5 h-5 text-gray-400" />
-              )}
-              <div className="flex-1 text-left">
-                <p className="font-medium">Notifications</p>
-                <p className="text-xs text-gray-400">{notificationsEnabled ? 'Message motivant chaque matin à 9h' : 'Activer les rappels quotidiens'}</p>
-              </div>
-              <div className={`w-10 h-6 rounded-full transition-colors ${notificationsEnabled ? 'bg-pink-500' : 'bg-gray-300'}`}>
-                <div className={`w-4 h-4 rounded-full bg-white shadow-md transform transition-transform mt-1 ${notificationsEnabled ? 'translate-x-5 ml-0.5' : 'translate-x-1'}`} />
-              </div>
-            </button>
-            
-            {notificationsEnabled && (
-              <button 
-                onClick={testNotification}
-                className="w-full mt-2 py-2 text-xs text-purple-500 hover:text-purple-600 transition-colors"
-              >
-                🔔 Tester une notification
-              </button>
-            )}
-          </div>
-          
           {/* APK info - Show in APK mode only */}
           {isAPKMode && (
             <div className="border-t border-gray-100 dark:border-gray-700 mt-2 pt-4">
