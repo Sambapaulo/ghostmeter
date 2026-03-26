@@ -664,20 +664,20 @@ export default function Home() {
     }
     requestNotificationPermissionAsync()
     
-    const checkMaintenance = async () => {
-      try {
-        const res = await fetch('/api/maintenance')
-        const data = await res.json()
-        if (data.maintenanceMode) {
-          setMaintenanceMode(true)
-          setMaintenanceMessage(data.message)
-        }
-      } catch (e) {
-        // If check fails, continue normally
-        console.log('Maintenance check failed, continuing normally')
-      }
-    }
-    checkMaintenance()
+    // Maintenance mode disabled - not needed for this app
+    // const checkMaintenance = async () => {
+    //   try {
+    //     const res = await fetch('/api/maintenance')
+    //     const data = await res.json()
+    //     if (data.maintenanceMode) {
+    //       setMaintenanceMode(true)
+    //       setMaintenanceMessage(data.message)
+    //     }
+    //   } catch (e) {
+    //     console.log('Maintenance check failed, continuing normally')
+    //   }
+    // }
+    // checkMaintenance()
   }, [])
   
   // Load dark mode preference
@@ -2465,30 +2465,30 @@ export default function Home() {
     )
   }
 
-  // MAINTENANCE MODE PAGE
-  if (maintenanceMode) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
-        <div className="text-center max-w-md">
-          <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-            <span className="text-4xl">👻</span>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">GhostMeter</h1>
-          <div className="w-16 h-1 bg-gradient-to-r from-purple-500 to-pink-500 mx-auto mb-6 rounded-full"></div>
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 border border-gray-100 dark:border-gray-700">
-            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-              <AlertCircle className="w-6 h-6 text-orange-500" />
-            </div>
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">Maintenance en cours</h2>
-            <p className="text-gray-600 dark:text-gray-300">{maintenanceMessage}</p>
-          </div>
-          <p className="text-sm text-gray-400 dark:text-gray-500 mt-6">
-            Merci de votre patience 🙏
-          </p>
-        </div>
-      </div>
-    )
-  }
+  // MAINTENANCE MODE PAGE - DISABLED
+  // if (maintenanceMode) {
+  //   return (
+  //     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+  //       <div className="text-center max-w-md">
+  //         <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+  //           <span className="text-4xl">👻</span>
+  //         </div>
+  //         <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">GhostMeter</h1>
+  //         <div className="w-16 h-1 bg-gradient-to-r from-purple-500 to-pink-500 mx-auto mb-6 rounded-full"></div>
+  //         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 border border-gray-100 dark:border-gray-700">
+  //           <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+  //             <AlertCircle className="w-6 h-6 text-orange-500" />
+  //           </div>
+  //           <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">Maintenance en cours</h2>
+  //           <p className="text-gray-600 dark:text-gray-300">{maintenanceMessage}</p>
+  //         </div>
+  //         <p className="text-sm text-gray-400 dark:text-gray-500 mt-6">
+  //           Merci de votre patience 🙏
+  //         </p>
+  //       </div>
+  //     </div>
+  //   )
+  // }
 
   // HOME PAGE
   if (appState === 'home') {
