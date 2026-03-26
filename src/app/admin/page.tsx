@@ -849,13 +849,21 @@ export default function AdminPage() {
                     <div className="text-center">
                       <p className="text-sm text-gray-500">Revenus potentiels/mois</p>
                       <p className="text-2xl font-bold text-green-700">
-                        {(premiumUsers.filter(u => u.isPremium).length * settings.pack1Month).toFixed(2)}{settings.premiumCurrency}
+                        {(() => {
+                          const count = premiumUsers.filter(u => u.isPremium).length
+                          const price = settings.pack1Month || 1.99
+                          return (count * price).toFixed(2) + settings.premiumCurrency
+                        })()}
                       </p>
                     </div>
                     <div className="text-center">
                       <p className="text-sm text-gray-500">Revenus potentiels/an</p>
                       <p className="text-2xl font-bold text-green-700">
-                        {(premiumUsers.filter(u => u.isPremium).length * settings.pack1Month * 12).toFixed(2)}{settings.premiumCurrency}
+                        {(() => {
+                          const count = premiumUsers.filter(u => u.isPremium).length
+                          const price = settings.pack1Month || 1.99
+                          return (count * price * 12).toFixed(2) + settings.premiumCurrency
+                        })()}
                       </p>
                     </div>
                   </div>
