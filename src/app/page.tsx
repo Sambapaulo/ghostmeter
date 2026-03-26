@@ -1610,9 +1610,19 @@ export default function Home() {
         default:
           basePrice = settings.pack3Months
       }
-      
+
       // Determine the price to charge (promo price or pack price)
-      const priceToCharge = promoResult?.valid ? promoResult.discountedPrice : basePrice;
+      // Calculate discounted price dynamically based on current pack
+      let priceToCharge: number
+      if (promoResult?.valid) {
+        if (promoResult.discountType === 'percent') {
+          priceToCharge = basePrice * (1 - promoResult.discount / 100)
+        } else {
+          priceToCharge = Math.max(0, basePrice - promoResult.discount)
+        }
+      } else {
+        priceToCharge = basePrice
+      }
       
       const res = await fetch('/api/paypal/create-order', {
         method: 'POST',
@@ -1934,6 +1944,17 @@ export default function Home() {
       }
     }
 
+    // Calculate discounted price dynamically based on current pack
+    const getCurrentDiscountedPrice = () => {
+      const basePrice = getPackPrice()
+      if (!promoResult?.valid) return basePrice
+      if (promoResult.discountType === 'percent') {
+        return basePrice * (1 - promoResult.discount / 100)
+      } else {
+        return Math.max(0, basePrice - promoResult.discount)
+      }
+    }
+
     const getPackMonths = () => {
       switch (selectedPack) {
         case '1month': return 1
@@ -2062,7 +2083,7 @@ export default function Home() {
                     promoResult?.valid ? (
                       <span className="flex items-center gap-2">
                         <span className="line-through text-white/50 text-sm">{getPackPrice().toFixed(2)}{settings.premiumCurrency}</span>
-                        <span>{promoResult.discountedPrice.toFixed(2)}{settings.premiumCurrency}</span>
+                        <span>{getCurrentDiscountedPrice().toFixed(2)}{settings.premiumCurrency}</span>
                       </span>
                     ) : (
                       `Payer ${getPackPrice().toFixed(2)}${settings.premiumCurrency}`

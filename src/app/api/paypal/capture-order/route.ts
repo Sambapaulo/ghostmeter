@@ -16,9 +16,25 @@ interface User {
 async function getPayPalAccessToken() {
   const clientId = process.env.PAYPAL_CLIENT_ID;
   const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
-  
+
+  // Debug logging
+  console.log('PayPal capture env check:', {
+    hasClientId: !!clientId,
+    hasClientSecret: !!clientSecret,
+    clientIdLength: clientId?.length || 0,
+    clientSecretLength: clientSecret?.length || 0
+  });
+
+  if (!clientId || !clientSecret) {
+    console.error('PayPal capture env vars missing:', {
+      PAYPAL_CLIENT_ID: clientId ? 'SET' : 'MISSING',
+      PAYPAL_CLIENT_SECRET: clientSecret ? 'SET' : 'MISSING'
+    });
+    throw new Error('PayPal non configuré');
+  }
+
   const useSandbox = process.env.PAYPAL_SANDBOX === 'true';
-  const baseUrl = useSandbox 
+  const baseUrl = useSandbox
     ? 'https://api-m.sandbox.paypal.com'
     : 'https://api-m.paypal.com';
 
