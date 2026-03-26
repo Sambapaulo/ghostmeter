@@ -178,6 +178,19 @@
   50% { transform: translateY(-10px); }
 }
 
+@keyframes slide-across {
+  0% { transform: translateX(100vw); }
+  100% { transform: translateX(-100vw); }
+}
+
+@keyframes ghost-dance {
+  0% { transform: translateX(100vw) rotate(0deg); }
+  25% { transform: translateX(50vw) rotate(-10deg); }
+  50% { transform: translateX(0vw) rotate(0deg); }
+  75% { transform: translateX(-50vw) rotate(10deg); }
+  100% { transform: translateX(-100vw) rotate(0deg); }
+}
+
 @keyframes pulse-glow {
   0%, 100% { box-shadow: 0 0 20px oklch(0.6 0.25 300 / 30%); }
   50% { box-shadow: 0 0 40px oklch(0.6 0.25 300 / 50%); }
@@ -202,6 +215,12 @@
 
 .ghost-float {
   animation: float 3s ease-in-out infinite;
+}
+
+.ghost-slide {
+  animation: ghost-dance 8s linear infinite;
+  position: absolute;
+  left: 0;
 }
 
 .ghost-glow {
