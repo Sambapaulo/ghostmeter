@@ -1899,8 +1899,8 @@ export default function Home() {
                 <p className="text-xs text-purple-600 dark:text-purple-400">
                   📱 Application GhostMeter v1.18.0
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Les notifications sont disponibles sur la version web (navigateur)
+                <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                  ✅ Notifications natives activées
                 </p>
               </div>
             </div>
@@ -2175,35 +2175,6 @@ export default function Home() {
                 Vos conversations sont analysées de manière anonyme et ne sont jamais stockées. Votre vie privée est notre priorité.
               </p>
             </div>
-            
-            {/* APK Debug Info - only show if debug info is available */}
-            {apkDebugInfo && (
-              <div className="bg-gray-100 rounded-xl p-4 overflow-x-auto">
-                <h3 className="font-semibold text-gray-700 mb-2">🔧 Debug APK</h3>
-                <p className="text-xs text-gray-500 font-mono whitespace-nowrap">{apkDebugInfo}</p>
-                <p className="text-xs text-gray-500 font-mono mt-2">Back button: {backButtonStatus || 'not set'}</p>
-                <p className="text-xs text-gray-500 font-mono mt-1">Notification: {notificationPermission || 'not requested'}</p>
-                
-                {/* Button to manually request notification permission */}
-                {isAPKMode && (
-                  <button
-                    onClick={async () => {
-                      try {
-                        const result = await LocalNotifications.requestPermissions()
-                        setNotificationPermission(`Permission: ${result.display}`)
-                        alert(`Permission notification: ${result.display}`)
-                      } catch (e: any) {
-                        setNotificationPermission(`Error: ${e?.message || e}`)
-                        alert(`Erreur: ${e?.message || e}`)
-                      }
-                    }}
-                    className="mt-3 px-3 py-1 bg-purple-500 text-white text-xs rounded-lg"
-                  >
-                    Demander permission notifications
-                  </button>
-                )}
-              </div>
-            )}
             
             <div className="bg-yellow-50 rounded-xl p-4">
               <h3 className="font-semibold text-yellow-700 mb-2">👑 Version Premium</h3>
