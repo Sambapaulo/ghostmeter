@@ -722,11 +722,30 @@ export default function Home() {
         console.log('Not in native app context')
         return false
       }
+
+      // Check if LocalNotifications plugin is available
+      if (!LocalNotifications) {
+        console.log('LocalNotifications plugin not loaded')
+        alert('❌ Plugin de notifications non disponible. Redémarrez l\'application.')
+        return false
+      }
       
+      console.log('Requesting notification permission...')
       const result = await LocalNotifications.requestPermissions()
+      console.log('Permission result:', result)
+      
+      if (result.display === 'granted' || result.granted) {
+        return true
+      } else if (result.display === 'prompt' || result.display === 'denied') {
+        // Permission was denied, guide user to settings
+        alert('ℹ️ Allez dans Paramètres > Apps > GhostMeter > Notifications pour autoriser.')
+        return false
+      }
+      
       return result.display === 'granted'
-    } catch (e) {
-      console.log('Notifications not available:', e)
+    } catch (e: any) {
+      console.log('Notifications permission error:', e)
+      alert('❌ Erreur: ' + (e?.message || e))
       return false
     }
   }
