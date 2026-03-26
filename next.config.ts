@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
   // Production optimizations
   poweredByHeader: false,
   
+  // Turbopack config (required for Next.js 16 with webpack config)
+  turbopack: {},
+  
   // Webpack config to handle Capacitor (mobile-only packages)
   webpack: (config, { isServer }) => {
     if (isServer) {
