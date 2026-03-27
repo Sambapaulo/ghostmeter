@@ -41,6 +41,12 @@
     "skills",
     "examples",
     "mini-services",
-    ".zscripts"
+    ".zscripts",
+    "src/components/ui",
+    "src/lib/payment.ts",
+    "src/lib/tesseract.ts",
+    "src/app/api/payment",
+    "src/app/api/checkout",
+    "src/app/api/webhooks"
   ]
 }
