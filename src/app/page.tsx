@@ -240,19 +240,25 @@ const replyTypes = [
   { id: 'soft_ghost', name: 'Ghosting doux', icon: '👻', description: 'Réponse courte pour disparaître' },
 ]
 
-// Ghost Logo
-function GhostLogo({ size = 80 }: { size?: number }) {
-  // Logo dimensions: 231x129 (width:height ratio ~1.79:1)
-  const height = Math.round(size / 1.79)
+// Ghost Logo avec animations
+function GhostLogo({ size = 80, animate = false }: { size?: number; animate?: boolean }) {
   return (
-    <img 
-      src="/logo.png" 
-      alt="GhostMeter" 
-      width={size} 
-      height={height}
-      className="drop-shadow-lg"
-      style={{ objectFit: 'contain' }}
-    />
+    <div 
+      className={`relative ${animate ? 'ghost-float ghost-glow' : ''}`}
+      style={{ width: size, height: size }}
+    >
+      <img 
+        src="/ghost-mascot.png" 
+        alt="GhostMeter" 
+        className="drop-shadow-lg transition-transform hover:scale-110"
+        style={{ 
+          width: '100%', 
+          height: '100%', 
+          objectFit: 'contain',
+          filter: 'drop-shadow(0 0 8px rgba(168, 85, 247, 0.5))'
+        }}
+      />
+    </div>
   )
 }
 
@@ -2591,7 +2597,7 @@ export default function Home() {
   if (appState === 'analyzing') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex flex-col items-center justify-center p-8">
-        <div className="animate-bounce"><GhostLogo size={100} /></div>
+        <GhostLogo size={100} animate />
         <p className="text-xl mt-6 text-gray-500 dark:text-gray-400">Le fantôme analyse...</p>
       </div>
     )
