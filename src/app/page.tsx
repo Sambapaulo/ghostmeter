@@ -245,18 +245,9 @@ function GhostLogo({ size = 100, animate = false }: { size?: number; animate?: b
   return (
     <div 
       className={`relative ${animate ? 'ghost-swing' : ''}`}
-      style={{ width: size * 1.5, height: size }}
+      style={{ fontSize: size }}
     >
-      <img 
-        src="/ghost-mascot.png" 
-        alt="GhostMeter" 
-        className="drop-shadow-lg transition-transform hover:scale-110"
-        style={{ 
-          width: '100%', 
-          height: '100%', 
-          objectFit: 'contain'
-        }}
-      />
+      👻
     </div>
   )
 }
@@ -1870,7 +1861,7 @@ export default function Home() {
             <div className="border-t border-gray-100 dark:border-gray-700 mt-2 pt-4">
               <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
                 <p className="text-xs text-purple-600 dark:text-purple-400">
-                  📱 Application GhostMeter v1.18.2
+                  📱 Application GhostMeter v1.18.3
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   Les notifications sont disponibles sur la version web (navigateur)
@@ -1880,7 +1871,7 @@ export default function Home() {
           )}
         </div>
         
-        <div className="absolute bottom-4 left-4 text-xs text-gray-400 dark:text-gray-500">Version 1.18.2</div>
+        <div className="absolute bottom-4 left-4 text-xs text-gray-400 dark:text-gray-500">Version 1.18.3</div>
       </div>
     </div>
   )
@@ -2086,7 +2077,7 @@ export default function Home() {
           <button onClick={() => setShowAbout(false)} className="absolute top-3 right-3 p-1 hover:bg-white/20 rounded-full"><X className="w-5 h-5" /></button>
           <GhostLogo size={60} />
           <h2 className="text-xl font-bold mt-3">GhostMeter</h2>
-          <p className="text-white/80 text-sm">Version 1.18.2</p>
+          <p className="text-white/80 text-sm">Version 1.18.3</p>
         </div>
         
         <div className="p-6">
