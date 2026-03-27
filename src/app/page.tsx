@@ -1905,7 +1905,7 @@ export default function Home() {
             <div className="border-t border-gray-100 dark:border-gray-700 mt-2 pt-4">
               <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
                 <p className="text-xs text-purple-600 dark:text-purple-400">
-                  📱 Application GhostMeter v1.19.3
+                  📱 Application GhostMeter v1.19.4
                 </p>
                 <p className="text-xs text-green-600 dark:text-green-400 mt-1">
                   ✅ Notifications natives activées
@@ -1915,7 +1915,7 @@ export default function Home() {
           )}
         </div>
         
-        <div className="absolute bottom-4 left-4 text-xs text-gray-400 dark:text-gray-500">Version 1.19.3</div>
+        <div className="absolute bottom-4 left-4 text-xs text-gray-400 dark:text-gray-500">Version 1.19.4</div>
       </div>
     </div>
   )
@@ -2132,7 +2132,7 @@ export default function Home() {
           <button onClick={() => setShowAbout(false)} className="absolute top-3 right-3 p-1 hover:bg-white/20 rounded-full"><X className="w-5 h-5" /></button>
           <GhostLogo size={60} />
           <h2 className="text-xl font-bold mt-3">GhostMeter</h2>
-          <p className="text-white/80 text-sm">Version 1.19.3</p>
+          <p className="text-white/80 text-sm">Version 1.19.4</p>
         </div>
         
         <div className="p-6">
