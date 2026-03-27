@@ -1907,9 +1907,6 @@ export default function Home() {
                 <p className="text-xs text-purple-600 dark:text-purple-400">
                   📱 Application GhostMeter v1.19.4
                 </p>
-                <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                  ✅ Notifications natives activées
-                </p>
               </div>
             </div>
           )}
