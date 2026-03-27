@@ -179,11 +179,11 @@
 }
 
 @keyframes ghost-swing {
-  0% { transform: translateX(30px) translateY(0) rotate(5deg); }
-  25% { transform: translateX(-30px) translateY(-8px) rotate(-5deg); }
-  50% { transform: translateX(-30px) translateY(0) rotate(-5deg); }
-  75% { transform: translateX(30px) translateY(-8px) rotate(5deg); }
-  100% { transform: translateX(30px) translateY(0) rotate(5deg); }
+  0% { transform: translateX(40px) translateY(0) rotate(3deg); }
+  25% { transform: translateX(0px) translateY(-5px) rotate(0deg); }
+  50% { transform: translateX(-40px) translateY(0) rotate(-3deg); }
+  75% { transform: translateX(0px) translateY(-5px) rotate(0deg); }
+  100% { transform: translateX(40px) translateY(0) rotate(3deg); }
 }
 
 @keyframes pulse-glow {
