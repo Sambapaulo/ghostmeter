@@ -179,8 +179,11 @@
 }
 
 @keyframes ghost-swing {
-  0%, 100% { transform: translateX(-15px); }
-  50% { transform: translateX(15px); }
+  0% { transform: translateX(30px) translateY(0) rotate(5deg); }
+  25% { transform: translateX(-30px) translateY(-8px) rotate(-5deg); }
+  50% { transform: translateX(-30px) translateY(0) rotate(-5deg); }
+  75% { transform: translateX(30px) translateY(-8px) rotate(5deg); }
+  100% { transform: translateX(30px) translateY(0) rotate(5deg); }
 }
 
 @keyframes pulse-glow {
@@ -210,7 +213,7 @@
 }
 
 .ghost-swing {
-  animation: ghost-swing 2s ease-in-out infinite;
+  animation: ghost-swing 6s ease-in-out infinite;
 }
 
 .gradient-animated {
