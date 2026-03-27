@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   keywords: ["ghostmeter", "analyse conversation", "ghosting", "IA", "intelligence artificielle", "WhatsApp", "Messenger", "Instagram", "Snapchat", "analyse message"],
   authors: [{ name: "GhostMeter Team" }],
   icons: {
-    icon: "/logo.png",
+    icon: "/logo-square.png",
     apple: "/icons/icon-192x192.png",
   },
   manifest: "/manifest.json",

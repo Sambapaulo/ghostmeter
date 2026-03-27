@@ -242,24 +242,17 @@ const replyTypes = [
 
 // Ghost Logo
 function GhostLogo({ size = 80 }: { size?: number }) {
+  // Logo dimensions: 231x129 (width:height ratio ~1.79:1)
+  const height = Math.round(size / 1.79)
   return (
-    <svg width={size} height={size} viewBox="0 0 100 100" className="drop-shadow-lg">
-      <defs>
-        <linearGradient id="ghostGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#a855f7" />
-          <stop offset="50%" stopColor="#ec4899" />
-          <stop offset="100%" stopColor="#8b5cf6" />
-        </linearGradient>
-      </defs>
-      <path d="M50 10 C25 10 15 35 15 55 L15 85 C15 85 20 80 25 85 C30 90 35 85 40 85 C45 85 45 90 50 85 C55 80 55 85 60 85 C65 85 70 90 75 85 C80 80 85 85 85 85 L85 55 C85 35 75 10 50 10 Z" fill="url(#ghostGradient)" />
-      <ellipse cx="35" cy="45" rx="8" ry="10" fill="white" />
-      <ellipse cx="65" cy="45" rx="8" ry="10" fill="white" />
-      <circle cx="37" cy="47" r="4" fill="#1a1a2e" />
-      <circle cx="67" cy="47" r="4" fill="#1a1a2e" />
-      <ellipse cx="25" cy="60" rx="6" ry="3" fill="#f472b6" opacity="0.6" />
-      <ellipse cx="75" cy="60" rx="6" ry="3" fill="#f472b6" opacity="0.6" />
-      <path d="M40 65 Q50 75 60 65" stroke="#1a1a2e" strokeWidth="3" fill="none" strokeLinecap="round" />
-    </svg>
+    <img 
+      src="/logo.png" 
+      alt="GhostMeter" 
+      width={size} 
+      height={height}
+      className="drop-shadow-lg"
+      style={{ objectFit: 'contain' }}
+    />
   )
 }
 
