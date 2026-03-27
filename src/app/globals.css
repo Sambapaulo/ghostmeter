@@ -244,6 +244,8 @@
 
 .ghost-slide {
   animation: ghost-dance 6s ease-in-out infinite;
+  position: absolute;
+  left: 0;
 }
 
 .gradient-animated {
