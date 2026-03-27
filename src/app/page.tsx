@@ -1,16 +1,31 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { App } from '@capacitor/app'
-import { LocalNotifications } from '@capacitor/local-notifications'
-import { Capacitor } from '@capacitor/core'
-import { 
-  Sparkles, Crown, RefreshCw, Share2, Menu, X, History, 
+import {
+  Sparkles, Crown, RefreshCw, Share2, Menu, X, History,
   Trash2, ChevronRight, ChevronLeft, Check, Ghost, Tag, Camera, ClipboardPaste, LogOut, Mail, Info, FileText, CreditCard, Loader2, MessageCircle, Send, MessageSquare, Copy, Heart, Sun, Moon, Plus, Bell, BellOff, AlertCircle
 } from 'lucide-react'
 import dynamic from 'next/dynamic'
 
 const OCRUploader = dynamic(() => import('@/components/OCRUploader'), { ssr: false })
+
+// Dynamic imports for Capacitor - only loaded on client side
+let App: any = null
+let LocalNotifications: any = null
+let Capacitor: any = null
+
+// Load Capacitor modules only on client side
+if (typeof window !== 'undefined') {
+  try {
+    App = require('@capacitor/app').App
+  } catch (e) {}
+  try {
+    LocalNotifications = require('@capacitor/local-notifications').LocalNotifications
+  } catch (e) {}
+  try {
+    Capacitor = require('@capacitor/core').Capacitor
+  } catch (e) {}
+}
 
 // Global flag to track if we're in APK - set after initial detection
 let _isAPK: boolean | null = null
@@ -240,14 +255,33 @@ const replyTypes = [
   { id: 'soft_ghost', name: 'Ghosting doux', icon: '👻', description: 'Réponse courte pour disparaître' },
 ]
 
-// Ghost Logo avec animation
+// Ghost Logo
 function GhostLogo({ size = 80, animate = false }: { size?: number; animate?: boolean }) {
   return (
-    <div 
-      className={animate ? 'ghost-slide' : ''}
-      style={{ fontSize: size }}
-    >
-      👻
+    <div className={animate ? 'w-full overflow-hidden' : ''}>
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 100 100"
+        className={`drop-shadow-lg ${animate ? 'ghost-slide' : ''}`}
+        style={animate ? { animation: 'ghost-dance 8s linear infinite' } : {}}
+      >
+        <defs>
+          <linearGradient id="ghostGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#a855f7" />
+            <stop offset="50%" stopColor="#ec4899" />
+            <stop offset="100%" stopColor="#8b5cf6" />
+          </linearGradient>
+        </defs>
+        <path d="M50 10 C25 10 15 35 15 55 L15 85 C15 85 20 80 25 85 C30 90 35 85 40 85 C45 85 45 90 50 85 C55 80 55 85 60 85 C65 85 70 90 75 85 C80 80 85 85 85 85 L85 55 C85 35 75 10 50 10 Z" fill="url(#ghostGradient)" />
+        <ellipse cx="35" cy="45" rx="8" ry="10" fill="white" />
+        <ellipse cx="65" cy="45" rx="8" ry="10" fill="white" />
+        <circle cx="37" cy="47" r="4" fill="#1a1a2e" />
+        <circle cx="67" cy="47" r="4" fill="#1a1a2e" />
+        <ellipse cx="25" cy="60" rx="6" ry="3" fill="#f472b6" opacity="0.6" />
+        <ellipse cx="75" cy="60" rx="6" ry="3" fill="#f472b6" opacity="0.6" />
+        <path d="M40 65 Q50 75 60 65" stroke="#1a1a2e" strokeWidth="3" fill="none" strokeLinecap="round" />
+      </svg>
     </div>
   )
 }
@@ -638,20 +672,20 @@ export default function Home() {
     }
     requestNotificationPermissionAsync()
     
-    const checkMaintenance = async () => {
-      try {
-        const res = await fetch('/api/maintenance')
-        const data = await res.json()
-        if (data.maintenanceMode) {
-          setMaintenanceMode(true)
-          setMaintenanceMessage(data.message)
-        }
-      } catch (e) {
-        // If check fails, continue normally
-        console.log('Maintenance check failed, continuing normally')
-      }
-    }
-    checkMaintenance()
+    // Maintenance mode disabled - not needed for this app
+    // const checkMaintenance = async () => {
+    //   try {
+    //     const res = await fetch('/api/maintenance')
+    //     const data = await res.json()
+    //     if (data.maintenanceMode) {
+    //       setMaintenanceMode(true)
+    //       setMaintenanceMessage(data.message)
+    //     }
+    //   } catch (e) {
+    //     console.log('Maintenance check failed, continuing normally')
+    //   }
+    // }
+    // checkMaintenance()
   }, [])
   
   // Load dark mode preference
@@ -1599,9 +1633,19 @@ export default function Home() {
         default:
           basePrice = settings.pack3Months
       }
-      
+
       // Determine the price to charge (promo price or pack price)
-      const priceToCharge = promoResult?.valid ? promoResult.discountedPrice : basePrice;
+      // Calculate discounted price dynamically based on current pack
+      let priceToCharge: number
+      if (promoResult?.valid) {
+        if (promoResult.discountType === 'percent') {
+          priceToCharge = basePrice * (1 - promoResult.discount / 100)
+        } else {
+          priceToCharge = Math.max(0, basePrice - promoResult.discount)
+        }
+      } else {
+        priceToCharge = basePrice
+      }
       
       const res = await fetch('/api/paypal/create-order', {
         method: 'POST',
@@ -1861,17 +1905,17 @@ export default function Home() {
             <div className="border-t border-gray-100 dark:border-gray-700 mt-2 pt-4">
               <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
                 <p className="text-xs text-purple-600 dark:text-purple-400">
-                  📱 Application GhostMeter v1.18.7
+                  📱 Application GhostMeter v1.19.0
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Les notifications sont disponibles sur la version web (navigateur)
+                <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                  ✅ Notifications natives activées
                 </p>
               </div>
             </div>
           )}
         </div>
         
-        <div className="absolute bottom-4 left-4 text-xs text-gray-400 dark:text-gray-500">Version 1.18.7</div>
+        <div className="absolute bottom-4 left-4 text-xs text-gray-400 dark:text-gray-500">Version 1.19.0</div>
       </div>
     </div>
   )
@@ -1920,6 +1964,17 @@ export default function Home() {
         case '3months': return settings.pack3Months
         case '12months': return settings.pack12Months
         default: return settings.pack3Months
+      }
+    }
+
+    // Calculate discounted price dynamically based on current pack
+    const getCurrentDiscountedPrice = () => {
+      const basePrice = getPackPrice()
+      if (!promoResult?.valid) return basePrice
+      if (promoResult.discountType === 'percent') {
+        return basePrice * (1 - promoResult.discount / 100)
+      } else {
+        return Math.max(0, basePrice - promoResult.discount)
       }
     }
 
@@ -2051,7 +2106,7 @@ export default function Home() {
                     promoResult?.valid ? (
                       <span className="flex items-center gap-2">
                         <span className="line-through text-white/50 text-sm">{getPackPrice().toFixed(2)}{settings.premiumCurrency}</span>
-                        <span>{promoResult.discountedPrice.toFixed(2)}{settings.premiumCurrency}</span>
+                        <span>{getCurrentDiscountedPrice().toFixed(2)}{settings.premiumCurrency}</span>
                       </span>
                     ) : (
                       `Payer ${getPackPrice().toFixed(2)}${settings.premiumCurrency}`
@@ -2077,7 +2132,7 @@ export default function Home() {
           <button onClick={() => setShowAbout(false)} className="absolute top-3 right-3 p-1 hover:bg-white/20 rounded-full"><X className="w-5 h-5" /></button>
           <GhostLogo size={60} />
           <h2 className="text-xl font-bold mt-3">GhostMeter</h2>
-          <p className="text-white/80 text-sm">Version 1.18.7</p>
+          <p className="text-white/80 text-sm">Version 1.19.0</p>
         </div>
         
         <div className="p-6">
@@ -2128,35 +2183,6 @@ export default function Home() {
                 Vos conversations sont analysées de manière anonyme et ne sont jamais stockées. Votre vie privée est notre priorité.
               </p>
             </div>
-            
-            {/* APK Debug Info - only show if debug info is available */}
-            {apkDebugInfo && (
-              <div className="bg-gray-100 rounded-xl p-4 overflow-x-auto">
-                <h3 className="font-semibold text-gray-700 mb-2">🔧 Debug APK</h3>
-                <p className="text-xs text-gray-500 font-mono whitespace-nowrap">{apkDebugInfo}</p>
-                <p className="text-xs text-gray-500 font-mono mt-2">Back button: {backButtonStatus || 'not set'}</p>
-                <p className="text-xs text-gray-500 font-mono mt-1">Notification: {notificationPermission || 'not requested'}</p>
-                
-                {/* Button to manually request notification permission */}
-                {isAPKMode && (
-                  <button
-                    onClick={async () => {
-                      try {
-                        const result = await LocalNotifications.requestPermissions()
-                        setNotificationPermission(`Permission: ${result.display}`)
-                        alert(`Permission notification: ${result.display}`)
-                      } catch (e: any) {
-                        setNotificationPermission(`Error: ${e?.message || e}`)
-                        alert(`Erreur: ${e?.message || e}`)
-                      }
-                    }}
-                    className="mt-3 px-3 py-1 bg-purple-500 text-white text-xs rounded-lg"
-                  >
-                    Demander permission notifications
-                  </button>
-                )}
-              </div>
-            )}
             
             <div className="bg-yellow-50 rounded-xl p-4">
               <h3 className="font-semibold text-yellow-700 mb-2">👑 Version Premium</h3>
@@ -2418,30 +2444,30 @@ export default function Home() {
     )
   }
 
-  // MAINTENANCE MODE PAGE
-  if (maintenanceMode) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
-        <div className="text-center max-w-md">
-          <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-            <span className="text-4xl">👻</span>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">GhostMeter</h1>
-          <div className="w-16 h-1 bg-gradient-to-r from-purple-500 to-pink-500 mx-auto mb-6 rounded-full"></div>
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 border border-gray-100 dark:border-gray-700">
-            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-              <AlertCircle className="w-6 h-6 text-orange-500" />
-            </div>
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">Maintenance en cours</h2>
-            <p className="text-gray-600 dark:text-gray-300">{maintenanceMessage}</p>
-          </div>
-          <p className="text-sm text-gray-400 dark:text-gray-500 mt-6">
-            Merci de votre patience 🙏
-          </p>
-        </div>
-      </div>
-    )
-  }
+  // MAINTENANCE MODE PAGE - DISABLED
+  // if (maintenanceMode) {
+  //   return (
+  //     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+  //       <div className="text-center max-w-md">
+  //         <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+  //           <span className="text-4xl">👻</span>
+  //         </div>
+  //         <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">GhostMeter</h1>
+  //         <div className="w-16 h-1 bg-gradient-to-r from-purple-500 to-pink-500 mx-auto mb-6 rounded-full"></div>
+  //         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 border border-gray-100 dark:border-gray-700">
+  //           <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+  //             <AlertCircle className="w-6 h-6 text-orange-500" />
+  //           </div>
+  //           <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">Maintenance en cours</h2>
+  //           <p className="text-gray-600 dark:text-gray-300">{maintenanceMessage}</p>
+  //         </div>
+  //         <p className="text-sm text-gray-400 dark:text-gray-500 mt-6">
+  //           Merci de votre patience 🙏
+  //         </p>
+  //       </div>
+  //     </div>
+  //   )
+  // }
 
   // HOME PAGE
   if (appState === 'home') {
@@ -2488,9 +2514,14 @@ export default function Home() {
         )}
         
         <div className="pt-20 pb-8 px-4 flex flex-col items-center justify-center min-h-screen">
-          <div className="text-center mb-6 flex flex-col items-center">
-            <GhostLogo size={80} />
-            <h1 className="text-3xl font-bold mt-4 bg-gradient-to-r from-purple-500 via-pink-500 to-violet-500 bg-clip-text text-transparent">GhostMeter</h1>
+          {/* Animated Ghost Logo that slides across the screen */}
+          <div className="absolute top-20 left-0 right-0 h-24 overflow-hidden pointer-events-none">
+            <div className="ghost-slide">
+              <GhostLogo size={80} />
+            </div>
+          </div>
+          <div className="text-center mb-6 flex flex-col items-center mt-16">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-500 via-pink-500 to-violet-500 bg-clip-text text-transparent">GhostMeter</h1>
             <p className="text-gray-500 dark:text-gray-400 mt-1">Analyse tes conversations avec l'IA</p>
           </div>
 
@@ -2587,7 +2618,7 @@ export default function Home() {
   if (appState === 'analyzing') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex flex-col items-center justify-center p-8">
-        <GhostLogo size={100} animate />
+        <div className="animate-bounce"><GhostLogo size={100} /></div>
         <p className="text-xl mt-6 text-gray-500 dark:text-gray-400">Le fantôme analyse...</p>
       </div>
     )
