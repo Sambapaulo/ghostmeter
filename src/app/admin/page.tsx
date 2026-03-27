@@ -849,13 +849,13 @@ export default function AdminPage() {
                     <div className="text-center">
                       <p className="text-sm text-gray-500">Revenus potentiels/mois</p>
                       <p className="text-2xl font-bold text-green-700">
-                        {(premiumUsers.filter(u => u.isPremium).length * settings.pack1Month).toFixed(2)}{settings.premiumCurrency}
+                        {((premiumUsers.filter(u => u.isPremium).length * (settings.pack1Month || 1.99)) || 0).toFixed(2)}{settings.premiumCurrency || '€'}
                       </p>
                     </div>
                     <div className="text-center">
                       <p className="text-sm text-gray-500">Revenus potentiels/an</p>
                       <p className="text-2xl font-bold text-green-700">
-                        {(premiumUsers.filter(u => u.isPremium).length * settings.pack1Month * 12).toFixed(2)}{settings.premiumCurrency}
+                        {((premiumUsers.filter(u => u.isPremium).length * (settings.pack1Month || 1.99) * 12) || 0).toFixed(2)}{settings.premiumCurrency || '€'}
                       </p>
                     </div>
                   </div>
@@ -1207,16 +1207,16 @@ Nous avons une grande nouvelle à vous annoncer..."
                     <div className="flex items-center gap-2">
                       <input
                         type="number"
-                        value={settings.pack1Month}
-                        onChange={(e) => setSettings({ ...settings, pack1Month: Number(e.target.value) })}
+                        value={settings.pack1Month || 1.99}
+                        onChange={(e) => setSettings({ ...settings, pack1Month: Number(e.target.value) || 1.99 })}
                         className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-center font-bold text-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                         min="0"
                         step="0.01"
                       />
-                      <span className="text-gray-500">{settings.premiumCurrency}</span>
+                      <span className="text-gray-500">{settings.premiumCurrency || '€'}</span>
                     </div>
                     <p className="text-center text-xs text-gray-400 mt-2">
-                      {settings.pack1Month.toFixed(2)}{settings.premiumCurrency}/mois
+                      {(settings.pack1Month || 1.99).toFixed(2)}{settings.premiumCurrency || '€'}/mois
                     </p>
                   </div>
 
@@ -1232,16 +1232,16 @@ Nous avons une grande nouvelle à vous annoncer..."
                     <div className="flex items-center gap-2">
                       <input
                         type="number"
-                        value={settings.pack3Months}
-                        onChange={(e) => setSettings({ ...settings, pack3Months: Number(e.target.value) })}
+                        value={settings.pack3Months || 4.99}
+                        onChange={(e) => setSettings({ ...settings, pack3Months: Number(e.target.value) || 4.99 })}
                         className="flex-1 px-3 py-2 border border-purple-200 rounded-lg text-center font-bold text-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                         min="0"
                         step="0.01"
                       />
-                      <span className="text-gray-500">{settings.premiumCurrency}</span>
+                      <span className="text-gray-500">{settings.premiumCurrency || '€'}</span>
                     </div>
                     <p className="text-center text-xs text-purple-600 font-medium mt-2">
-                      {(settings.pack3Months / 3).toFixed(2)}{settings.premiumCurrency}/mois
+                      {((settings.pack3Months || 4.99) / 3).toFixed(2)}{settings.premiumCurrency || '€'}/mois
                     </p>
                   </div>
 
@@ -1257,16 +1257,16 @@ Nous avons une grande nouvelle à vous annoncer..."
                     <div className="flex items-center gap-2">
                       <input
                         type="number"
-                        value={settings.pack12Months}
-                        onChange={(e) => setSettings({ ...settings, pack12Months: Number(e.target.value) })}
+                        value={settings.pack12Months || 14.99}
+                        onChange={(e) => setSettings({ ...settings, pack12Months: Number(e.target.value) || 14.99 })}
                         className="flex-1 px-3 py-2 border border-yellow-200 rounded-lg text-center font-bold text-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                         min="0"
                         step="0.01"
                       />
-                      <span className="text-gray-500">{settings.premiumCurrency}</span>
+                      <span className="text-gray-500">{settings.premiumCurrency || '€'}</span>
                     </div>
                     <p className="text-center text-xs text-orange-600 font-medium mt-2">
-                      {(settings.pack12Months / 12).toFixed(2)}{settings.premiumCurrency}/mois
+                      {((settings.pack12Months || 14.99) / 12).toFixed(2)}{settings.premiumCurrency || '€'}/mois
                     </p>
                   </div>
                 </div>

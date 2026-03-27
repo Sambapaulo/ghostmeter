@@ -63,7 +63,8 @@ export async function getSettings(): Promise<Settings> {
       const settings = await redis.get(KV_SETTINGS_KEY)
       if (settings) {
         console.log('Settings loaded from Redis')
-        return settings as Settings
+        // Merge with defaults to ensure all properties exist
+        return { ...defaultSettings, ...settings as Settings }
       }
     } catch (error) {
       console.error('Redis get error:', error)
