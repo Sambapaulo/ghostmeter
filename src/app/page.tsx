@@ -240,22 +240,13 @@ const replyTypes = [
   { id: 'soft_ghost', name: 'Ghosting doux', icon: '👻', description: 'Réponse courte pour disparaître' },
 ]
 
-// Ghost Logo avec animation horizontale
+// Ghost Logo avec animation
 function GhostLogo({ size = 80, animate = false }: { size?: number; animate?: boolean }) {
-  if (animate) {
-    return (
-      <div className="w-full overflow-hidden relative" style={{ height: size * 1.5 }}>
-        <div 
-          className="ghost-slide"
-          style={{ fontSize: size }}
-        >
-          👻
-        </div>
-      </div>
-    )
-  }
   return (
-    <div style={{ fontSize: size }}>
+    <div 
+      className={animate ? 'ghost-slide' : ''}
+      style={{ fontSize: size }}
+    >
       👻
     </div>
   )
@@ -1870,7 +1861,7 @@ export default function Home() {
             <div className="border-t border-gray-100 dark:border-gray-700 mt-2 pt-4">
               <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
                 <p className="text-xs text-purple-600 dark:text-purple-400">
-                  📱 Application GhostMeter v1.18.6
+                  📱 Application GhostMeter v1.18.7
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   Les notifications sont disponibles sur la version web (navigateur)
@@ -1880,7 +1871,7 @@ export default function Home() {
           )}
         </div>
         
-        <div className="absolute bottom-4 left-4 text-xs text-gray-400 dark:text-gray-500">Version 1.18.6</div>
+        <div className="absolute bottom-4 left-4 text-xs text-gray-400 dark:text-gray-500">Version 1.18.7</div>
       </div>
     </div>
   )
@@ -2086,7 +2077,7 @@ export default function Home() {
           <button onClick={() => setShowAbout(false)} className="absolute top-3 right-3 p-1 hover:bg-white/20 rounded-full"><X className="w-5 h-5" /></button>
           <GhostLogo size={60} />
           <h2 className="text-xl font-bold mt-3">GhostMeter</h2>
-          <p className="text-white/80 text-sm">Version 1.18.6</p>
+          <p className="text-white/80 text-sm">Version 1.18.7</p>
         </div>
         
         <div className="p-6">
