@@ -109,7 +109,7 @@ function PromoCodeInput({
           type="text" 
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
-          placeholder="Code promo" 
+          placeholder={t('premium.promo_code', language)} 
           autoComplete="off"
           autoCorrect="off"
           autoCapitalize="characters"
@@ -325,6 +325,7 @@ function AuthModal({ isOpen, onClose, onPremiumActivated, mode }: {
   const [success, setSuccess] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
   const [isRegisterMode, setIsRegisterMode] = useState(false)
+  const [language, setLanguage] = useState<Language>('fr') // Local language state for AuthModal
 
   // Reset form when modal opens/closes or mode changes
   useEffect(() => {
@@ -342,15 +343,15 @@ function AuthModal({ isOpen, onClose, onPremiumActivated, mode }: {
 
   const handleRegister = async () => {
     if (!email || !email.includes('@')) {
-      setError('Email invalide')
+      setError(t('error.invalid_email', language))
       return
     }
     if (!password || password.length < 4) {
-      setError('Le mot de passe doit contenir au moins 4 caractères')
+      setError(t('error.password_short', language))
       return
     }
     if (password !== confirmPassword) {
-      setError('Les mots de passe ne correspondent pas')
+      setError(t('error.password_mismatch', language))
       return
     }
 
@@ -369,17 +370,17 @@ function AuthModal({ isOpen, onClose, onPremiumActivated, mode }: {
         // Compte créé, mais Premium nécessite un paiement
         localStorage.setItem('ghostmeter_email', email.toLowerCase())
         if (data.sessionId) localStorage.setItem('ghostmeter_session', data.sessionId)
-        setSuccessMessage('Compte créé ! Activez Premium pour profiter de toutes les fonctionnalités.')
+        setSuccessMessage(t('auth.account_created', language))
         setSuccess(true)
         setTimeout(() => {
           onPremiumActivated(email.toLowerCase())
           onClose()
         }, 4000)
       } else {
-        setError(data.error || 'Erreur lors de l\'inscription')
+        setError(data.error || t('error.register', language))
       }
     } catch (e) {
-      setError('Erreur de connexion')
+      setError(t('error.connection', language))
     } finally {
       setIsLoading(false)
     }
@@ -387,11 +388,11 @@ function AuthModal({ isOpen, onClose, onPremiumActivated, mode }: {
 
   const handleLogin = async () => {
     if (!email || !email.includes('@')) {
-      setError('Email invalide')
+      setError(t('error.invalid_email', language))
       return
     }
     if (!password) {
-      setError('Mot de passe requis')
+      setError(t('auth.password_required', language))
       return
     }
 
@@ -414,17 +415,17 @@ function AuthModal({ isOpen, onClose, onPremiumActivated, mode }: {
           localStorage.setItem('ghostmeter_email', email.toLowerCase())
         }
         if (data.sessionId) localStorage.setItem('ghostmeter_session', data.sessionId)
-        setSuccessMessage('Connexion réussie !')
+        setSuccessMessage(t('auth.login_success', language))
         setSuccess(true)
         setTimeout(() => {
           onPremiumActivated(email.toLowerCase())
           onClose()
         }, 4000)
       } else {
-        setError(data.error || 'Erreur de connexion')
+        setError(data.error || t('error.connection', language))
       }
     } catch (e) {
-      setError('Erreur de connexion')
+      setError(t('error.connection', language))
     } finally {
       setIsLoading(false)
     }
@@ -432,11 +433,11 @@ function AuthModal({ isOpen, onClose, onPremiumActivated, mode }: {
 
   const handleSave = async () => {
     if (!email || !email.includes('@')) {
-      setError('Email invalide')
+      setError(t('error.invalid_email', language))
       return
     }
     if (!password) {
-      setError('Mot de passe requis')
+      setError(t('auth.password_required', language))
       return
     }
 
@@ -458,9 +459,9 @@ function AuthModal({ isOpen, onClose, onPremiumActivated, mode }: {
         if (checkData.sessionId) localStorage.setItem('ghostmeter_session', checkData.sessionId)
         if (checkData.user.isPremium) {
           localStorage.setItem('ghostmeter_premium', 'true')
-          setSuccessMessage('Connexion réussie ! Premium actif.')
+          setSuccessMessage(t('auth.login_success_premium', language))
         } else {
-          setSuccessMessage('Compte récupéré ! Activez Premium pour plus de fonctionnalités.')
+          setSuccessMessage(t('auth.account_recovered', language))
         }
         setSuccess(true)
         setTimeout(() => {
@@ -468,10 +469,10 @@ function AuthModal({ isOpen, onClose, onPremiumActivated, mode }: {
           onClose()
         }, 4000)
       } else {
-        setError(checkData.error || 'Erreur lors de la sauvegarde')
+        setError(checkData.error || t('error.save', language))
       }
     } catch (e) {
-      setError('Erreur de connexion')
+      setError(t('error.connection', language))
     } finally {
       setIsLoading(false)
     }
@@ -494,7 +495,7 @@ function AuthModal({ isOpen, onClose, onPremiumActivated, mode }: {
           <div className="flex items-center gap-2">
             <Mail className="w-5 h-5" />
             <h3 className="font-semibold">
-              {mode === 'save' ? 'Sauvegarder Premium' : isRegisterMode ? 'Créer un compte' : 'Connexion'}
+              {mode === 'save' ? t('auth.save_title', language) : isRegisterMode ? t('auth.register_title', language) : t('auth.login_title', language)}
             </h3>
           </div>
           <button onClick={onClose} className="p-1 hover:bg-white/20 rounded-full">
@@ -516,10 +517,10 @@ function AuthModal({ isOpen, onClose, onPremiumActivated, mode }: {
             <>
               <p className="text-center text-gray-500 text-sm mb-4">
                 {mode === 'save' 
-                  ? 'Lie ton email et mot de passe pour récupérer ton compte Premium.'
+                  ? t('auth.save_description', language)
                   : isRegisterMode
-                    ? 'Crée un compte pour sauvegarder ton Premium.'
-                    : 'Connecte-toi pour récupérer ton compte Premium.'
+                    ? t('auth.register_description', language)
+                    : t('auth.login_description', language)
                 }
               </p>
               
@@ -535,7 +536,7 @@ function AuthModal({ isOpen, onClose, onPremiumActivated, mode }: {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Mot de passe"
+                placeholder={t('auth.password', language)}
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 mb-3"
               />
 
@@ -544,7 +545,7 @@ function AuthModal({ isOpen, onClose, onPremiumActivated, mode }: {
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirmer le mot de passe"
+                  placeholder={t('auth.confirm_password', language)}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 mb-3"
                 />
               )}
@@ -554,7 +555,7 @@ function AuthModal({ isOpen, onClose, onPremiumActivated, mode }: {
                 disabled={isLoading}
                 className="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium hover:opacity-90 disabled:opacity-50 mb-3"
               >
-                {isLoading ? 'Chargement...' : mode === 'save' ? 'Sauvegarder' : isRegisterMode ? 'Créer un compte' : 'Se connecter'}
+                {isLoading ? t('auth.loading', language) : mode === 'save' ? t('auth.save', language) : isRegisterMode ? t('auth.register', language) : t('auth.login', language)}
               </button>
               
               {mode === 'login' && (
@@ -563,7 +564,7 @@ function AuthModal({ isOpen, onClose, onPremiumActivated, mode }: {
                     onClick={() => setIsRegisterMode(!isRegisterMode)}
                     className="text-sm text-purple-500 font-medium"
                   >
-                    {isRegisterMode ? 'Déjà un compte ? Se connecter' : 'Pas de compte ? Créer un compte'}
+                    {isRegisterMode ? t('auth.have_account', language) : t('auth.no_account', language)}
                   </button>
                 </div>
               )}
@@ -810,7 +811,7 @@ export default function Home() {
     } else {
       // Check if we're in native context first
       if (!isAPKMode) {
-        alert('Les notifications ne sont disponibles que dans l\'application mobile (APK).')
+        alert(t('notifications.apk_only', language))
         return
       }
       
@@ -821,12 +822,12 @@ export default function Home() {
         if (scheduled) {
           setNotificationsEnabled(true)
           localStorage.setItem('ghostmeter_notifications', 'true')
-          alert('✅ Notifications activées ! Vous recevrez un message motivant chaque matin à 9h.')
+          alert(t('notifications.enabled', language))
         } else {
-          alert('❌ Erreur lors de la programmation des notifications. Réessayez.')
+          alert(t('notifications.schedule_error', language))
         }
       } else {
-        alert('❌ Permission refusée. Autorisez les notifications dans les paramètres de votre appareil.')
+        alert(t('notifications.permission_denied', language))
       }
     }
   }
@@ -835,7 +836,7 @@ export default function Home() {
     try {
       // Check if we're in native context first
       if (!isAPKMode) {
-        alert('Les notifications ne sont disponibles que dans l\'application mobile (APK).')
+        alert(t('notifications.apk_only', language))
         return
       }
       
@@ -856,13 +857,13 @@ export default function Home() {
             }
           ]
         })
-        alert('✅ Notification de test programmée ! Regardez dans 2 secondes...')
+        alert(t('notifications.test_scheduled', language))
       } else {
-        alert('❌ Permission de notification non accordée.')
+        alert(t('notifications.no_permission', language))
       }
     } catch (e) {
       console.error('Test notification error:', e)
-      alert('❌ Erreur lors de l\'envoi de la notification de test.')
+      alert(t('notifications.test_error', language))
     }
   }
   
@@ -1240,7 +1241,7 @@ export default function Home() {
             setUserEmail(null)
             setIsPremium(false)
             setRemaining(settings.freeAnalysesPerDay)
-            alert('⚠️ Votre compte a été connecté sur un autre appareil. Vous avez été déconnecté.')
+            alert(t('session.logged_elsewhere', language))
             return
           }
           
@@ -1277,7 +1278,7 @@ export default function Home() {
             setUserEmail(null)
             setIsPremium(false)
             setRemaining(settings.freeAnalysesPerDay)
-            alert('⚠️ Votre compte a été connecté sur un autre appareil. Vous avez été déconnecté.')
+            alert(t('session.logged_elsewhere', language))
           }
         })
         .catch(() => {})
@@ -1379,11 +1380,11 @@ export default function Home() {
         }
         setAppState('results')
       } else {
-        alert('Erreur: ' + (data.error || 'Inconnue'))
+        alert(t('error.generic', language) + ': ' + (data.error || t('error.unknown', language)))
         setAppState('home')
       }
     } catch (error) {
-      alert('Erreur réseau')
+      alert(t('error.network', language))
       setAppState('home')
     } finally {
       setIsLoading(false)
@@ -1394,7 +1395,7 @@ export default function Home() {
     if (!analysis) return
     const text = `GhostMeter:\n"${analysis.punchline}"\n❤️ ${Math.round(analysis.interestScore)}% | ⚠️ ${Math.round(analysis.manipulationScore)}% | 👻 ${Math.round(analysis.ghostingScore)}%`
     await navigator.clipboard.writeText(text)
-    alert('Copié !')
+    alert(t('copied', language))
   }
 
   const handlePaste = async () => {
@@ -1412,7 +1413,7 @@ export default function Home() {
 
   const generateReply = async () => {
     if (!receivedMessage.trim() || receivedMessage.trim().length < 5) {
-      alert('Message trop court')
+      alert(t('error.message_short', language))
       return
     }
 
@@ -1441,10 +1442,10 @@ export default function Home() {
         setSuggestedReplies(data.replies)
         setCurrentReplyIndex(0)
       } else {
-        alert(data.error || 'Erreur lors de la génération')
+        alert(data.error || t('error.reply_generation', language))
       }
     } catch (err) {
-      alert('Erreur de connexion')
+      alert(t('error.connection', language))
     } finally {
       setIsGeneratingReply(false)
     }
@@ -1506,10 +1507,10 @@ export default function Home() {
       if (data.success) {
         setCoachMessages(prev => [...prev, { role: 'assistant', content: data.reply }])
       } else {
-        setCoachMessages(prev => [...prev, { role: 'assistant', content: "Désolé, j'ai eu un souci. Peux-tu reformuler ?" }])
+        setCoachMessages(prev => [...prev, { role: 'assistant', content: t('coach.error_reply', language) }])
       }
     } catch (err) {
-      setCoachMessages(prev => [...prev, { role: 'assistant', content: "Oups, erreur de connexion. Réessaie !" }])
+      setCoachMessages(prev => [...prev, { role: 'assistant', content: t('coach.error_connection', language) }])
     } finally {
       setIsCoachLoading(false)
     }
@@ -1582,7 +1583,7 @@ export default function Home() {
           discountedPrice: basePrice,
           discount: 0,
           discountType: 'percent',
-          message: data.error || 'Code invalide'
+          message: data.error || t('premium.promo_invalid', language)
         })
       }
     } catch (error) {
@@ -1606,7 +1607,7 @@ export default function Home() {
         discountedPrice: basePrice,
         discount: 0,
         discountType: 'percent',
-        message: 'Erreur de validation'
+        message: t('error.generic', language)
       })
     } finally {
       setIsValidatingPromo(false)
@@ -1672,11 +1673,11 @@ export default function Home() {
         // Redirect to PayPal for approval
         window.location.href = data.approvalUrl
       } else {
-        alert(data.error || 'Erreur lors de la création du paiement')
+        alert(data.error || t('error.payment', language))
         setIsProcessingPayment(false)
       }
     } catch (e) {
-      alert('Erreur de connexion au service de paiement')
+      alert(t('error.payment_service', language))
       setIsProcessingPayment(false)
     }
   }
@@ -1754,7 +1755,7 @@ export default function Home() {
         <div className="p-4 overflow-y-auto flex-1 pb-20">
           {isPremium && (
             <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl p-3 mb-4 flex items-center gap-2">
-              <Crown className="w-5 h-5" /><span className="font-semibold">Premium Actif</span>
+              <Crown className="w-5 h-5" /><span className="font-semibold">{t('menu.premium', language)} {t('menu.premium_active', language)}</span>
             </div>
           )}
           
@@ -1766,7 +1767,7 @@ export default function Home() {
                 <span className="truncate">{userEmail}</span>
               </div>
               <button onClick={logout} className="mt-2 text-xs text-red-500 flex items-center gap-1">
-                <LogOut className="w-3 h-3" /> Déconnexion
+                <LogOut className="w-3 h-3" /> {t('menu.logout', language)}
               </button>
             </div>
           ) : isPremium && !userEmail ? (
@@ -1776,8 +1777,8 @@ export default function Home() {
             >
               <Mail className="w-5 h-5 text-purple-500" />
               <div className="flex-1 text-left">
-                <p className="font-medium">Sauvegarder mon compte</p>
-                <p className="text-xs text-gray-400">Lier un email</p>
+                <p className="font-medium">{t('menu.save_account', language)}</p>
+                <p className="text-xs text-gray-400">{t('menu.save_account_subtitle', language)}</p>
               </div>
               <ChevronRight className="w-4 h-4 text-gray-300" />
             </button>
@@ -1788,8 +1789,8 @@ export default function Home() {
             >
               <Mail className="w-5 h-5 text-purple-500" />
               <div className="flex-1 text-left">
-                <p className="font-medium">Connexion</p>
-                <p className="text-xs text-gray-400">Récupérer mon compte Premium</p>
+                <p className="font-medium">{t('menu.login', language)}</p>
+                <p className="text-xs text-gray-400">{t('menu.login_subtitle', language)}</p>
               </div>
               <ChevronRight className="w-4 h-4 text-gray-300" />
             </button>
@@ -1801,8 +1802,8 @@ export default function Home() {
           >
             <History className="w-5 h-5 text-purple-500" />
             <div className="flex-1 text-left">
-              <p className="font-medium">Historique</p>
-              <p className="text-xs text-gray-400">{savedConversations.length} conversation{savedConversations.length > 1 ? 's' : ''}</p>
+              <p className="font-medium">{t('menu.history', language)}</p>
+              <p className="text-xs text-gray-400">{t('menu.history_count', language, { count: String(savedConversations.length), s: savedConversations.length > 1 ? 's' : '' })}</p>
             </div>
             <ChevronRight className="w-4 h-4 text-gray-300" />
           </button>
@@ -1814,8 +1815,8 @@ export default function Home() {
             >
               <Crown className="w-5 h-5 text-yellow-500" />
               <div className="flex-1 text-left">
-                <p className="font-medium text-gray-800 dark:text-white">Premium</p>
-                <p className="text-xs text-gray-400">Dès {(settings.pack12Months / 12).toFixed(2)}{settings.premiumCurrency}/mois</p>
+                <p className="font-medium text-gray-800 dark:text-white">{t('menu.premium', language)}</p>
+                <p className="text-xs text-gray-400">{t('menu.premium_price', language, { price: (settings.pack12Months / 12).toFixed(2) + settings.premiumCurrency })}</p>
               </div>
               <ChevronRight className="w-4 h-4 text-gray-300" />
             </button>
@@ -1828,8 +1829,8 @@ export default function Home() {
             >
               <MessageCircle className="w-5 h-5 text-green-500" />
               <div className="flex-1 text-left">
-                <p className="font-medium">Contact</p>
-                <p className="text-xs text-gray-400">Une question ? Un bug ?</p>
+                <p className="font-medium">{t('menu.contact', language)}</p>
+                <p className="text-xs text-gray-400">{t('menu.contact_subtitle', language)}</p>
               </div>
               <ChevronRight className="w-4 h-4 text-gray-300" />
             </button>
@@ -1840,7 +1841,7 @@ export default function Home() {
             >
               <Info className="w-5 h-5 text-blue-500" />
               <div className="flex-1 text-left">
-                <p className="font-medium">À propos</p>
+                <p className="font-medium">{t('menu.about', language)}</p>
               </div>
               <ChevronRight className="w-4 h-4 text-gray-300" />
             </button>
@@ -1851,8 +1852,8 @@ export default function Home() {
             >
               <FileText className="w-5 h-5 text-gray-500 dark:text-gray-400" />
               <div className="flex-1 text-left">
-                <p className="font-medium">CGU</p>
-                <p className="text-xs text-gray-400">Conditions Générales d'Utilisation</p>
+                <p className="font-medium">{t('menu.cgu', language)}</p>
+                <p className="text-xs text-gray-400">{t('menu.cgu_subtitle', language)}</p>
               </div>
               <ChevronRight className="w-4 h-4 text-gray-300" />
             </button>
@@ -1935,8 +1936,8 @@ export default function Home() {
                   <BellOff className="w-5 h-5 text-gray-400" />
                 )}
                 <div className="flex-1 text-left">
-                  <p className="font-medium">Notifications</p>
-                  <p className="text-xs text-gray-400">{notificationsEnabled ? 'Message motivant chaque matin à 9h' : 'Activer les rappels quotidiens'}</p>
+                  <p className="font-medium">{t('menu.notifications', language)}</p>
+                  <p className="text-xs text-gray-400">{notificationsEnabled ? t('menu.notifications_daily', language) : t('menu.notifications_enable', language)}</p>
                 </div>
                 <div className={`w-10 h-6 rounded-full transition-colors ${notificationsEnabled ? 'bg-pink-500' : 'bg-gray-300'}`}>
                   <div className={`w-4 h-4 rounded-full bg-white shadow-md transform transition-transform mt-1 ${notificationsEnabled ? 'translate-x-5 ml-0.5' : 'translate-x-1'}`} />
@@ -1948,7 +1949,7 @@ export default function Home() {
                   onClick={testNotification}
                   className="w-full mt-2 py-2 text-xs text-purple-500 hover:text-purple-600 transition-colors"
                 >
-                  🔔 Tester une notification
+                  {t('menu.notifications_test', language)}
                 </button>
               )}
             </div>
@@ -1959,14 +1960,14 @@ export default function Home() {
             <div className="border-t border-gray-100 dark:border-gray-700 mt-2 pt-4">
               <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
                 <p className="text-xs text-purple-600 dark:text-purple-400">
-                  📱 Application GhostMeter v1.19.4
+                  📱 {t('menu.app_version', language, { version: '1.19.4' })}
                 </p>
               </div>
             </div>
           )}
         </div>
         
-        <div className="absolute bottom-4 left-4 text-xs text-gray-400 dark:text-gray-500">Version 1.19.4</div>
+        <div className="absolute bottom-4 left-4 text-xs text-gray-400 dark:text-gray-500">{t('menu.version', language)} 1.19.4</div>
       </div>
     </div>
   )
@@ -1977,13 +1978,13 @@ export default function Home() {
       <div className="absolute inset-0 bg-black/50" onClick={() => setShowHistory(false)} />
       <div className="absolute inset-4 bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col">
         <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="font-bold text-lg flex items-center gap-2"><History className="w-5 h-5 text-purple-500" />Historique</h2>
+          <h2 className="font-bold text-lg flex items-center gap-2"><History className="w-5 h-5 text-purple-500" />{t('history.title', language)}</h2>
           <button onClick={() => setShowHistory(false)} className="p-2 hover:bg-gray-100 rounded-full"><X className="w-5 h-5" /></button>
         </div>
         
         <div className="flex-1 overflow-y-auto p-4">
           {savedConversations.length === 0 ? (
-            <div className="text-center py-12 text-gray-400"><Ghost className="w-12 h-12 mx-auto mb-3 opacity-30" /><p>Aucune conversation enregistrée</p></div>
+            <div className="text-center py-12 text-gray-400"><Ghost className="w-12 h-12 mx-auto mb-3 opacity-30" /><p>{t('history.empty', language)}</p></div>
           ) : (
             <div className="space-y-3">
               {savedConversations.map((saved) => (
@@ -2045,13 +2046,13 @@ export default function Home() {
           <div className="bg-gradient-to-r from-purple-500 via-pink-500 to-violet-500 p-6 text-white text-center relative">
             <button onClick={() => setShowPremium(false)} className="absolute top-3 right-3 p-1 hover:bg-white/20 rounded-full"><X className="w-5 h-5" /></button>
             <Crown className="w-12 h-12 mx-auto mb-3" />
-            <h2 className="text-2xl font-bold">GhostMeter Premium</h2>
-            <p className="text-white/80 mt-1">Analyses illimitées + sauvegarde compte</p>
+            <h2 className="text-2xl font-bold">{t('premium.title', language)}</h2>
+            <p className="text-white/80 mt-1">{t('premium.subtitle', language)}</p>
           </div>
           
           {/* Pack Selection */}
           <div className="p-4 border-b border-gray-100 dark:border-gray-700">
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3 text-center">Choisis ton forfait :</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3 text-center">{t('premium.choose_plan', language)}</p>
             <div className="grid grid-cols-3 gap-2">
               {/* 1 Month */}
               <button
@@ -2063,8 +2064,8 @@ export default function Home() {
                 }`}
               >
                 <p className="text-lg font-bold text-purple-600 dark:text-purple-400">{settings.pack1Month.toFixed(2)}{settings.premiumCurrency}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">1 mois</p>
-                <p className="text-[10px] text-gray-400">{settings.pack1Month.toFixed(2)}{settings.premiumCurrency}/mois</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{t('premium.pack_1month', language)}</p>
+                <p className="text-[10px] text-gray-400">{settings.pack1Month.toFixed(2)}{settings.premiumCurrency}{t('premium.per_month_short', language)}</p>
               </button>
 
               {/* 3 Months */}
@@ -2077,11 +2078,11 @@ export default function Home() {
                 }`}
               >
                 <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] px-2 py-0.5 rounded-full font-medium">
-                  ⭐ Populaire
+                  ⭐ {t('premium.popular', language)}
                 </span>
                 <p className="text-lg font-bold text-purple-600 dark:text-purple-400">{settings.pack3Months.toFixed(2)}{settings.premiumCurrency}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">3 mois</p>
-                <p className="text-[10px] text-purple-500 font-medium">{(settings.pack3Months / 3).toFixed(2)}{settings.premiumCurrency}/mois</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{t('premium.pack_3months', language)}</p>
+                <p className="text-[10px] text-purple-500 font-medium">{(settings.pack3Months / 3).toFixed(2)}{settings.premiumCurrency}{t('premium.per_month_short', language)}</p>
               </button>
 
               {/* 12 Months */}
@@ -2094,11 +2095,11 @@ export default function Home() {
                 }`}
               >
                 <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-[10px] px-2 py-0.5 rounded-full font-medium">
-                  🔥 Économie
+                  🔥 {t('premium.savings', language)}
                 </span>
                 <p className="text-lg font-bold text-purple-600 dark:text-purple-400">{settings.pack12Months.toFixed(2)}{settings.premiumCurrency}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">12 mois</p>
-                <p className="text-[10px] text-orange-500 font-medium">{(settings.pack12Months / 12).toFixed(2)}{settings.premiumCurrency}/mois</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{t('premium.pack_12months', language)}</p>
+                <p className="text-[10px] text-orange-500 font-medium">{(settings.pack12Months / 12).toFixed(2)}{settings.premiumCurrency}{t('premium.per_month_short', language)}</p>
               </button>
             </div>
           </div>
@@ -2118,8 +2119,8 @@ export default function Home() {
                 <p className="text-green-600 dark:text-green-400 text-xs font-medium">✅ {promoResult.message}</p>
                 <p className="text-green-700 dark:text-green-300 text-xs">
                   {promoResult.discountType === 'percent' 
-                    ? `-${promoResult.discount}% de réduction !` 
-                    : `-${promoResult.discount}${settings.premiumCurrency} de réduction !`}
+                    ? t('premium.discount_percent', language, { discount: String(promoResult.discount) })
+                    : t('premium.discount_amount', language, { discount: String(promoResult.discount), currency: settings.premiumCurrency })}
                 </p>
               </div>
             )}
@@ -2129,17 +2130,17 @@ export default function Home() {
           {/* Features */}
           <div className="p-4">
             <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-              <div className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" /><span>Analyses illimitées</span></div>
-              <div className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" /><span>Coach IA illimité + historique</span></div>
-              <div className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" /><span>Générateur de réponses illimité</span></div>
-              <div className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" /><span>Compte sauvegardé dans le cloud</span></div>
-              <div className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" /><span>Récupérable sur tout appareil</span></div>
+              <div className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" /><span>{t('premium.feature_unlimited_analyses', language)}</span></div>
+              <div className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" /><span>{t('premium.feature_unlimited_coach', language)}</span></div>
+              <div className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" /><span>{t('premium.feature_unlimited_replies', language)}</span></div>
+              <div className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" /><span>{t('premium.feature_cloud_backup', language)}</span></div>
+              <div className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" /><span>{t('premium.feature_multi_device', language)}</span></div>
             </div>
           </div>
           
           {/* Payment Button */}
           <div className="p-4 flex gap-2">
-            <button onClick={() => setShowPremium(false)} className="flex-1 py-3 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700">Fermer</button>
+            <button onClick={() => setShowPremium(false)} className="flex-1 py-3 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700">{t('close', language)}</button>
             <button 
               onClick={() => activatePremium()} 
               disabled={isProcessingPayment}
@@ -2148,7 +2149,7 @@ export default function Home() {
               {isProcessingPayment ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Redirection...
+                  {t('premium.redirecting_short', language)}
                 </>
               ) : (
                 <>
@@ -2160,15 +2161,15 @@ export default function Home() {
                         <span>{getCurrentDiscountedPrice().toFixed(2)}{settings.premiumCurrency}</span>
                       </span>
                     ) : (
-                      `Payer ${getPackPrice().toFixed(2)}${settings.premiumCurrency}`
+                      t('premium.pay', language, { price: getPackPrice().toFixed(2) + settings.premiumCurrency })
                     )
-                  ) : 'Créer un compte'}
+                  ) : t('auth.register_title', language)}
                 </>
               )}
             </button>
           </div>
           
-          <p className="text-center text-xs text-gray-400 pb-4">Annule à tout moment • Paiement sécurisé PayPal</p>
+          <p className="text-center text-xs text-gray-400 pb-4">{t('premium.payment_secure', language)}</p>
         </div>
       </div>
     )
@@ -2188,64 +2189,64 @@ export default function Home() {
         
         <div className="p-6">
           <p className="text-gray-600 text-center mb-6">
-            GhostMeter est votre assistant IA pour décrypter vos conversations sentimentales et obtenir des conseils personnalisés.
+            {t('about.description_full', language)}
           </p>
           
           <div className="space-y-4">
             <div className="bg-purple-50 rounded-xl p-4">
-              <h3 className="font-semibold text-purple-700 mb-2">🔍 Analyse de conversation</h3>
+              <h3 className="font-semibold text-purple-700 mb-2">🔍 {t('about.analysis_title', language)}</h3>
               <p className="text-sm text-gray-600">
-                Collez votre conversation et notre IA analyse le ton, la fréquence, les émotions pour évaluer l'intérêt, le risque de ghosting et de manipulation.
+                {t('about.analysis_desc', language)}
               </p>
             </div>
             
             <div className="bg-pink-50 rounded-xl p-4">
-              <h3 className="font-semibold text-pink-700 mb-2">💬 Générateur de réponses</h3>
+              <h3 className="font-semibold text-pink-700 mb-2">💬 {t('about.reply_title', language)}</h3>
               <p className="text-sm text-gray-600">
-                Recevez 3 suggestions de réponses personnalisées selon votre style (chaleureux, mystérieux, direct, flirty...). Naviguez entre les propositions pour choisir la meilleure !
+                {t('about.reply_desc', language)}
               </p>
             </div>
             
             <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl p-4">
-              <h3 className="font-semibold text-pink-700 mb-2">💜 Coach Relationnel IA</h3>
+              <h3 className="font-semibold text-pink-700 mb-2">💜 {t('about.coach_title', language)}</h3>
               <p className="text-sm text-gray-600">
-                Discutez avec un coach IA qui vous donne des conseils personnalisés sur votre situation sentimentale. Questions sur le ghosting, les signaux d'intérêt, les ex...
+                {t('about.coach_desc', language)}
               </p>
-              <p className="text-xs text-gray-500 mt-2">🆓 Gratuit : 3 questions/jour • 👑 Premium : illimité + historique</p>
+              <p className="text-xs text-gray-500 mt-2">{t('about.coach_pricing', language)}</p>
             </div>
             
             <div className="bg-gradient-to-r from-gray-100 to-gray-200 rounded-xl p-4">
-              <h3 className="font-semibold text-gray-700 mb-2">🌙 Mode Sombre</h3>
+              <h3 className="font-semibold text-gray-700 mb-2">🌙 {t('about.darkmode_title', language)}</h3>
               <p className="text-sm text-gray-600">
-                Activez le mode sombre pour un confort visuel optimal le soir. Le bouton 🌙/☀️ en haut à droite permet de basculer facilement entre les modes.
+                {t('about.darkmode_desc', language)}
               </p>
             </div>
             
             <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl p-4">
-              <h3 className="font-semibold text-pink-700 mb-2">🔔 Notifications Motivantes</h3>
+              <h3 className="font-semibold text-pink-700 mb-2">🔔 {t('about.notifications_title', language)}</h3>
               <p className="text-sm text-gray-600">
-                Recevez chaque matin à 9h un message motivant pour bien commencer la journée. Compliments, rappels de valeur et perspectives positives !
+                {t('about.notifications_desc', language)}
               </p>
             </div>
             
             <div className="bg-blue-50 rounded-xl p-4">
-              <h3 className="font-semibold text-blue-700 mb-2">🔒 Confidentialité</h3>
+              <h3 className="font-semibold text-blue-700 mb-2">🔒 {t('about.privacy_title', language)}</h3>
               <p className="text-sm text-gray-600">
-                Vos conversations sont analysées de manière anonyme et ne sont jamais stockées. Votre vie privée est notre priorité.
+                {t('about.privacy_desc', language)}
               </p>
             </div>
             
             <div className="bg-yellow-50 rounded-xl p-4">
-              <h3 className="font-semibold text-yellow-700 mb-2">👑 Version Premium</h3>
+              <h3 className="font-semibold text-yellow-700 mb-2">👑 {t('about.premium_title', language)}</h3>
               <p className="text-sm text-gray-600">
-                Analyses illimitées, réponses illimitées et coaching illimité pour les membres Premium.
+                {t('about.premium_desc', language)}
               </p>
             </div>
           </div>
           
           <div className="mt-6 pt-4 border-t border-gray-100 text-center">
-            <p className="text-xs text-gray-400">Fait avec ❤️ par l'équipe GhostMeter</p>
-            <p className="text-xs text-gray-400 mt-1">© 2024-2025 GhostMeter. Tous droits réservés.</p>
+            <p className="text-xs text-gray-400">{t('about.made_by', language)}</p>
+            <p className="text-xs text-gray-400 mt-1">{t('about.copyright', language)}</p>
           </div>
         </div>
       </div>
@@ -2259,90 +2260,90 @@ export default function Home() {
       <div className="absolute inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
         <div className="bg-gradient-to-r from-gray-700 to-gray-900 p-6 text-white relative">
           <button onClick={() => setShowCGU(false)} className="absolute top-3 right-3 p-1 hover:bg-white/20 rounded-full"><X className="w-5 h-5" /></button>
-          <h2 className="text-xl font-bold">Conditions Générales d'Utilisation</h2>
-          <p className="text-white/60 text-sm mt-1">Dernière mise à jour : Janvier 2025</p>
+          <h2 className="text-xl font-bold">{t('cgu.title', language)}</h2>
+          <p className="text-white/60 text-sm mt-1">{t('cgu.last_update', language)}</p>
         </div>
         
         <div className="p-6 text-sm text-gray-700 space-y-4">
           <section>
-            <h3 className="font-bold text-gray-900 mb-2">1. Acceptation des conditions</h3>
+            <h3 className="font-bold text-gray-900 mb-2">{t('cgu.accept_title', language)}</h3>
             <p>
-              En utilisant GhostMeter, vous acceptez ces conditions générales d'utilisation. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser l'application.
+              {t('cgu.accept_text', language)}
             </p>
           </section>
           
           <section>
-            <h3 className="font-bold text-gray-900 mb-2">2. Description du service</h3>
+            <h3 className="font-bold text-gray-900 mb-2">{t('cgu.service_title', language)}</h3>
             <p>
-              GhostMeter est un outil d'analyse de conversations basé sur l'intelligence artificielle. Le service fournit des analyses à titre indicatif uniquement et ne constitue en aucun cas un conseil professionnel (psychologique, relationnel ou juridique).
+              {t('cgu.service_text', language)}
             </p>
           </section>
           
           <section>
-            <h3 className="font-bold text-gray-900 mb-2">3. Utilisation de l'application</h3>
+            <h3 className="font-bold text-gray-900 mb-2">{t('cgu.use_title', language)}</h3>
             <p>
-              Vous vous engagez à utiliser GhostMeter de manière légale et éthique. Il est interdit d'utiliser l'application pour :
+              {t('cgu.use_text', language)}
             </p>
             <ul className="list-disc list-inside mt-2 space-y-1 text-gray-600">
-              <li>Analyser des conversations sans le consentement des parties concernées</li>
-              <li>Harceler, intimider ou nuire à autrui</li>
-              <li>Violer la vie privée d'autrui</li>
-              <li>Toute activité illégale</li>
+              <li>{t('cgu.use_item1', language)}</li>
+              <li>{t('cgu.use_item2', language)}</li>
+              <li>{t('cgu.use_item3', language)}</li>
+              <li>{t('cgu.use_item4', language)}</li>
             </ul>
           </section>
           
           <section>
-            <h3 className="font-bold text-gray-900 mb-2">4. Compte Premium</h3>
+            <h3 className="font-bold text-gray-900 mb-2">{t('cgu.premium_title', language)}</h3>
             <p>
-              L'abonnement Premium offre des fonctionnalités supplémentaires. Les paiements sont sécurisés et vous pouvez annuler votre abonnement à tout moment. Aucun remboursement n'est prévu pour les périodes d'abonnement en cours.
+              {t('cgu.premium_text', language)}
             </p>
           </section>
           
           <section>
-            <h3 className="font-bold text-gray-900 mb-2">5. Confidentialité</h3>
+            <h3 className="font-bold text-gray-900 mb-2">{t('cgu.privacy_title', language)}</h3>
             <p>
-              Nous respectons votre vie privée. Les conversations analysées ne sont pas stockées sur nos serveurs. Seules les informations de compte (email, statut premium) sont conservées de manière sécurisée. Pour plus de détails, consultez notre Politique de Confidentialité.
+              {t('cgu.privacy_text', language)}
             </p>
           </section>
           
           <section>
-            <h3 className="font-bold text-gray-900 mb-2">6. Limitation de responsabilité</h3>
+            <h3 className="font-bold text-gray-900 mb-2">{t('cgu.liability_title', language)}</h3>
             <p>
-              GhostMeter fournit des analyses basées sur l'IA à titre indicatif uniquement. Nous ne garantissons pas l'exactitude des résultats. L'utilisateur est seul responsable des décisions prises sur la base de ces analyses. En aucun cas GhostMeter ne pourra être tenu responsable des dommages directs ou indirects résultant de l'utilisation de l'application.
+              {t('cgu.liability_text', language)}
             </p>
           </section>
           
           <section>
-            <h3 className="font-bold text-gray-900 mb-2">7. Propriété intellectuelle</h3>
+            <h3 className="font-bold text-gray-900 mb-2">{t('cgu.ip_title', language)}</h3>
             <p>
-              GhostMeter, son logo, son design et son contenu sont protégés par le droit d'auteur. Toute reproduction, distribution ou modification sans autorisation est interdite.
+              {t('cgu.ip_text', language)}
             </p>
           </section>
           
           <section>
-            <h3 className="font-bold text-gray-900 mb-2">8. Modifications</h3>
+            <h3 className="font-bold text-gray-900 mb-2">{t('cgu.modifications_title', language)}</h3>
             <p>
-              Nous nous réservons le droit de modifier ces CGU à tout moment. Les modifications prendront effet dès leur publication dans l'application. L'utilisation continue de l'application après modification vaut acceptation des nouvelles conditions.
+              {t('cgu.modifications_text', language)}
             </p>
           </section>
           
           <section>
-            <h3 className="font-bold text-gray-900 mb-2">9. Résiliation</h3>
+            <h3 className="font-bold text-gray-900 mb-2">{t('cgu.termination_title', language)}</h3>
             <p>
-              Nous nous réservons le droit de suspendre ou résilier votre accès à l'application en cas de violation de ces CGU, sans préavis ni remboursement.
+              {t('cgu.termination_text', language)}
             </p>
           </section>
           
           <section>
-            <h3 className="font-bold text-gray-900 mb-2">10. Contact</h3>
+            <h3 className="font-bold text-gray-900 mb-2">{t('cgu.contact_title', language)}</h3>
             <p>
-              Pour toute question concernant ces CGU, vous pouvez nous contacter à : <span className="text-purple-600">contact@ghostmeter.app</span>
+              {t('cgu.contact_text', language)} <span className="text-purple-600">contact@ghostmeter.app</span>
             </p>
           </section>
           
           <div className="mt-6 pt-4 border-t border-gray-200 text-center">
             <p className="text-xs text-gray-400">
-              En utilisant GhostMeter, vous reconnaissez avoir lu, compris et accepté ces conditions.
+              {t('cgu.accept_confirm', language)}
             </p>
           </div>
         </div>
@@ -2361,7 +2362,7 @@ export default function Home() {
 
     const handleSubmit = async () => {
       if (!subject.trim() || !message.trim()) {
-        setSendError('Veuillez remplir tous les champs')
+        setSendError(t('error.fill_fields', language))
         return
       }
 
@@ -2389,10 +2390,10 @@ export default function Home() {
             setSendSuccess(false)
           }, 2000)
         } else {
-          setSendError(data.error || 'Erreur lors de l\'envoi')
+          setSendError(data.error || t('error.generic', language))
         }
       } catch (e) {
-        setSendError('Erreur de connexion')
+        setSendError(t('error.connection', language))
       } finally {
         setIsSending(false)
       }
@@ -2407,8 +2408,8 @@ export default function Home() {
             <div className="flex items-center gap-3">
               <MessageCircle className="w-8 h-8" />
               <div>
-                <h2 className="text-xl font-bold">Contact</h2>
-                <p className="text-white/80 text-sm">Une question ? Un bug ? Contactez-nous !</p>
+                <h2 className="text-xl font-bold">{t('contact.title', language)}</h2>
+                <p className="text-white/80 text-sm">{t('contact.subtitle', language)}</p>
               </div>
             </div>
           </div>
@@ -2419,8 +2420,8 @@ export default function Home() {
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Check className="w-8 h-8 text-green-500" />
                 </div>
-                <p className="font-semibold text-green-600">Message envoyé !</p>
-                <p className="text-sm text-gray-500 mt-1">Nous vous répondrons dans les plus brefs délais.</p>
+                <p className="font-semibold text-green-600">{t('contact.success', language)}</p>
+                <p className="text-sm text-gray-500 mt-1">{t('contact.success_detail', language)}</p>
               </div>
             ) : (
               <>
@@ -2432,7 +2433,7 @@ export default function Home() {
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">Email (optionnel)</label>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">{t('contact.email', language)}</label>
                     <input
                       type="email"
                       value={contactEmail}
@@ -2440,30 +2441,30 @@ export default function Home() {
                       placeholder="votre@email.com"
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
                     />
-                    <p className="text-xs text-gray-400 mt-1">Pour recevoir une réponse</p>
+                    <p className="text-xs text-gray-400 mt-1">{t('contact.email_hint', language)}</p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">Sujet *</label>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">{t('contact.subject', language)}</label>
                     <select
                       value={subject}
                       onChange={(e) => setSubject(e.target.value)}
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
                     >
-                      <option value="">Sélectionner un sujet</option>
-                      <option value="bug">🐛 Signaler un bug</option>
-                      <option value="feature">💡 Suggestion de fonctionnalité</option>
-                      <option value="premium">👑 Question sur Premium</option>
-                      <option value="other">❓ Autre</option>
+                      <option value="">{t('contact.subject_select', language)}</option>
+                      <option value="bug">{t('contact.subject_bug', language)}</option>
+                      <option value="feature">{t('contact.subject_feature', language)}</option>
+                      <option value="premium">{t('contact.subject_premium', language)}</option>
+                      <option value="other">{t('contact.subject_other', language)}</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">Message *</label>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">{t('contact.message', language)}</label>
                     <textarea
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
-                      placeholder="Décrivez votre question ou problème..."
+                      placeholder={t('contact.message_placeholder', language)}
                       rows={4}
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
                     />
@@ -2477,12 +2478,12 @@ export default function Home() {
                     {isSending ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        Envoi en cours...
+                        {t('contact.sending', language)}
                       </>
                     ) : (
                       <>
                         <Send className="w-4 h-4" />
-                        Envoyer
+                        {t('contact.send', language)}
                       </>
                     )}
                   </button>
@@ -2559,8 +2560,8 @@ export default function Home() {
         {paymentStatus && (
           <div className={`fixed top-14 left-0 right-0 z-30 p-3 text-center text-sm font-medium ${paymentStatus === 'success' ? 'bg-green-500 text-white' : 'bg-orange-500 text-white'}`}>
             {paymentStatus === 'success' 
-              ? '✅ Paiement réussi ! Votre compte Premium est maintenant actif.' 
-              : '❌ Paiement annulé. Vous pouvez réessayer à tout moment.'}
+              ? t('payment.success', language)
+              : t('payment.canceled', language)}
           </div>
         )}
         
@@ -2573,7 +2574,7 @@ export default function Home() {
           </div>
           <div className="text-center mb-6 flex flex-col items-center mt-16">
             <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-500 via-pink-500 to-violet-500 bg-clip-text text-transparent">GhostMeter</h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1">Analyse tes conversations avec l'IA</p>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">{t('home.subtitle_short', language)}</p>
           </div>
 
           <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 border-2 border-purple-200 dark:border-purple-800">
@@ -2590,8 +2591,8 @@ export default function Home() {
                       <Heart className="w-5 h-5 text-white" />
                     </div>
                     <div className="text-left">
-                      <p className="font-semibold text-gray-800 dark:text-white">Coach Relationnel</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Conseils personnalisés pour ta situation</p>
+                      <p className="font-semibold text-gray-800 dark:text-white">{t('home.coach_relational', language)}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{t('home.coach_description', language)}</p>
                     </div>
                   </div>
                   <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-pink-500 transition-colors" />
@@ -2609,8 +2610,8 @@ export default function Home() {
                       <MessageSquare className="w-5 h-5 text-white" />
                     </div>
                     <div className="text-left">
-                      <p className="font-semibold text-gray-800 dark:text-white">Générer une réponse</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Obtiens la réponse parfaite</p>
+                      <p className="font-semibold text-gray-800 dark:text-white">{t('home.reply_generator', language)}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{t('home.reply_description', language)}</p>
                     </div>
                   </div>
                   <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-purple-500 transition-colors" />
@@ -2618,20 +2619,20 @@ export default function Home() {
               </button>
             </div>
 
-            <h2 className="text-lg font-semibold text-center mb-4 flex items-center justify-center gap-2 text-gray-800 dark:text-white"><Sparkles className="w-5 h-5 text-purple-500" />Colle ta conversation</h2>
+            <h2 className="text-lg font-semibold text-center mb-4 flex items-center justify-center gap-2 text-gray-800 dark:text-white"><Sparkles className="w-5 h-5 text-purple-500" />{t('home.paste_conversation', language)}</h2>
 
             <div className="mb-4">
-              <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">Type de relation :</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">{t('home.relationship_type', language)}</p>
               <div className="flex gap-2 overflow-x-auto pb-2">{contexts.map(c => (
                 <button key={c.id} onClick={() => setSelectedContext(c.id)} className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${selectedContext === c.id ? 'bg-pink-500 text-white' : 'bg-gray-100 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>{c.icon} {c.name}</button>
               ))}</div>
             </div>
 
             <div className="relative">
-              <textarea value={conversation} onChange={(e) => setConversation(e.target.value)} placeholder="Colle ta conversation ici...&#10;&#10;Exemple:&#10;Toi: Hey ! Tu fais quoi ? :)&#10;Lui/Elle: Rien de spécial, et toi ?&#10;Toi: Je pensais aller au ciné ?" className="w-full h-48 p-3 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white rounded-xl resize-none text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 mb-2" />
+              <textarea value={conversation} onChange={(e) => setConversation(e.target.value)} placeholder={t('home.paste_here', language)} className="w-full h-48 p-3 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white rounded-xl resize-none text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 mb-2" />
               <div className="absolute bottom-2 right-2 flex gap-2">
-                <button onClick={handlePaste} className={`p-2 rounded-lg transition-colors flex items-center gap-1 text-xs font-medium ${pasteSuccess ? 'bg-green-500 text-white' : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-500'}`} title="Coller"><ClipboardPaste className="w-4 h-4" /><span className="hidden sm:inline">{pasteSuccess ? 'Collé !' : 'Coller'}</span></button>
-                <button onClick={() => setShowOCR(true)} className="p-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors flex items-center gap-1 text-xs font-medium" title="Importer une capture d'écran"><Camera className="w-4 h-4" /><span className="hidden sm:inline">Screenshot</span></button>
+                <button onClick={handlePaste} className={`p-2 rounded-lg transition-colors flex items-center gap-1 text-xs font-medium ${pasteSuccess ? 'bg-green-500 text-white' : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-500'}`} title="Coller"><ClipboardPaste className="w-4 h-4" /><span className="hidden sm:inline">{pasteSuccess ? t('home.pasted', language) : t('home.paste', language)}</span></button>
+                <button onClick={() => setShowOCR(true)} className="p-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors flex items-center gap-1 text-xs font-medium" title={t('home.scan_screenshot', language)}><Camera className="w-4 h-4" /><span className="hidden sm:inline">{t('home.screenshot', language)}</span></button>
               </div>
             </div>
             
@@ -2640,24 +2641,24 @@ export default function Home() {
                 onClick={() => setConversation(prev => prev + (prev && !prev.endsWith('\n') ? '\n' : '') + 'Toi: ')} 
                 className="flex-1 py-2 bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 rounded-lg text-sm font-medium hover:bg-purple-200 dark:hover:bg-purple-800/50 transition-colors"
               >
-                + Toi
+                {t('home.add_you', language)}
               </button>
               <button 
                 onClick={() => setConversation(prev => prev + (prev && !prev.endsWith('\n') ? '\n' : '') + 'Lui/Elle: ')} 
                 className="flex-1 py-2 bg-pink-100 dark:bg-pink-900/50 text-pink-700 dark:text-pink-300 rounded-lg text-sm font-medium hover:bg-pink-200 dark:hover:bg-pink-800/50 transition-colors"
               >
-                + Lui/Elle
+                {t('home.add_them', language)}
               </button>
             </div>
             
-            <p className="text-xs text-gray-400 dark:text-gray-500 mb-4 text-center">Utilise le bouton Coller ou importe une capture d'écran</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mb-4 text-center">{t('home.use_paste', language)}</p>
 
-            <button onClick={handleAnalyze} disabled={conversation.trim().length < 20 || isLoading || (!isPremium && remaining <= 0)} className="w-full py-3 text-white font-semibold rounded-xl bg-gradient-to-r from-purple-500 via-pink-500 to-violet-500 hover:opacity-90 disabled:opacity-50 transition-all">{isLoading ? 'Analyse en cours...' : 'Analyser'}</button>
+            <button onClick={handleAnalyze} disabled={conversation.trim().length < 20 || isLoading || (!isPremium && remaining <= 0)} className="w-full py-3 text-white font-semibold rounded-xl bg-gradient-to-r from-purple-500 via-pink-500 to-violet-500 hover:opacity-90 disabled:opacity-50 transition-all">{isLoading ? t('home.analyzing', language) : t('home.analyze', language)}</button>
 
-            <p className="text-center text-sm text-gray-400 dark:text-gray-500 mt-3">{isPremium ? <span className="text-purple-500 font-medium">Analyses illimitées</span> : `${remaining}/${settings.freeAnalysesPerDay} analyses gratuites`}</p>
+            <p className="text-center text-sm text-gray-400 dark:text-gray-500 mt-3">{isPremium ? <span className="text-purple-500 font-medium">{t('home.premium_unlimited', language)}</span> : t('home.analyses_remaining', language, { remaining: String(remaining), total: String(settings.freeAnalysesPerDay) })}</p>
             
             {!isPremium && remaining <= 0 && (
-              <button onClick={() => setShowPremium(true)} className="w-full mt-2 py-2 border border-purple-200 dark:border-purple-700 text-purple-500 rounded-xl text-sm font-medium hover:bg-purple-50 dark:hover:bg-purple-900/30">Obtenir Premium pour plus d'analyses</button>
+              <button onClick={() => setShowPremium(true)} className="w-full mt-2 py-2 border border-purple-200 dark:border-purple-700 text-purple-500 rounded-xl text-sm font-medium hover:bg-purple-50 dark:hover:bg-purple-900/30">{t('home.get_premium_more', language)}</button>
             )}
           </div>
         </div>
@@ -2670,7 +2671,7 @@ export default function Home() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex flex-col items-center justify-center p-8">
         <div className="animate-bounce"><GhostLogo size={100} /></div>
-        <p className="text-xl mt-6 text-gray-500 dark:text-gray-400">Le fantôme analyse...</p>
+        <p className="text-xl mt-6 text-gray-500 dark:text-gray-400">{t('analyzing', language)}</p>
       </div>
     )
   }
@@ -2689,12 +2690,12 @@ export default function Home() {
         <div className="fixed top-0 left-0 right-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-100 dark:border-gray-700">
           <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
             <button onClick={() => setShowMenu(true)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"><Menu className="w-5 h-5 text-gray-700 dark:text-gray-200" /></button>
-            <span className="font-bold text-gray-800 dark:text-white">Résultats</span>
+            <span className="font-bold text-gray-800 dark:text-white">{t('results.title', language)}</span>
             <div className="flex items-center gap-2">
               <button 
                 onClick={() => setDarkMode(!darkMode)} 
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-                title={darkMode ? 'Mode clair' : 'Mode sombre'}
+                title={darkMode ? t('darkmode.light', language) : t('darkmode.dark', language)}
               >
                 {darkMode ? (
                   <Sun className="w-5 h-5 text-yellow-500" />
@@ -2720,42 +2721,42 @@ export default function Home() {
 
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 mb-4">
               <div className="grid grid-cols-3 gap-4 justify-items-center">
-                <ScoreCircle score={analysis.interestScore} label="Intérêt" icon="❤️" color={getScoreColor(analysis.interestScore, 'good')} />
-                <ScoreCircle score={analysis.manipulationScore} label="Manipulation" icon="⚠️" color={getScoreColor(analysis.manipulationScore, 'bad')} />
-                <ScoreCircle score={analysis.ghostingScore} label="Ghosting" icon="👻" color={getScoreColor(analysis.ghostingScore, 'bad')} />
+                <ScoreCircle score={analysis.interestScore} label={t('results.interest', language)} icon="❤️" color={getScoreColor(analysis.interestScore, 'good')} />
+                <ScoreCircle score={analysis.manipulationScore} label={t('results.manipulation', language)} icon="⚠️" color={getScoreColor(analysis.manipulationScore, 'bad')} />
+                <ScoreCircle score={analysis.ghostingScore} label={t('results.ghosting', language)} icon="👻" color={getScoreColor(analysis.ghostingScore, 'bad')} />
               </div>
               <div className="text-center mt-6">
-                <p className="text-sm text-gray-400">Score Global</p>
+                <p className="text-sm text-gray-400">{t('results.global_score', language)}</p>
                 <span className="text-4xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">{analysis.overallScore}</span>
                 <span className="text-xl text-gray-400">/100</span>
               </div>
             </div>
 
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 mb-4">
-              <h3 className="font-semibold mb-2 text-gray-800 dark:text-white">Conseil</h3>
+              <h3 className="font-semibold mb-2 text-gray-800 dark:text-white">{t('results.advice', language)}</h3>
               <p className="text-gray-600 dark:text-gray-300">{analysis.advice}</p>
             </div>
 
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 mb-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <h4 className="font-medium text-green-600 mb-2">Positif</h4>
-                  <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">{analysis.highlights.positive.map((p, i) => <li key={i}>• {p}</li>)}{analysis.highlights.positive.length === 0 && <li>Aucun</li>}</ul>
+                  <h4 className="font-medium text-green-600 mb-2">{t('results.positive', language)}</h4>
+                  <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">{analysis.highlights.positive.map((p, i) => <li key={i}>• {p}</li>)}{analysis.highlights.positive.length === 0 && <li>{t('results.none', language)}</li>}</ul>
                 </div>
                 <div>
-                  <h4 className="font-medium text-red-600 mb-2">Négatif</h4>
-                  <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">{analysis.highlights.negative.map((p, i) => <li key={i}>• {p}</li>)}{analysis.highlights.negative.length === 0 && <li>Aucun</li>}</ul>
+                  <h4 className="font-medium text-red-600 mb-2">{t('results.negative', language)}</h4>
+                  <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">{analysis.highlights.negative.map((p, i) => <li key={i}>• {p}</li>)}{analysis.highlights.negative.length === 0 && <li>{t('results.none', language)}</li>}</ul>
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-2">
-              <button onClick={() => { setAnalysis(null); setAppState('home') }} className="py-3 bg-gray-100 dark:bg-gray-700 dark:text-white rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"><RefreshCw className="w-4 h-4 mx-auto mb-1" />Nouveau</button>
-              <button onClick={handleShare} className="py-3 bg-gray-100 dark:bg-gray-700 dark:text-white rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"><Share2 className="w-4 h-4 mx-auto mb-1" />Partager</button>
+              <button onClick={() => { setAnalysis(null); setAppState('home') }} className="py-3 bg-gray-100 dark:bg-gray-700 dark:text-white rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"><RefreshCw className="w-4 h-4 mx-auto mb-1" />{t('results.new', language)}</button>
+              <button onClick={handleShare} className="py-3 bg-gray-100 dark:bg-gray-700 dark:text-white rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"><Share2 className="w-4 h-4 mx-auto mb-1" />{t('results.share', language)}</button>
               {!isPremium ? (
-                <button onClick={() => setShowPremium(true)} className="py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium hover:opacity-90"><Crown className="w-4 h-4 mx-auto mb-1" />Premium</button>
+                <button onClick={() => setShowPremium(true)} className="py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium hover:opacity-90"><Crown className="w-4 h-4 mx-auto mb-1" />{t('menu.premium', language)}</button>
               ) : (
-                <div className="py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium flex items-center justify-center gap-1"><Crown className="w-4 h-4" />Actif</div>
+                <div className="py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium flex items-center justify-center gap-1"><Crown className="w-4 h-4" />{t('menu.premium_active', language)}</div>
               )}
             </div>
           </div>
@@ -2776,12 +2777,12 @@ export default function Home() {
             <button onClick={() => { setAppState('home'); setReceivedMessage(''); setSuggestedReplies([]) }} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
               <X className="w-5 h-5 text-gray-700 dark:text-gray-200" />
             </button>
-            <span className="font-bold text-gray-800 dark:text-white">Générer une réponse</span>
+            <span className="font-bold text-gray-800 dark:text-white">{t('reply.title_page', language)}</span>
             <div className="flex items-center gap-2">
               <button 
                 onClick={() => setDarkMode(!darkMode)} 
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-                title={darkMode ? 'Mode clair' : 'Mode sombre'}
+                title={darkMode ? t('darkmode.light', language) : t('darkmode.dark', language)}
               >
                 {darkMode ? (
                   <Sun className="w-5 h-5 text-yellow-500" />
@@ -2801,8 +2802,8 @@ export default function Home() {
               <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
                 <MessageSquare className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-xl font-bold text-gray-800 dark:text-white">Obtiens la réponse parfaite</h2>
-              <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Colle le message reçu et choisis ton style</p>
+              <h2 className="text-xl font-bold text-gray-800 dark:text-white">{t('reply.get_perfect', language)}</h2>
+              <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{t('reply.paste_received', language)}</p>
             </div>
 
             {/* Main Card */}
@@ -2810,13 +2811,13 @@ export default function Home() {
               {/* Received Message */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  📩 Message reçu
+                  📩 {t('reply.received_label', language)}
                 </label>
                 <div className="relative">
                   <textarea 
                     value={receivedMessage}
                     onChange={(e) => setReceivedMessage(e.target.value)}
-                    placeholder="Colle ici le message que tu as reçu..."
+                    placeholder={t('reply.paste_received_placeholder', language)}
                     className="w-full h-32 p-3 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white rounded-xl resize-none text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                   />
                   <button 
@@ -2832,7 +2833,7 @@ export default function Home() {
               {/* Context selector */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  💕 Type de relation
+                  💕 {t('reply.relationship_type', language)}
                 </label>
                 <div className="flex gap-2 overflow-x-auto pb-2">
                   {contexts.map(c => (
@@ -2854,7 +2855,7 @@ export default function Home() {
               {/* Reply Type Selector */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  🎯 Style de réponse
+                  🎯 {t('reply.style_label', language)}
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {replyTypes.map(rt => (
@@ -2892,19 +2893,19 @@ export default function Home() {
                 {isGeneratingReply ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    Génération en cours...
+                    {t('reply.generating_long', language)}
                   </>
                 ) : (
                   <>
                     <Sparkles className="w-5 h-5" />
-                    Générer la réponse
+                    {t('reply.generate_button', language)}
                   </>
                 )}
               </button>
 
               {!isPremium && (
                 <p className="text-center text-xs text-gray-400 mt-2">
-                  🔒 Premium requis pour générer des réponses
+                  🔒 {t('reply.premium_required', language)}
                 </p>
               )}
             </div>
@@ -2915,7 +2916,7 @@ export default function Home() {
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-semibold text-gray-800 dark:text-white flex items-center gap-2">
                     <Send className="w-5 h-5 text-purple-500" />
-                    Réponse suggérée
+                    {t('reply.suggested', language)}
                   </h3>
                   <span className="text-xs text-gray-400 dark:text-gray-500">
                     {replyTypes.find(r => r.id === selectedReplyType)?.icon} {replyTypes.find(r => r.id === selectedReplyType)?.name}
@@ -2970,12 +2971,12 @@ export default function Home() {
                   {replyCopied ? (
                     <>
                       <Check className="w-5 h-5" />
-                      Copié !
+                      {t('reply.copied', language)}
                     </>
                   ) : (
                     <>
                       <Copy className="w-5 h-5" />
-                      Copier la réponse
+                      {t('reply.copy_reply', language)}
                     </>
                   )}
                 </button>
@@ -2985,7 +2986,7 @@ export default function Home() {
             {/* Tips */}
             <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 text-center">
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                💡 <strong className="text-gray-700 dark:text-gray-300">Astuce :</strong> Plus ton message reçu est détaillé, meilleure sera la réponse suggérée !
+                💡 <strong className="text-gray-700 dark:text-gray-300">{t('reply.tip', language)}</strong> {t('reply.tip_detail', language)}
               </p>
             </div>
           </div>
@@ -3007,7 +3008,7 @@ export default function Home() {
               <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
                 <h3 className="font-bold text-lg flex items-center gap-2 text-gray-800 dark:text-white">
                   <History className="w-5 h-5 text-purple-500" />
-                  Historique des conversations
+                  {t('coach.history_title', language)}
                 </h3>
                 <button onClick={() => setShowCoachHistory(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
                   <X className="w-5 h-5 text-gray-600 dark:text-gray-300" />
@@ -3018,7 +3019,7 @@ export default function Home() {
                 {savedCoachConversations.length === 0 ? (
                   <div className="text-center py-8 text-gray-400">
                     <MessageCircle className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                    <p>Aucune conversation sauvegardée</p>
+                    <p>{t('coach.no_saved', language)}</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -3054,7 +3055,7 @@ export default function Home() {
             </button>
             <span className="font-bold flex items-center gap-2 text-gray-800 dark:text-white">
               <Heart className="w-5 h-5 text-pink-500" />
-              Coach Relationnel
+              {t('coach.title_page', language)}
             </span>
             <div className="flex items-center gap-1">
               {isPremium && (
@@ -3062,14 +3063,14 @@ export default function Home() {
                   <button 
                     onClick={startNewCoachConversation}
                     className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-                    title="Nouvelle conversation"
+                    title={t('coach.new_chat', language)}
                   >
                     <Plus className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                   </button>
                   <button 
                     onClick={() => setShowCoachHistory(true)}
                     className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors relative"
-                    title="Historique des conversations"
+                    title={t('coach.history_tooltip', language)}
                   >
                     <History className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                     {savedCoachConversations.length > 0 && (
@@ -3104,36 +3105,36 @@ export default function Home() {
               <div className="w-20 h-20 mx-auto bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mb-4">
                 <Heart className="w-10 h-10 text-white" />
               </div>
-              <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">Salut ! Je suis ton coach 💜</h2>
+              <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">{t('coach.welcome', language)} 💜</h2>
               <p className="text-gray-600 dark:text-gray-300 text-sm mb-6">
-                Dis-moi ce qui se passe dans ta vie sentimentale. Je suis là pour t'aider !
+                {t('coach.welcome_desc', language)}
               </p>
               
               {/* Quick Start Suggestions */}
               <div className="space-y-2">
                 <button 
-                  onClick={() => { setCoachInput("J'ai besoin de conseils sur ma situation"); }}
+                  onClick={() => { setCoachInput(t('coach.suggestion1', language)); }}
                   className="w-full py-3 px-4 bg-white dark:bg-gray-800 rounded-xl text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-600"
                 >
-                  <span className="text-sm text-gray-700 dark:text-gray-200">💡 J'ai besoin de conseils sur ma situation</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-200">💡 {t('coach.suggestion1', language)}</span>
                 </button>
                 <button 
-                  onClick={() => { setCoachInput("Comment savoir si il/elle est intéressé(e) ?"); }}
+                  onClick={() => { setCoachInput(t('coach.suggestion2', language)); }}
                   className="w-full py-3 px-4 bg-white dark:bg-gray-800 rounded-xl text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-600"
                 >
-                  <span className="text-sm text-gray-700 dark:text-gray-200">🔍 Comment savoir si il/elle est intéressé(e) ?</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-200">🔍 {t('coach.suggestion2', language)}</span>
                 </button>
                 <button 
-                  onClick={() => { setCoachInput("J'ai été ghosté, qu'est-ce que je dois faire ?"); }}
+                  onClick={() => { setCoachInput(t('coach.suggestion3', language)); }}
                   className="w-full py-3 px-4 bg-white dark:bg-gray-800 rounded-xl text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-600"
                 >
-                  <span className="text-sm text-gray-700 dark:text-gray-200">👻 J'ai été ghosté, qu'est-ce que je dois faire ?</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-200">👻 {t('coach.suggestion3', language)}</span>
                 </button>
                 <button 
-                  onClick={() => { setCoachInput("Qu'est-ce que je dois répondre à ce message ?"); }}
+                  onClick={() => { setCoachInput(t('coach.suggestion4', language)); }}
                   className="w-full py-3 px-4 bg-white dark:bg-gray-800 rounded-xl text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-600"
                 >
-                  <span className="text-sm text-gray-700 dark:text-gray-200">💬 Qu'est-ce que je dois répondre à ce message ?</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-200">💬 {t('coach.suggestion4', language)}</span>
                 </button>
               </div>
             </div>
@@ -3163,7 +3164,7 @@ export default function Home() {
                 <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-2xl px-4 py-3">
                   <div className="flex items-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin text-purple-500" />
-                    <span className="text-sm text-gray-500 dark:text-gray-400">Le coach réfléchit...</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">{t('coach.thinking_long', language)}</span>
                   </div>
                 </div>
               </div>
@@ -3179,7 +3180,7 @@ export default function Home() {
               value={coachInput}
               onChange={(e) => setCoachInput(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && sendCoachMessage()}
-              placeholder="Pose ta question..."
+              placeholder={t('coach.ask_question', language)}
               className="flex-1 px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
             <button
@@ -3194,8 +3195,8 @@ export default function Home() {
           {!isPremium && (
             <p className="text-center text-xs mt-2">
               {coachQuestionsRemaining > 0 
-                ? <span className="text-gray-400">{coachQuestionsRemaining} question{coachQuestionsRemaining > 1 ? 's' : ''} restante{coachQuestionsRemaining > 1 ? 's' : ''} /jour</span>
-                : <span className="text-pink-500">🔒 Premium requis pour continuer</span>
+                ? <span className="text-gray-400">{t('coach.questions_remaining_long', language, { count: String(coachQuestionsRemaining), s: coachQuestionsRemaining > 1 ? 's' : '', s2: coachQuestionsRemaining > 1 ? 's' : '' })}</span>
+                : <span className="text-pink-500">🔒 {t('coach.premium_required', language)}</span>
               }
             </p>
           )}
