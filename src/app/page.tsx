@@ -3,9 +3,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   Sparkles, Crown, RefreshCw, Share2, Menu, X, History,
-  Trash2, ChevronRight, ChevronLeft, Check, Ghost, Tag, Camera, ClipboardPaste, LogOut, Mail, Info, FileText, CreditCard, Loader2, MessageCircle, Send, MessageSquare, Copy, Heart, Sun, Moon, Plus, Bell, BellOff, AlertCircle
+  Trash2, ChevronRight, ChevronLeft, Check, Ghost, Tag, Camera, ClipboardPaste, LogOut, Mail, Info, FileText, CreditCard, Loader2, MessageCircle, Send, MessageSquare, Copy, Heart, Sun, Moon, Plus, Bell, BellOff, AlertCircle, Globe
 } from 'lucide-react'
 import dynamic from 'next/dynamic'
+import { Language, languages, t, getStoredLanguage, setStoredLanguage } from '@/lib/translations'
 
 const OCRUploader = dynamic(() => import('@/components/OCRUploader'), { ssr: false })
 
@@ -604,6 +605,10 @@ export default function Home() {
   const [showContact, setShowContact] = useState(false)
   const [authMode, setAuthMode] = useState<'save' | 'login'>('login')
   
+  // Language state
+  const [language, setLanguage] = useState<Language>('fr')
+  const [showLanguageSelector, setShowLanguageSelector] = useState(false)
+  
   // Theme states
   const [darkMode, setDarkMode] = useState(false)
   
@@ -712,6 +717,12 @@ export default function Home() {
     if (savedNotifications === 'true') {
       setNotificationsEnabled(true)
     }
+  }, [])
+  
+  // Load language preference
+  useEffect(() => {
+    const savedLanguage = getStoredLanguage()
+    setLanguage(savedLanguage)
   }, [])
 
   // Notification functions
@@ -1859,13 +1870,56 @@ export default function Home() {
                 <Moon className="w-5 h-5 text-purple-500" />
               )}
               <div className="flex-1 text-left">
-                <p className="font-medium">{darkMode ? 'Mode clair' : 'Mode sombre'}</p>
-                <p className="text-xs text-gray-400">{darkMode ? 'Désactiver le thème sombre' : 'Activer le thème sombre'}</p>
+                <p className="font-medium">{darkMode ? t('menu.light_mode', language) : t('menu.dark_mode', language)}</p>
+                <p className="text-xs text-gray-400">{darkMode ? t('menu.dark_mode_disable', language) : t('menu.dark_mode_enable', language)}</p>
               </div>
               <div className={`w-10 h-6 rounded-full transition-colors ${darkMode ? 'bg-purple-500' : 'bg-gray-300'}`}>
                 <div className={`w-4 h-4 rounded-full bg-white shadow-md transform transition-transform mt-1 ${darkMode ? 'translate-x-5 ml-0.5' : 'translate-x-1'}`} />
               </div>
             </button>
+          </div>
+          
+          {/* Language Selector */}
+          <div className="border-t border-gray-100 dark:border-gray-700 mt-2 pt-4">
+            <button 
+              onClick={() => setShowLanguageSelector(!showLanguageSelector)}
+              className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
+            >
+              <Globe className="w-5 h-5 text-blue-500" />
+              <div className="flex-1 text-left">
+                <p className="font-medium">{t('menu.language', language)}</p>
+                <p className="text-xs text-gray-400">{languages.find(l => l.code === language)?.flag} {languages.find(l => l.code === language)?.name}</p>
+              </div>
+              <ChevronRight className={`w-4 h-4 text-gray-300 transition-transform ${showLanguageSelector ? 'rotate-90' : ''}`} />
+            </button>
+            
+            {showLanguageSelector && (
+              <div className="mt-2 space-y-1 pl-4">
+                {languages.map((lang) => (
+                  <button
+                    key={lang.code}
+                    onClick={() => {
+                      setLanguage(lang.code)
+                      setStoredLanguage(lang.code)
+                      setShowLanguageSelector(false)
+                    }}
+                    className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors ${
+                      language === lang.code 
+                        ? 'bg-purple-100 dark:bg-purple-900/30' 
+                        : 'hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    <span className="text-xl">{lang.flag}</span>
+                    <span className={`font-medium ${language === lang.code ? 'text-purple-600 dark:text-purple-400' : ''}`}>
+                      {lang.name}
+                    </span>
+                    {language === lang.code && (
+                      <Check className="w-4 h-4 text-purple-500 ml-auto" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Notifications Toggle - Only show in web version, not in APK */}
