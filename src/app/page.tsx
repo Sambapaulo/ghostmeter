@@ -1745,13 +1745,13 @@ export default function Home() {
   const MenuDrawer = () => (
     <div className={`fixed inset-0 z-50 transition-all ${showMenu ? 'visible' : 'invisible'}`}>
       <div className="absolute inset-0 bg-black/50" onClick={() => setShowMenu(false)} />
-      <div className={`absolute left-0 top-0 h-full w-72 bg-white dark:bg-gray-900 shadow-2xl transition-transform ${showMenu ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+      <div className={`absolute left-0 top-0 h-full w-72 bg-white dark:bg-gray-900 shadow-2xl transition-transform ${showMenu ? 'translate-x-0' : '-translate-x-full'} flex flex-col`}>
+        <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3"><GhostLogo size={40} /><span className="font-bold text-lg text-gray-800 dark:text-white">GhostMeter</span></div>
           <button onClick={() => setShowMenu(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"><X className="w-5 h-5 text-gray-600 dark:text-gray-300" /></button>
         </div>
         
-        <div className="p-4">
+        <div className="p-4 overflow-y-auto flex-1 pb-20">
           {isPremium && (
             <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl p-3 mb-4 flex items-center gap-2">
               <Crown className="w-5 h-5" /><span className="font-semibold">Premium Actif</span>
