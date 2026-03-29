@@ -93,11 +93,13 @@ const checkIsRunningInAPK = async (): Promise<boolean> => {
 function PromoCodeInput({ 
   onValidate, 
   isValidating,
-  currency
+  currency,
+  language
 }: { 
   onValidate: (code: string) => void
   isValidating: boolean
   currency: string
+  language: Language
 }) {
   const [code, setCode] = useState('')
   
@@ -123,7 +125,7 @@ function PromoCodeInput({
         disabled={isValidating || !code.trim()} 
         className="px-4 py-2 bg-purple-500 text-white rounded-xl text-sm font-medium hover:bg-purple-600 disabled:opacity-50"
       >
-        {isValidating ? '...' : 'OK'}
+        {isValidating ? '...' : t('premium.promo_validate', language)}
       </button>
     </div>
   )
@@ -2113,6 +2115,7 @@ export default function Home() {
               }}
               isValidating={isValidatingPromo}
               currency={settings.premiumCurrency}
+              language={language}
             />
             {promoResult && promoResult.valid && (
               <div className="mt-2 p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
