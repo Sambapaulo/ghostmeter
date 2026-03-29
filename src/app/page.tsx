@@ -1435,7 +1435,8 @@ export default function Home() {
         body: JSON.stringify({
           receivedMessage: receivedMessage.trim(),
           replyType: selectedReplyType,
-          context: selectedContext
+          context: selectedContext,
+          language: language
         })
       })
       const data = await res.json()
@@ -1501,7 +1502,8 @@ export default function Home() {
           context: {
             relationshipType: selectedContext,
             analysisScore: analysis?.overallScore
-          }
+          },
+          language: language
         })
       })
       const data = await res.json()
