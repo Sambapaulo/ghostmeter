@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Politique de Confidentialité - GhostMeter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, #a855f7, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .lang-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .lang-btn {
+            padding: 8px 16px;
+            border: 2px solid #a855f7;
+            background: transparent;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .lang-btn:hover, .lang-btn.active {
+            background: #a855f7;
+            color: white;
+        }
+        .content {
+            display: none;
+        }
+        .content.active {
+            display: block;
+        }
+        h2 {
+            color: #a855f7;
+            margin: 30px 0 15px;
+            font-size: 1.4rem;
+            border-bottom: 2px solid #f3f4f6;
+            padding-bottom: 10px;
+        }
+        h3 {
+            color: #6366f1;
+            margin: 20px 0 10px;
+            font-size: 1.1rem;
+        }
+        p {
+            margin-bottom: 15px;
+            color: #4b5563;
+        }
+        ul {
+            margin: 15px 0 15px 25px;
+        }
+        li {
+            margin-bottom: 8px;
+            color: #4b5563;
+        }
+        .last-update {
+            text-align: center;
+            color: #9ca3af;
+            font-size: 14px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+        .highlight {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #a855f7;
+            margin: 15px 0;
+        }
+        .contact-box {
+            background: linear-gradient(135deg, #a855f7, #6366f1);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 30px;
+        }
+        .contact-box p {
+            color: white;
+            margin: 0;
+        }
+        .contact-box a {
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>👻 GhostMeter</h1>
+        </div>
+
+        <div class="lang-selector">
+            <button class="lang-btn active" onclick="showLang('fr')">🇫🇷 Français</button>
+            <button class="lang-btn" onclick="showLang('en')">🇬🇧 English</button>
+            <button class="lang-btn" onclick="showLang('de')">🇩🇪 Deutsch</button>
+            <button class="lang-btn" onclick="showLang('es')">🇪🇸 Español</button>
+        </div>
+
+        <!-- FRANÇAIS -->
+        <div id="fr" class="content active">
+            <h1>Politique de Confidentialité</h1>
+
+            <h2>1. Introduction</h2>
+            <p>Bienvenue dans GhostMeter. Nous respectons votre vie privée et nous engageons à protéger vos données personnelles. Cette politique de confidentialité explique comment nous collectons, utilisons et protégeons vos informations lorsque vous utilisez notre application.</p>
+
+            <h2>2. Données que nous collectons</h2>
+            <h3>2.1 Données fournies volontairement</h3>
+            <ul>
+                <li><strong>Conversations analysées</strong> : Les conversations que vous collez dans l'application sont traitées temporairement par notre IA pour générer des analyses. Ces conversations ne sont PAS stockées sur nos serveurs après analyse.</li>
+                <li><strong>Email (optionnel)</strong> : Si vous créez un compte pour sauvegarder votre abonnement Premium, nous stockons votre adresse email de manière sécurisée.</li>
+                <li><strong>Messages de contact</strong> : Si vous nous contactez via le formulaire, nous conservons votre message et email (si fourni) pour vous répondre.</li>
+            </ul>
+
+            <h3>2.2 Données collectées automatiquement</h3>
+            <ul>
+                <li><strong>Identifiant anonyme</strong> : Un identifiant unique est généré pour chaque utilisateur afin de gérer les quotas d'utilisation gratuits.</li>
+                <li><strong>Statut Premium</strong> : Nous stockons la date d'expiration de votre abonnement Premium.</li>
+                <li><strong>Historique des conversations Coach</strong> : Les conversations avec le Coach Relationnel sont sauvegardées si vous avez un compte (supprimables à tout moment).</li>
+            </ul>
+
+            <h2>3. Comment nous utilisons vos données</h2>
+            <div class="highlight">
+                <p>Nous utilisons vos données uniquement pour :</p>
+                <ul>
+                    <li>Fournir les services d'analyse de conversation</li>
+                    <li>Gérer votre abonnement Premium</li>
+                    <li>Permettre la récupération de votre compte sur plusieurs appareils</li>
+                    <li>Répondre à vos demandes de contact</li>
+                    <li>Améliorer nos services</li>
+                </ul>
+            </div>
+
+            <h2>4. Conservation des données</h2>
+            <ul>
+                <li><strong>Conversations analysées</strong> : 0 jour - non stockées</li>
+                <li><strong>Conversations Coach</strong> : Jusqu'à suppression par l'utilisateur ou fermeture du compte</li>
+                <li><strong>Données de compte</strong> : Jusqu'à demande de suppression</li>
+                <li><strong>Logs de paiement</strong> : 5 ans (obligations légales)</li>
+            </ul>
+
+            <h2>5. Partage des données</h2>
+            <p>Nous ne vendons jamais vos données. Nous partageons uniquement les données nécessaires avec :</p>
+            <ul>
+                <li><strong>OpenAI</strong> : Pour l'analyse des conversations (traitement temporaire, non conservé)</li>
+                <li><strong>PayPal / Google Play</strong> : Pour le traitement des paiements (sécurisé)</li>
+                <li><strong>Autorités légales</strong> : Si requis par la loi</li>
+            </ul>
+
+            <h2>6. Sécurité</h2>
+            <p>Nous mettons en œuvre des mesures de sécurité techniques et organisationnelles pour protéger vos données :</p>
+            <ul>
+                <li>Chiffrement HTTPS/TLS pour toutes les communications</li>
+                <li>Hébergement sécurisé sur Vercel</li>
+                <li>Base de données chiffrée</li>
+                <li>Accès restreint aux données personnelles</li>
+            </ul>
+
+            <h2>7. Vos droits (RGPD)</h2>
+            <p>Conformément au Règlement Général sur la Protection des Données, vous avez le droit de :</p>
+            <ul>
+                <li><strong>Accès</strong> : Obtenir une copie de vos données personnelles</li>
+                <li><strong>Rectification</strong> : Corriger vos données inexactes</li>
+                <li><strong>Suppression</strong> : Demander la suppression de vos données</li>
+                <li><strong>Portabilité</strong> : Recevoir vos données dans un format portable</li>
+                <li><strong>Opposition</strong> : Vous opposer au traitement de vos données</li>
+            </ul>
+
+            <h2>8. Notifications</h2>
+            <p>Si vous activez les notifications push, nous utilisons Firebase Cloud Messaging pour envoyer des messages motivants quotidiens. Vous pouvez désactiver ces notifications à tout moment dans les paramètres de l'application.</p>
+
+            <h2>9. Modifications</h2>
+            <p>Nous nous réservons le droit de modifier cette politique. Les modifications seront notifiées via l'application. L'utilisation continue vaut acceptation.</p>
+
+            <h2>10. Contact</h2>
+            <p>Pour toute question concernant cette politique ou pour exercer vos droits, contactez-nous :</p>
+            <div class="contact-box">
+                <p>📧 Email : <a href="mailto:contact@ghostmeter.app">contact@ghostmeter.app</a></p>
+                <p>📱 Via l'application : Menu → Contact</p>
+            </div>
+
+            <p class="last-update">Dernière mise à jour : Mars 2025</p>
+        </div>
+
+        <!-- ENGLISH -->
+        <div id="en" class="content">
+            <h1>Privacy Policy</h1>
+
+            <h2>1. Introduction</h2>
+            <p>Welcome to GhostMeter. We respect your privacy and are committed to protecting your personal data. This privacy policy explains how we collect, use, and protect your information when you use our application.</p>
+
+            <h2>2. Data We Collect</h2>
+            <h3>2.1 Data Provided Voluntarily</h3>
+            <ul>
+                <li><strong>Analyzed Conversations</strong>: Conversations you paste in the app are temporarily processed by our AI to generate analyses. These conversations are NOT stored on our servers after analysis.</li>
+                <li><strong>Email (optional)</strong>: If you create an account to save your Premium subscription, we securely store your email address.</li>
+                <li><strong>Contact Messages</strong>: If you contact us via the form, we keep your message and email (if provided) to respond to you.</li>
+            </ul>
+
+            <h3>2.2 Automatically Collected Data</h3>
+            <ul>
+                <li><strong>Anonymous Identifier</strong>: A unique identifier is generated for each user to manage free usage quotas.</li>
+                <li><strong>Premium Status</strong>: We store your Premium subscription expiration date.</li>
+                <li><strong>Coach Conversation History</strong>: Conversations with the Relationship Coach are saved if you have an account (can be deleted at any time).</li>
+            </ul>
+
+            <h2>3. How We Use Your Data</h2>
+            <div class="highlight">
+                <p>We use your data only to:</p>
+                <ul>
+                    <li>Provide conversation analysis services</li>
+                    <li>Manage your Premium subscription</li>
+                    <li>Enable account recovery across multiple devices</li>
+                    <li>Respond to your contact requests</li>
+                    <li>Improve our services</li>
+                </ul>
+            </div>
+
+            <h2>4. Data Retention</h2>
+            <ul>
+                <li><strong>Analyzed Conversations</strong>: 0 days - not stored</li>
+                <li><strong>Coach Conversations</strong>: Until user deletion or account closure</li>
+                <li><strong>Account Data</strong>: Until deletion request</li>
+                <li><strong>Payment Logs</strong>: 5 years (legal requirements)</li>
+            </ul>
+
+            <h2>5. Data Sharing</h2>
+            <p>We never sell your data. We only share necessary data with:</p>
+            <ul>
+                <li><strong>OpenAI</strong>: For conversation analysis (temporary processing, not retained)</li>
+                <li><strong>PayPal / Google Play</strong>: For payment processing (secured)</li>
+                <li><strong>Legal Authorities</strong>: If required by law</li>
+            </ul>
+
+            <h2>6. Security</h2>
+            <p>We implement technical and organizational security measures to protect your data:</p>
+            <ul>
+                <li>HTTPS/TLS encryption for all communications</li>
+                <li>Secure hosting on Vercel</li>
+                <li>Encrypted database</li>
+                <li>Restricted access to personal data</li>
+            </ul>
+
+            <h2>7. Your Rights (GDPR)</h2>
+            <p>In accordance with the General Data Protection Regulation, you have the right to:</p>
+            <ul>
+                <li><strong>Access</strong>: Obtain a copy of your personal data</li>
+                <li><strong>Rectification</strong>: Correct your inaccurate data</li>
+                <li><strong>Erasure</strong>: Request deletion of your data</li>
+                <li><strong>Portability</strong>: Receive your data in a portable format</li>
+                <li><strong>Objection</strong>: Object to the processing of your data</li>
+            </ul>
+
+            <h2>8. Notifications</h2>
+            <p>If you enable push notifications, we use Firebase Cloud Messaging to send daily motivational messages. You can disable these notifications at any time in the app settings.</p>
+
+            <h2>9. Changes</h2>
+            <p>We reserve the right to modify this policy. Changes will be notified via the app. Continued use constitutes acceptance.</p>
+
+            <h2>10. Contact</h2>
+            <p>For any questions regarding this policy or to exercise your rights, contact us:</p>
+            <div class="contact-box">
+                <p>📧 Email: <a href="mailto:contact@ghostmeter.app">contact@ghostmeter.app</a></p>
+                <p>📱 Via the app: Menu → Contact</p>
+            </div>
+
+            <p class="last-update">Last updated: March 2025</p>
+        </div>
+
+        <!-- DEUTSCH -->
+        <div id="de" class="content">
+            <h1>Datenschutzerklärung</h1>
+
+            <h2>1. Einleitung</h2>
+            <p>Willkommen bei GhostMeter. Wir respektieren Ihre Privatsphäre und verpflichten uns, Ihre persönlichen Daten zu schützen. Diese Datenschutzerklärung erklärt, wie wir Ihre Informationen sammeln, verwenden und schützen, wenn Sie unsere App nutzen.</p>
+
+            <h2>2. Daten, die wir sammeln</h2>
+            <h3>2.1 Freiwillig bereitgestellte Daten</h3>
+            <ul>
+                <li><strong>Analysierte Gespräche</strong>: Gespräche, die Sie in die App einfügen, werden vorübergehend von unserer KI verarbeitet, um Analysen zu erstellen. Diese Gespräche werden NICHT auf unseren Servern gespeichert.</li>
+                <li><strong>E-Mail (optional)</strong>: Wenn Sie ein Konto erstellen, um Ihr Premium-Abonnement zu speichern, speichern wir Ihre E-Mail-Adresse sicher.</li>
+                <li><strong>Kontaktnachrichten</strong>: Wenn Sie uns über das Formular kontaktieren, behalten wir Ihre Nachricht und E-Mail (falls angegeben), um Ihnen zu antworten.</li>
+            </ul>
+
+            <h3>2.2 Automatisch gesammelte Daten</h3>
+            <ul>
+                <li><strong>Anonyme Kennung</strong>: Für jeden Benutzer wird eine eindeutige Kennung generiert, um kostenlose Nutzungskontingente zu verwalten.</li>
+                <li><strong>Premium-Status</strong>: Wir speichern das Ablaufdatum Ihres Premium-Abonnements.</li>
+                <li><strong>Coach-Gesprächsverlauf</strong>: Gespräche mit dem Beziehungscoach werden gespeichert, wenn Sie ein Konto haben (jederzeit löschbar).</li>
+            </ul>
+
+            <h2>3. Wie wir Ihre Daten verwenden</h2>
+            <div class="highlight">
+                <p>Wir verwenden Ihre Daten nur, um:</p>
+                <ul>
+                    <li>Gesprächsanalyse-Dienste bereitzustellen</li>
+                    <li>Ihr Premium-Abonnement zu verwalten</li>
+                    <li>Kontowiederherstellung auf mehreren Geräten zu ermöglichen</li>
+                    <li>Auf Ihre Kontaktanfragen zu antworten</li>
+                    <li>Unsere Dienste zu verbessern</li>
+                </ul>
+            </div>
+
+            <h2>4. Datenspeicherung</h2>
+            <ul>
+                <li><strong>Analysierte Gespräche</strong>: 0 Tage - nicht gespeichert</li>
+                <li><strong>Coach-Gespräche</strong>: Bis zur Löschung durch den Benutzer oder Kontoschließung</li>
+                <li><strong>Kontodaten</strong>: Bis zur Löschanfrage</li>
+                <li><strong>Zahlungsprotokolle</strong>: 5 Jahre (gesetzliche Anforderungen)</li>
+            </ul>
+
+            <h2>5. Datenweitergabe</h2>
+            <p>Wir verkaufen niemals Ihre Daten. Wir teilen Daten nur mit:</p>
+            <ul>
+                <li><strong>OpenAI</strong>: Für Gesprächsanalysen (vorübergehende Verarbeitung, nicht gespeichert)</li>
+                <li><strong>PayPal / Google Play</strong>: Für Zahlungsabwicklung (gesichert)</li>
+                <li><strong>Behörden</strong>: Wenn gesetzlich erforderlich</li>
+            </ul>
+
+            <h2>6. Sicherheit</h2>
+            <p>Wir setzen technische und organisatorische Sicherheitsmaßnahmen ein, um Ihre Daten zu schützen:</p>
+            <ul>
+                <li>HTTPS/TLS-Verschlüsselung für alle Kommunikation</li>
+                <li>Sicheres Hosting auf Vercel</li>
+                <li>Verschlüsselte Datenbank</li>
+                <li>Eingeschränkter Zugriff auf persönliche Daten</li>
+            </ul>
+
+            <h2>7. Ihre Rechte (DSGVO)</h2>
+            <p>Gemäß der Datenschutz-Grundverordnung haben Sie das Recht auf:</p>
+            <ul>
+                <li><strong>Auskunft</strong>: Erhalt einer Kopie Ihrer persönlichen Daten</li>
+                <li><strong>Berichtigung</strong>: Korrektur ungenauer Daten</li>
+                <li><strong>Löschung</strong>: Antrag auf Löschung Ihrer Daten</li>
+                <li><strong>Portabilität</strong>: Erhalt Ihrer Daten in einem portablen Format</li>
+                <li><strong>Widerspruch</strong>: Widerspruch gegen die Verarbeitung Ihrer Daten</li>
+            </ul>
+
+            <h2>8. Benachrichtigungen</h2>
+            <p>Wenn Sie Push-Benachrichtigungen aktivieren, verwenden wir Firebase Cloud Messaging, um tägliche motivierende Nachrichten zu senden. Sie können diese Benachrichtigungen jederzeit in den App-Einstellungen deaktivieren.</p>
+
+            <h2>9. Änderungen</h2>
+            <p>Wir behalten uns vor, diese Richtlinie zu ändern. Änderungen werden über die App mitgeteilt. Fortgesetzte Nutzung bedeutet Akzeptanz.</p>
+
+            <h2>10. Kontakt</h2>
+            <p>Bei Fragen zu dieser Richtlinie oder zur Ausübung Ihrer Rechte kontaktieren Sie uns:</p>
+            <div class="contact-box">
+                <p>📧 E-Mail: <a href="mailto:contact@ghostmeter.app">contact@ghostmeter.app</a></p>
+                <p>📱 Über die App: Menü → Kontakt</p>
+            </div>
+
+            <p class="last-update">Letzte Aktualisierung: März 2025</p>
+        </div>
+
+        <!-- ESPAÑOL -->
+        <div id="es" class="content">
+            <h1>Política de Privacidad</h1>
+
+            <h2>1. Introducción</h2>
+            <p>Bienvenido a GhostMeter. Respetamos su privacidad y nos comprometemos a proteger sus datos personales. Esta política de privacidad explica cómo recopilamos, usamos y protegemos su información cuando utiliza nuestra aplicación.</p>
+
+            <h2>2. Datos que Recopilamos</h2>
+            <h3>2.1 Datos Proporcionados Voluntariamente</h3>
+            <ul>
+                <li><strong>Conversaciones Analizadas</strong>: Las conversaciones que pega en la aplicación son procesadas temporalmente por nuestra IA para generar análisis. Estas conversaciones NO se almacenan en nuestros servidores después del análisis.</li>
+                <li><strong>Correo Electrónico (opcional)</strong>: Si crea una cuenta para guardar su suscripción Premium, almacenamos su dirección de correo de forma segura.</li>
+                <li><strong>Mensajes de Contacto</strong>: Si nos contacta a través del formulario, conservamos su mensaje y correo (si se proporciona) para responderle.</li>
+            </ul>
+
+            <h3>2.2 Datos Recopilados Automáticamente</h3>
+            <ul>
+                <li><strong>Identificador Anónimo</strong>: Se genera un identificador único para cada usuario para gestionar las cuotas de uso gratuito.</li>
+                <li><strong>Estado Premium</strong>: Almacenamos la fecha de vencimiento de su suscripción Premium.</li>
+                <li><strong>Historial de Conversaciones del Coach</strong>: Las conversaciones con el Coach Relacional se guardan si tiene una cuenta (se pueden eliminar en cualquier momento).</li>
+            </ul>
+
+            <h2>3. Cómo Usamos Sus Datos</h2>
+            <div class="highlight">
+                <p>Solo usamos sus datos para:</p>
+                <ul>
+                    <li>Proporcionar servicios de análisis de conversaciones</li>
+                    <li>Gestionar su suscripción Premium</li>
+                    <li>Permitir la recuperación de cuenta en múltiples dispositivos</li>
+                    <li>Responder a sus solicitudes de contacto</li>
+                    <li>Mejorar nuestros servicios</li>
+                </ul>
+            </div>
+
+            <h2>4. Conservación de Datos</h2>
+            <ul>
+                <li><strong>Conversaciones Analizadas</strong>: 0 días - no almacenadas</li>
+                <li><strong>Conversaciones del Coach</strong>: Hasta eliminación por el usuario o cierre de cuenta</li>
+                <li><strong>Datos de Cuenta</strong>: Hasta solicitud de eliminación</li>
+                <li><strong>Registros de Pago</strong>: 5 años (requisitos legales)</li>
+            </ul>
+
+            <h2>5. Compartición de Datos</h2>
+            <p>Nunca vendemos sus datos. Solo compartimos datos necesarios con:</p>
+            <ul>
+                <li><strong>OpenAI</strong>: Para análisis de conversaciones (procesamiento temporal, no conservado)</li>
+                <li><strong>PayPal / Google Play</strong>: Para procesamiento de pagos (asegurado)</li>
+                <li><strong>Autoridades Legales</strong>: Si lo requiere la ley</li>
+            </ul>
+
+            <h2>6. Seguridad</h2>
+            <p>Implementamos medidas de seguridad técnicas y organizativas para proteger sus datos:</p>
+            <ul>
+                <li>Cifrado HTTPS/TLS para todas las comunicaciones</li>
+                <li>Alojamiento seguro en Vercel</li>
+                <li>Base de datos cifrada</li>
+                <li>Acceso restringido a datos personales</li>
+            </ul>
+
+            <h2>7. Sus Derechos (RGPD)</h2>
+            <p>De acuerdo con el Reglamento General de Protección de Datos, tiene derecho a:</p>
+            <ul>
+                <li><strong>Acceso</strong>: Obtener una copia de sus datos personales</li>
+                <li><strong>Rectificación</strong>: Corregir sus datos inexactos</li>
+                <li><strong>Supresión</strong>: Solicitar la eliminación de sus datos</li>
+                <li><strong>Portabilidad</strong>: Recibir sus datos en un formato portátil</li>
+                <li><strong>Oposición</strong>: Oponerse al procesamiento de sus datos</li>
+            </ul>
+
+            <h2>8. Notificaciones</h2>
+            <p>Si activa las notificaciones push, usamos Firebase Cloud Messaging para enviar mensajes motivadores diarios. Puede desactivar estas notificaciones en cualquier momento en la configuración de la aplicación.</p>
+
+            <h2>9. Modificaciones</h2>
+            <p>Nos reservamos el derecho de modificar esta política. Los cambios se notificarán a través de la aplicación. El uso continuado constituye aceptación.</p>
+
+            <h2>10. Contacto</h2>
+            <p>Para cualquier pregunta sobre esta política o para ejercer sus derechos, contáctenos:</p>
+            <div class="contact-box">
+                <p>📧 Email: <a href="mailto:contact@ghostmeter.app">contact@ghostmeter.app</a></p>
+                <p>📱 A través de la app: Menú → Contacto</p>
+            </div>
+
+            <p class="last-update">Última actualización: Marzo 2025</p>
+        </div>
+    </div>
+
+    <script>
+        function showLang(lang) {
+            // Hide all content
+            document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
+            // Remove active from all buttons
+            document.querySelectorAll('.lang-btn').forEach(el => el.classList.remove('active'));
+            // Show selected content
+            document.getElementById(lang).classList.add('active');
+            // Add active to clicked button
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
