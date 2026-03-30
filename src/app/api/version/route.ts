@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   return NextResponse.json({
-    version: '1.18.0',
+    version: '1.19.4',
     buildTime: new Date().toISOString(),
   });
 }
