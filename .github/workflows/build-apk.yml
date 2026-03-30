@@ -1,0 +1,101 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Capacitor CLI
+        run: npm install -g @capacitor/cli
+
+      - name: Create www directory
+        run: mkdir -p www && echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>GhostMeter</title></head><body></body></html>' > www/index.html
+
+      - name: Add Android platform
+        run: npx cap add android
+
+      - name: Copy custom MainActivity with native back button handler
+        run: |
+          cp android-template/MainActivity.java android/app/src/main/java/app/ghostmeter/app/MainActivity.java
+
+      - name: Fix all proguard configurations
+        run: |
+          # Fix app build.gradle
+          sed -i "s/proguard-android.txt/proguard-android-optimize.txt/g" android/app/build.gradle
+          sed -i "s/versionCode .*/versionCode 22/g" android/app/build.gradle
+          sed -i 's/versionName "1.0.0"/versionName "1.18.0"/g' android/app/build.gradle
+          
+          # Fix all Capacitor module build.gradle files
+          find node_modules/@capacitor -name "build.gradle" -exec sed -i "s/proguard-android.txt/proguard-android-optimize.txt/g" {} \;
+
+      - name: Copy app icons
+        run: |
+          # Copy icons from public/icons to Android mipmap folders
+          cp public/icons/icon-72x72.png android/app/src/main/res/mipmap-mdpi/ic_launcher.png
+          cp public/icons/icon-72x72.png android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png
+          cp public/icons/icon-96x96.png android/app/src/main/res/mipmap-hdpi/ic_launcher.png
+          cp public/icons/icon-96x96.png android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png
+          cp public/icons/icon-144x144.png android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
+          cp public/icons/icon-144x144.png android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png
+          cp public/icons/icon-192x192.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+          cp public/icons/icon-192x192.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
+          cp public/icons/icon-192x192.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+          cp public/icons/icon-192x192.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
+          
+          # Also copy foreground icons for adaptive icon
+          cp public/icons/icon-72x72.png android/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png
+          cp public/icons/icon-96x96.png android/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.png
+          cp public/icons/icon-144x144.png android/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png
+          cp public/icons/icon-192x192.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png
+          cp public/icons/icon-192x192.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png
+
+      - name: Update capacitor config with APK marker
+        run: |
+          # Update capacitor.config.json to include ?from=apk
+          sed -i 's|"url": "https://ghostmeter.vercel.app"|"url": "https://ghostmeter.vercel.app?from=apk"|g' android/app/src/main/assets/capacitor.config.json
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Build APK
+        working-directory: android
+        run: ./gradlew assembleDebug
+
+      - name: Rename APK with version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          BUILD_DATE=$(date +%Y%m%d)
+          mv android/app/build/outputs/apk/debug/app-debug.apk android/app/build/outputs/apk/debug/ghostmeter-v${VERSION}-${BUILD_DATE}.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ghostmeter-apk
+          path: android/app/build/outputs/apk/debug/*.apk
+          retention-days: 30

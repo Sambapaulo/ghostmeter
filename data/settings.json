@@ -1,0 +1,26 @@
+{
+  "premiumPrice": 4,
+  "premiumCurrency": "€",
+  "premiumPeriod": "mois",
+  "freeAnalysesPerDay": 3,
+  "promoCodes": [
+    {
+      "code": "GHOST20",
+      "discount": 20,
+      "discountType": "percent",
+      "active": true,
+      "maxUses": 100,
+      "currentUses": 0,
+      "createdAt": "2024-01-01"
+    },
+    {
+      "code": "FREEMIUM",
+      "discount": 100,
+      "discountType": "percent",
+      "active": true,
+      "maxUses": 10,
+      "currentUses": 0,
+      "createdAt": "2024-01-01"
+    }
+  ]
+}
