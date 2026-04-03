@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { kv } from '@vercel/kv';
+import { getSettings, saveSettings } from '@/lib/kv';
 
 interface User {
   email: string;
@@ -16,17 +17,7 @@ interface User {
   sessionCreatedAt?: string;
 }
 
-interface Settings {
-  promoCodes?: Array<{
-    code: string;
-    discount: number;
-    discountType: string;
-    active: boolean;
-    currentUses: number;
-    maxUses: number;
-  }>;
-  [key: string]: unknown;
-}
+// Settings interface is now imported from @/lib/kv
 
 // POST - Activate free premium via promo code 100%
 export async function POST(request: NextRequest) {
@@ -43,9 +34,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify the promo code exists and is valid (100% discount)
-    const settings = await kv.get('settings') as Settings | null;
+    const settings = await getSettings();
 
-    if (!settings?.promoCodes) {
+    if (!settings?.promoCodes || settings.promoCodes.length === 0) {
       return NextResponse.json({ error: 'Erreur de configuration' }, { status: 500 });
     }
 
@@ -102,7 +93,7 @@ export async function POST(request: NextRequest) {
     );
     if (promoIndex !== -1) {
       settings.promoCodes[promoIndex].currentUses += 1;
-      await kv.set('settings', settings);
+      await saveSettings(settings);
     }
 
     return NextResponse.json({
