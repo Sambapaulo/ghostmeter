@@ -1662,6 +1662,33 @@ export default function Home() {
       } else {
         priceToCharge = basePrice
       }
+
+      // If price is 0 (100% promo code), activate premium directly without PayPal
+      if (priceToCharge === 0 && promoResult?.valid && promoCode) {
+        const freeRes = await fetch('/api/premium/activate-free', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: userEmail,
+            promoCode: promoCode
+          })
+        })
+        const freeData = await freeRes.json()
+
+        if (freeData.success) {
+          setIsPremium(true)
+          setRemaining(999)
+          localStorage.setItem('ghostmeter_premium', 'true')
+          setShowPremium(false)
+          setPromoCode('')
+          setPromoResult(null)
+          alert('🎉 Premium activé gratuitement !')
+        } else {
+          alert(freeData.error || 'Erreur lors de l\'activation')
+        }
+        setIsProcessingPayment(false)
+        return
+      }
       
       const res = await fetch('/api/paypal/create-order', {
         method: 'POST',
