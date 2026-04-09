@@ -539,7 +539,7 @@ function AuthModal({ isOpen, onClose, onPremiumActivated, mode }: {
 
               <div className='relative mb-3'>
                 <input
-                  type={showPassword ? 'text' : 'password'} autoComplete='off'
+                  type={showPassword ? 'text' : 'password'} autoComplete='new-password'
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={t('auth.password', language)}
@@ -557,7 +557,7 @@ function AuthModal({ isOpen, onClose, onPremiumActivated, mode }: {
               {isRegisterMode && mode !== 'save' && (
                 <div className='relative mb-3'>
                   <input
-                    type={showPassword ? 'text' : 'password'} autoComplete='off'
+                    type={showPassword ? 'text' : 'password'} autoComplete='new-password'
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder={t('auth.confirm_password', language)}
