@@ -78,6 +78,7 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <script src="https://accounts.google.com/gsi/client" async defer></script>
         <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png" />
         <script
           dangerouslySetInnerHTML={{

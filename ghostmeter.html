@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GhostMeter Pro Animation</title>
+  <style>
+    body {
+      margin: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle at center, #1a0a2e 0%, #000000 100%);
+      font-family: 'Arial', sans-serif;
+      color: #fff;
+      position: relative;
+    }
+
+    h1 {
+      font-size: 100px;
+      color: #fff;
+      text-shadow: 0 0 20px #ff00ff, 0 0 30px #00ffff;
+      opacity: 0;
+      animation: fadeIn 1.5s ease-in-out forwards;
+      white-space: nowrap;
+      overflow: hidden;
+      border-right: 5px solid #fff;
+      width: 0;
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; width: 800px; }
+    }
+
+    .circle {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.7;
+      animation: floatUp 5s ease-in-out infinite;
+    }
+
+    @keyframes floatUp {
+      0% { transform: translateY(1080px) scale(0.3); opacity: 0; }
+      50% { opacity: 0.8; }
+      100% { transform: translateY(-200px) scale(1); opacity: 0; }
+    }
+
+    .spark {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: white;
+      opacity: 0;
+      animation: sparkMove 2s ease-in-out infinite;
+    }
+
+    @keyframes sparkMove {
+      0% { transform: translateY(1080px) scale(0.3); opacity: 0; }
+      50% { opacity: 1; }
+      100% { transform: translateY(-50px) scale(1); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <h1 id="ghost-text">GhostMeter</h1>
+
+  <script>
+    // Animation du texte "tape à l'écran"
+    const textEl = document.getElementById('ghost-text');
+    const fullText = "GhostMeter";
+    let index = 0;
+
+    function typeText() {
+      if(index < fullText.length){
+        textEl.textContent += fullText[index];
+        index++;
+        setTimeout(typeText, 200); // vitesse de frappe
+      }
+    }
+    typeText();
+
+    // Cercles flottants colorés
+    for(let i=0; i<30; i++){
+      const circle = document.createElement('div');
+      const size = Math.random() * 80 + 20;
+      circle.classList.add('circle');
+      circle.style.width = size + 'px';
+      circle.style.height = size + 'px';
+      circle.style.left = Math.random() * 1920 + 'px';
+      circle.style.background = `hsl(${Math.random()*360}, 80%, 60%)`;
+      circle.style.animationDelay = Math.random() * 5 + 's';
+      document.body.appendChild(circle);
+    }
+
+    // Particules éclats
+    for(let i=0; i<50; i++){
+      const spark = document.createElement('div');
+      spark.classList.add('spark');
+      spark.style.left = Math.random() * 1920 + 'px';
+      spark.style.animationDelay = Math.random() * 3 + 's';
+      document.body.appendChild(spark);
+    }
+
+    // Néon dynamique sur texte
+    let hue = 0;
+    setInterval(() => {
+      hue += 2;
+      textEl.style.textShadow = `
+        0 0 20px hsl(${hue}, 100%, 70%),
+        0 0 30px hsl(${(hue+90)%360}, 100%, 70%),
+        0 0 40px hsl(${(hue+180)%360}, 100%, 70%)
+      `;
+    }, 100);
+  </script>
+</body>
+</html>

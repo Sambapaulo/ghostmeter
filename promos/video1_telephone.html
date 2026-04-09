@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1080, height=1920, initial-scale=1.0">
+  <title>GhostMeter - Video 1</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(180deg, #1a0a2e 0%, #2d1b4e 50%, #1a0a2e 100%);
+      color: white;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      width: 1080px;
+      height: 1920px;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    /* Decorative elements */
+    .bg-circle {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.3) 0%, transparent 70%);
+    }
+    
+    /* Animations */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(60px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes scaleIn { from { opacity: 0; transform: scale(0.3); } to { opacity: 1; transform: scale(1); } }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+    @keyframes glow { 0%, 100% { filter: drop-shadow(0 0 30px rgba(168, 85, 247, 0.6)); } 50% { filter: drop-shadow(0 0 80px rgba(168, 85, 247, 1)); } }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-30px); } }
+    @keyframes scanLine { 0% { top: 0; } 100% { top: 100%; } }
+    @keyframes typing { from { width: 0; } to { width: 100%; } }
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+    
+    .anim-fade { animation: fadeIn 0.8s ease-out forwards; }
+    .anim-scale { animation: scaleIn 0.6s ease-out forwards; }
+    .anim-pulse { animation: pulse 1.5s ease-in-out infinite; }
+    .anim-glow { animation: glow 1.5s ease-in-out infinite; }
+    .anim-float { animation: float 3s ease-in-out infinite; }
+    .anim-bounce { animation: bounce 1s ease-in-out infinite; }
+    
+    .hidden { opacity: 0; }
+    
+    .screen {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px;
+      text-align: center;
+    }
+    
+    /* Phone mockup */
+    .phone {
+      background: linear-gradient(145deg, #2d1b4e, #1a0a2e);
+      border: 8px solid #4c1d95;
+      border-radius: 60px;
+      width: 650px;
+      padding: 30px;
+      box-shadow: 
+        0 0 0 4px rgba(168, 85, 247, 0.3),
+        0 50px 100px rgba(0, 0, 0, 0.5),
+        inset 0 2px 10px rgba(255, 255, 255, 0.1);
+      position: relative;
+    }
+    
+    .phone-notch {
+      position: absolute;
+      top: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 150px;
+      height: 30px;
+      background: #1a0a2e;
+      border-radius: 20px;
+    }
+    
+    .phone-screen {
+      background: #1a0a2e;
+      border-radius: 40px;
+      overflow: hidden;
+      margin-top: 20px;
+    }
+    
+    /* Document card */
+    .document {
+      background: linear-gradient(145deg, #3b2d5e, #2d1b4e);
+      border-radius: 25px;
+      padding: 35px;
+      margin: 20px;
+      border: 2px solid rgba(168, 85, 247, 0.3);
+    }
+    
+    /* Scan overlay */
+    .scan-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 100%;
+      overflow: hidden;
+      border-radius: 40px;
+      pointer-events: none;
+    }
+    
+    .scan-line {
+      position: absolute;
+      width: 100%;
+      height: 6px;
+      background: linear-gradient(90deg, transparent, #a855f7, #f43f5e, #a855f7, transparent);
+      box-shadow: 0 0 20px #a855f7;
+    }
+    
+    /* Result badge */
+    .result-badge {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      border-radius: 50px;
+      padding: 20px 40px;
+      display: inline-flex;
+      align-items: center;
+      gap: 15px;
+      box-shadow: 0 10px 30px rgba(34, 197, 94, 0.3);
+    }
+    
+    /* CTA Button */
+    .cta-btn {
+      background: linear-gradient(135deg, #a855f7, #7c3aed);
+      color: white;
+      padding: 45px 90px;
+      border-radius: 60px;
+      font-size: 44px;
+      font-weight: bold;
+      box-shadow: 
+        0 10px 40px rgba(168, 85, 247, 0.5),
+        inset 0 2px 10px rgba(255, 255, 255, 0.2);
+    }
+    
+    /* Text styles */
+    .hook-text {
+      font-size: 72px;
+      font-weight: bold;
+      line-height: 1.2;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+    
+    .highlight { color: #a855f7; }
+    
+    /* Ghost logo */
+    .ghost-logo {
+      font-size: 200px;
+      line-height: 1;
+    }
+    
+    /* Step indicator */
+    .step-row {
+      display: flex;
+      align-items: center;
+      gap: 25px;
+      background: rgba(168, 85, 247, 0.1);
+      padding: 25px 40px;
+      border-radius: 30px;
+      margin: 15px 0;
+      width: 600px;
+    }
+    
+    .step-num {
+      width: 70px;
+      height: 70px;
+      background: linear-gradient(135deg, #a855f7, #7c3aed);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+    
+    /* Floating ghosts background */
+    .floating-ghost {
+      position: absolute;
+      opacity: 0.15;
+      font-size: 80px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Background decorations -->
+<div class="bg-circle" style="width: 800px; height: 800px; top: -200px; right: -200px;"></div>
+<div class="bg-circle" style="width: 600px; height: 600px; bottom: -100px; left: -100px;"></div>
+<div class="floating-ghost anim-float" style="top: 150px; left: 100px;">👻</div>
+<div class="floating-ghost anim-float" style="top: 200px; right: 120px; animation-delay: 0.5s;">👻</div>
+<div class="floating-ghost anim-float" style="bottom: 300px; left: 150px; animation-delay: 1s;">👻</div>
+<div class="floating-ghost anim-float" style="bottom: 200px; right: 100px; animation-delay: 1.5s;">👻</div>
+
+<!-- ECRAN 1: HOOK -->
+<div class="screen" id="s1">
+  <div id="g1" class="ghost-logo anim-bounce anim-glow hidden" style="margin-bottom: 40px;">👻</div>
+  <h1 id="t1" class="hook-text hidden">Ton telephone peut<br>faire <span class="highlight">ça</span> ?!</h1>
+</div>
+
+<!-- ECRAN 2: DEMO SCAN -->
+<div class="screen" id="s2" style="display: none;">
+  <div class="phone" id="phone1">
+    <div class="phone-notch"></div>
+    <div class="phone-screen">
+      <div id="doc1" class="document hidden">
+        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+          <div style="width: 50px; height: 50px; background: #4c1d95; border-radius: 15px; display: flex; align-items: center; justify-content: center;">
+            <span style="font-size: 28px;">📄</span>
+          </div>
+          <div style="text-align: left;">
+            <p style="font-size: 24px; color: #9ca3af;">Document scanne</p>
+            <p style="font-size: 28px; font-weight: bold;">Facture_2025.pdf</p>
+          </div>
+        </div>
+        <div style="background: rgba(0,0,0,0.3); border-radius: 15px; padding: 25px; text-align: left;">
+          <p style="font-size: 26px; line-height: 1.6; color: #d1d5db;">
+            <span style="color: #a855f7;">Facture #</span>12345<br>
+            <span style="color: #a855f7;">Total:</span> 89,99 EUR<br>
+            <span style="color: #a855f7;">Date:</span> 15/01/2025<br>
+            <span style="color: #a855f7;">Client:</span> Jean Dupont
+          </p>
+        </div>
+      </div>
+      
+      <div id="scan1" class="scan-overlay hidden">
+        <div class="scan-line" style="top: 50%;"></div>
+      </div>
+      
+      <div id="result1" class="hidden" style="padding: 30px;">
+        <div class="result-badge">
+          <span style="font-size: 40px;">✓</span>
+          <span style="font-size: 32px; font-weight: bold;">Texte extrait en 3 sec</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ECRAN 3: STEPS -->
+<div class="screen" id="s3" style="display: none;">
+  <div id="g3" class="ghost-logo anim-glow hidden" style="font-size: 150px; margin-bottom: 50px;">👻</div>
+  
+  <div id="step1" class="step-row hidden">
+    <div class="step-num">1</div>
+    <div style="text-align: left;">
+      <p style="font-size: 32px; font-weight: bold;">Scan</p>
+      <p style="font-size: 24px; color: #9ca3af;">Prendre en photo</p>
+    </div>
+  </div>
+  
+  <div id="step2" class="step-row hidden">
+    <div class="step-num">2</div>
+    <div style="text-align: left;">
+      <p style="font-size: 32px; font-weight: bold;">Texte</p>
+      <p style="font-size: 24px; color: #9ca3af;">Extraction automatique</p>
+    </div>
+  </div>
+  
+  <div id="step3" class="step-row hidden">
+    <div class="step-num">3</div>
+    <div style="text-align: left;">
+      <p style="font-size: 32px; font-weight: bold;">Analyse</p>
+      <p style="font-size: 24px; color: #9ca3af;">Resultat instantane</p>
+    </div>
+  </div>
+  
+  <p id="time1" class="hidden" style="font-size: 80px; font-weight: bold; color: #a855f7; margin-top: 40px;">3 secondes</p>
+</div>
+
+<!-- ECRAN 4: CTA -->
+<div class="screen" id="s4" style="display: none;">
+  <div id="g4" class="ghost-logo anim-bounce anim-glow hidden" style="margin-bottom: 50px;">👻</div>
+  <h1 id="app1" class="hidden" style="font-size: 90px; font-weight: bold; margin-bottom: 20px;">GhostMeter</h1>
+  <p id="tag1" class="hidden" style="font-size: 40px; color: #a855f7; margin-bottom: 60px;">Detecteur de Ghosting</p>
+  <div id="cta1" class="cta-btn anim-pulse hidden">Lien dans la bio →</div>
+</div>
+
+<script>
+function show(id, anim) {
+  var el = document.getElementById(id);
+  el.classList.remove('hidden');
+  if (anim) el.classList.add(anim);
+}
+
+function go(n) {
+  for (var i = 1; i <= 4; i++) {
+    document.getElementById('s' + i).style.display = i === n ? 'flex' : 'none';
+  }
+}
+
+// Ecran 1: Hook
+setTimeout(function() { show('g1', 'anim-bounce'); }, 300);
+setTimeout(function() { show('t1', 'anim-fade'); }, 800);
+
+// Ecran 2: Demo
+setTimeout(function() { go(2); show('phone1', 'anim-scale'); }, 3500);
+setTimeout(function() { show('doc1', 'anim-fade'); }, 4200);
+setTimeout(function() { show('scan1', 'anim-fade'); }, 5000);
+setTimeout(function() { show('result1', 'anim-scale'); }, 6500);
+
+// Ecran 3: Steps
+setTimeout(function() { go(3); show('g3', 'anim-scale'); }, 8500);
+setTimeout(function() { show('step1', 'anim-fade'); }, 9000);
+setTimeout(function() { show('step2', 'anim-fade'); }, 9500);
+setTimeout(function() { show('step3', 'anim-fade'); }, 10000);
+setTimeout(function() { show('time1', 'anim-scale'); }, 10500);
+
+// Ecran 4: CTA
+setTimeout(function() { go(4); show('g4', 'anim-bounce'); }, 12500);
+setTimeout(function() { show('app1', 'anim-fade'); }, 13000);
+setTimeout(function() { show('tag1', 'anim-fade'); }, 13500);
+setTimeout(function() { show('cta1', 'anim-pulse'); }, 14000);
+</script>
+</body>
+</html>
