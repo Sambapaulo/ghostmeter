@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 
-// Types for Google Identity Services
 declare global {
   interface Window {
     google?: {
@@ -12,6 +11,7 @@ declare global {
         }
       }
     }
+    Capacitor?: any
   }
 }
 
@@ -23,6 +23,17 @@ interface GoogleSignInProps {
 
 export default function GoogleSignIn({ onSuccess, onError, language }: GoogleSignInProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const [isAPK, setIsAPK] = useState(false)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search)
+      const isApkMode = urlParams.get('from') === 'apk' || 
+                        localStorage.getItem('ghostmeter_apk_mode') === 'true' ||
+                        (window as any).__GHOSTMETER_APK__ === true
+      setIsAPK(isApkMode)
+    }
+  }, [])
 
   const handleGoogleSignIn = async () => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
@@ -32,12 +43,32 @@ export default function GoogleSignIn({ onSuccess, onError, language }: GoogleSig
       return
     }
 
-    if (!window.google?.accounts?.oauth2) {
-      onError(language === 'fr' ? 'Google Sign-in non disponible. Vérifiez votre connexion.' : 'Google Sign-in unavailable. Check your connection.')
-      return
+    setIsLoading(true)
+
+    // APK Mode: Open in system browser
+    if (isAPK) {
+      try {
+        const redirectUri = encodeURIComponent(window.location.origin + '/auth/callback')
+        const scope = encodeURIComponent('email profile')
+        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=${scope}&prompt=consent`
+        
+        // Open in system browser for APK
+        window.open(authUrl, '_system')
+        setIsLoading(false)
+        return
+      } catch (error) {
+        onError(language === 'fr' ? 'Erreur d\'ouverture du navigateur' : 'Browser open error')
+        setIsLoading(false)
+        return
+      }
     }
 
-    setIsLoading(true)
+    // Web Mode: Use Google Identity Services
+    if (!window.google?.accounts?.oauth2) {
+      onError(language === 'fr' ? 'Google Sign-in non disponible. Vérifiez votre connexion.' : 'Google Sign-in unavailable.')
+      setIsLoading(false)
+      return
+    }
 
     try {
       const tokenClient = window.google.accounts.oauth2.initTokenClient({
@@ -55,7 +86,6 @@ export default function GoogleSignIn({ onSuccess, onError, language }: GoogleSig
                 const userInfo = await userInfoResponse.json()
                 onSuccess(userInfo.email, userInfo.name)
                 
-                // Send to backend
                 await fetch('/api/auth', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
@@ -77,7 +107,7 @@ export default function GoogleSignIn({ onSuccess, onError, language }: GoogleSig
           }
           setIsLoading(false)
         },
-        error_callback: (error: Error) => {
+        error_callback: () => {
           onError(language === 'fr' ? 'Erreur Google' : 'Google error')
           setIsLoading(false)
         },

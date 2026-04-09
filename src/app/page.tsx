@@ -539,7 +539,7 @@ function AuthModal({ isOpen, onClose, onPremiumActivated, mode }: {
 
               <div className='relative mb-3'>
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? 'text' : 'password'} autoComplete='off'
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={t('auth.password', language)}
@@ -557,7 +557,7 @@ function AuthModal({ isOpen, onClose, onPremiumActivated, mode }: {
               {isRegisterMode && mode !== 'save' && (
                 <div className='relative mb-3'>
                   <input
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? 'text' : 'password'} autoComplete='off'
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder={t('auth.confirm_password', language)}
@@ -1825,7 +1825,7 @@ export default function Home() {
           <button onClick={() => setShowMenu(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"><X className="w-5 h-5 text-gray-600 dark:text-gray-300" /></button>
         </div>
         
-        <div className="p-4 overflow-y-auto flex-1 pb-20">
+        <div className="p-4 overflow-y-auto flex-1 pb-20 min-h-0">
           {isPremium && (
             <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl p-3 mb-4 flex items-center gap-2">
               <Crown className="w-5 h-5" /><span className="font-semibold">{t('menu.premium', language)} {t('menu.premium_active', language)}</span>
@@ -2031,10 +2031,26 @@ export default function Home() {
           {/* APK info - Show in APK mode only */}
           {isAPKMode && (
             <div className="border-t border-gray-100 dark:border-gray-700 mt-2 pt-4">
-              <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
-                <p className="text-xs text-purple-600 dark:text-purple-400">
+              <div className='p-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl'>
+                <p className='text-xs text-purple-600 dark:text-purple-400'>
                   📱 {t('menu.app_version', language, { version: '1.19.4' })}
                 </p>
+                <button
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      const cap = (window as any).Capacitor
+                      if (cap?.Plugins?.App) {
+                        window.open('market://details?id=com.ghostmeter.app', '_system')
+                      } else {
+                        window.open('https://play.google.com/store/apps/details?id=com.ghostmeter.app', '_blank')
+                      }
+                    }
+                  }}
+                  className='mt-3 w-full py-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-lg font-medium flex items-center justify-center gap-2 hover:opacity-90 transition-opacity'
+                >
+                  <span>⭐</span>
+                  <span>{language === 'fr' ? 'Noter l\\'application' : 'Rate the app'}</span>
+                </button>
               </div>
             </div>
           )}
