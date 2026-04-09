@@ -2049,7 +2049,7 @@ export default function Home() {
                   className='mt-3 w-full py-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-lg font-medium flex items-center justify-center gap-2 hover:opacity-90 transition-opacity'
                 >
                   <span>⭐</span>
-                  <span>{language === 'fr' ? 'Noter l\\'application' : 'Rate the app'}</span>
+                  <span>{language === 'fr' ? 'Noter l'application' : 'Rate the app'}</span>
                 </button>
               </div>
             </div>
