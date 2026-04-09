@@ -8,6 +8,8 @@ import {
 import dynamic from 'next/dynamic'
 import { Language, languages, t, getStoredLanguage, setStoredLanguage } from '@/lib/translations'
 
+import GoogleSignIn from '@/components/GoogleSignIn'
+
 const OCRUploader = dynamic(() => import('@/components/OCRUploader'), { ssr: false })
 
 // Dynamic imports for Capacitor - only loaded on client side
@@ -559,6 +561,27 @@ function AuthModal({ isOpen, onClose, onPremiumActivated, mode }: {
               >
                 {isLoading ? t('auth.loading', language) : mode === 'save' ? t('auth.save', language) : isRegisterMode ? t('auth.register', language) : t('auth.login', language)}
               </button>
+
+                <div className='relative my-4'>
+                  <div className='absolute inset-0 flex items-center'>
+                    <div className='w-full border-t border-gray-200'></div>
+                  </div>
+                  <div className='relative flex justify-center text-sm'>
+                    <span className='px-2 bg-white text-gray-500'>{language === 'fr' ? 'ou' : 'or'}</span>
+                  </div>
+                </div>
+
+                <GoogleSignIn
+                  onSuccess={(email: string, name: string) => {
+                    localStorage.setItem('ghostmeter_email', email)
+                    onPremiumActivated(email)
+                    setSuccessMessage(t('auth.login_success', language))
+                    setSuccess(true)
+                    setTimeout(() => { onClose() }, 2000)
+                  }}
+                  onError={(err: string) => setError(err)}
+                  language={language}
+                />
               
               {mode === 'login' && (
                 <div className="text-center">
