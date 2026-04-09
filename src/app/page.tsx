@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import {
   Sparkles, Crown, RefreshCw, Share2, Menu, X, History,
   Trash2, ChevronRight, ChevronLeft, Check, Ghost, Tag, Camera, ClipboardPaste, LogOut, Mail, Info, FileText, CreditCard, Loader2, MessageCircle, Send, MessageSquare, Copy, Heart, Sun, Moon, Plus, Bell, BellOff, AlertCircle, Globe
-} from 'lucide-react'
+, Eye, EyeOff } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { Language, languages, t, getStoredLanguage, setStoredLanguage } from '@/lib/translations'
 
@@ -329,6 +329,7 @@ function AuthModal({ isOpen, onClose, onPremiumActivated, mode }: {
   const [success, setSuccess] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
   const [isRegisterMode, setIsRegisterMode] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const [language, setLanguage] = useState<Language>('fr') // Local language state for AuthModal
 
   // Reset form when modal opens/closes or mode changes
@@ -536,22 +537,40 @@ function AuthModal({ isOpen, onClose, onPremiumActivated, mode }: {
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 mb-3"
               />
 
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={t('auth.password', language)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 mb-3"
-              />
+              <div className='relative mb-3'>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder={t('auth.password', language)}
+                  className='w-full px-4 py-3 pr-12 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500'
+                />
+                <button
+                  type='button'
+                  onClick={() => setShowPassword(!showPassword)}
+                  className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600'
+                >
+                  {showPassword ? <EyeOff className='w-5 h-5' /> : <Eye className='w-5 h-5' />}
+                </button>
+              </div>
 
               {isRegisterMode && mode !== 'save' && (
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder={t('auth.confirm_password', language)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 mb-3"
-                />
+                <div className='relative mb-3'>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder={t('auth.confirm_password', language)}
+                    className='w-full px-4 py-3 pr-12 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500'
+                  />
+                  <button
+                    type='button'
+                    onClick={() => setShowPassword(!showPassword)}
+                    className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600'
+                  >
+                    {showPassword ? <EyeOff className='w-5 h-5' /> : <Eye className='w-5 h-5' />}
+                  </button>
+                </div>
               )}
 
               <button
