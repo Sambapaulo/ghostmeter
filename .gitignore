@@ -67,3 +67,4 @@ capacitor.config.json
 .secrets/
 
 
+.env.local
