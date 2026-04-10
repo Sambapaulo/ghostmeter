@@ -27,15 +27,12 @@ export async function POST(request: NextRequest) {
 
     const zai = await ZAI.create();
 
-    const systemPrompt = `Tu es un expert en analyse de conversations romantiques et de relations. Analyse les conversations pour detecter les signes de ghosting, interet, reciprocite et manipulation.
+    const systemPrompt = `Tu es un expert en analyse de conversations romantiques. Analyse les conversations pour detecter les signes de ghosting, interet, reciprocite et manipulation.
 
 REGLES CRITIQUES:
-1. Les expressions d'amour ("je t'aime", "love you", "moi aussi je t'aime", etc.) indiquent un FORT INTERET MUTUEL - score d'interet TRES ELEVE (85-98%), PAS faible!
-2. La reciprocite (les deux personnes s'expriment de maniere egale) est un signe TRES POSITIF
-3. Les messages courts ne sont PAS toujours negatifs - ils peuvent etre normaux
-4. Les reponses rapides et enthousiastes indiquent un fort interet
-5. Le ghosting signifie ABSENCE DE REPONSE pendant longtemps, PAS des reponses courtes
-6. Le context est: crush, ex, new, talking, situationship, friend, other
+1. Les expressions d'amour ("je t'aime", "love you", "moi aussi je t'aime") indiquent un FORT INTERET MUTUEL - score d'interet TRES ELEVE (85-98%)
+2. La reciprocite est un signe TRES POSITIF
+3. Le ghosting signifie ABSENCE DE REPONSE pendant longtemps, PAS des reponses courtes
 
 Reponds UNIQUEMENT avec un JSON valide (sans markdown, sans backticks):
 {
@@ -43,35 +40,17 @@ Reponds UNIQUEMENT avec un JSON valide (sans markdown, sans backticks):
   "manipulationScore": 0-100,
   "ghostingScore": 0-100,
   "overallScore": 0-100,
-  "advice": "conseil personnalise",
-  "punchline": "phrase courte et percutante",
-  "highlights": {
-    "positive": ["point positif 1"],
-    "negative": ["point negatif 1"],
-    "neutral": []
-  },
-  "vibe": "description de l'ambiance",
-  "badges": ["badge1", "badge2"]
-}
-
-EXEMPLES D'ANALYSE CORRECTE:
-
-1. "Toi: je t'aime\nLui/Elle: moi aussi je t'aime"
-   - interestScore: 95
-   - ghostingScore: 3
-   - punchline: "Crush confirmee !"
-   - badges: ["Amour mutuel", "Reciproque"]
-
-2. "Toi: salut\nLui/Elle: (pas de reponse depuis 3 jours)"
-   - interestScore: 10
-   - ghostingScore: 90
-   - punchline: "Ghost imminent..."
-   - badges: ["Ghosting"]`;
+  "advice": "conseil",
+  "punchline": "phrase courte",
+  "highlights": {"positive": [], "negative": [], "neutral": []},
+  "vibe": "ambiance",
+  "badges": ["badge"]
+}`;
 
     const completion = await zai.chat.completions.create({
       messages: [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: `Analyse cette conversation (context: ${context || 'crush'}):\n\n${conversation}` }
+        { role: 'user', content: `Analyse: ${conversation}` }
       ],
       temperature: 0.3,
     });
@@ -87,7 +66,6 @@ EXEMPLES D'ANALYSE CORRECTE:
     
     analysis = JSON.parse(cleanedResponse.trim());
 
-    // Clamp values
     analysis.interestScore = Math.max(0, Math.min(100, Number(analysis.interestScore) || 50));
     analysis.manipulationScore = Math.max(0, Math.min(100, Number(analysis.manipulationScore) || 0));
     analysis.ghostingScore = Math.max(0, Math.min(100, Number(analysis.ghostingScore) || 0));
