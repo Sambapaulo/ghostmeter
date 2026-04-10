@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import ZAI from 'z-ai-web-dev-sdk';
+import OpenAI from 'openai';
 
 interface AnalysisResult {
   interestScore: number;
@@ -17,6 +17,10 @@ interface AnalysisResult {
   badges: string[];
 }
 
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
 export async function POST(request: NextRequest) {
   try {
     const { conversation, context } = await request.json();
@@ -25,16 +29,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Conversation requise' }, { status: 400 });
     }
 
-    const zai = await ZAI.create();
+    const systemPrompt = `Tu es un expert en analyse de conversations romantiques. Analyse les conversations pour détecter les signes de ghosting, intérêt, réciprocité et manipulation.
 
-    const systemPrompt = `Tu es un expert en analyse de conversations romantiques. Analyse les conversations pour detecter les signes de ghosting, interet, reciprocite et manipulation.
+RÈGLES CRITIQUES:
+1. Les expressions d'amour ("je t'aime", "love you", "moi aussi je t'aime") indiquent un FORT INTÉRÊT MUTUEL - score d'intérêt TRÈS ÉLEVÉ (85-98%)
+2. La réciprocité est un signe TRÈS POSITIF
+3. Le ghosting signifie ABSENCE DE RÉPONSE pendant longtemps, PAS des réponses courtes
 
-REGLES CRITIQUES:
-1. Les expressions d'amour ("je t'aime", "love you", "moi aussi je t'aime") indiquent un FORT INTERET MUTUEL - score d'interet TRES ELEVE (85-98%)
-2. La reciprocite est un signe TRES POSITIF
-3. Le ghosting signifie ABSENCE DE REPONSE pendant longtemps, PAS des reponses courtes
-
-Reponds UNIQUEMENT avec un JSON valide (sans markdown, sans backticks):
+Réponds UNIQUEMENT avec un JSON valide (sans markdown, sans backticks):
 {
   "interestScore": 0-100,
   "manipulationScore": 0-100,
@@ -47,31 +49,28 @@ Reponds UNIQUEMENT avec un JSON valide (sans markdown, sans backticks):
   "badges": ["badge"]
 }`;
 
-    const completion = await zai.chat.completions.create({
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: `Analyse: ${conversation}` }
+        { role: 'user', content: `Analyse cette conversation (contexte: ${context || 'crush'}):\n\n${conversation}` }
       ],
       temperature: 0.3,
+      response_format: { type: 'json_object' },
     });
 
     const responseContent = completion.choices[0]?.message?.content;
-    if (!responseContent) throw new Error('Pas de reponse');
+    if (!responseContent) throw new Error('Pas de réponse');
 
-    let analysis: AnalysisResult;
-    let cleanedResponse = responseContent.trim();
-    if (cleanedResponse.startsWith('```json')) cleanedResponse = cleanedResponse.slice(7);
-    if (cleanedResponse.startsWith('```')) cleanedResponse = cleanedResponse.slice(3);
-    if (cleanedResponse.endsWith('```')) cleanedResponse = cleanedResponse.slice(0, -3);
-    
-    analysis = JSON.parse(cleanedResponse.trim());
+    let analysis: AnalysisResult = JSON.parse(responseContent);
 
+    // Validation et sanitisation
     analysis.interestScore = Math.max(0, Math.min(100, Number(analysis.interestScore) || 50));
     analysis.manipulationScore = Math.max(0, Math.min(100, Number(analysis.manipulationScore) || 0));
     analysis.ghostingScore = Math.max(0, Math.min(100, Number(analysis.ghostingScore) || 0));
     analysis.overallScore = Math.max(0, Math.min(100, Number(analysis.overallScore) || 50));
-    
-    if (!analysis.advice) analysis.advice = 'Continue a observer les signaux.';
+
+    if (!analysis.advice) analysis.advice = 'Continue à observer les signaux.';
     if (!analysis.punchline) analysis.punchline = 'Analyse en cours...';
     if (!analysis.vibe) analysis.vibe = 'Neutre';
     if (!analysis.badges) analysis.badges = [];
@@ -83,7 +82,6 @@ Reponds UNIQUEMENT avec un JSON valide (sans markdown, sans backticks):
     return NextResponse.json({ success: true, analysis });
   } catch (error) {
     console.error('Analysis error:', error);
-console.error('Error details:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
     return NextResponse.json({ error: 'Erreur lors de l\'analyse' }, { status: 500 });
   }
 }
