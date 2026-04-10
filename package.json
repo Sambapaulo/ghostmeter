@@ -2,7 +2,7 @@
   "name": "ghostmeter",
   "version": "1.19.4",
   "private": true,
-  "description": "GhostMeter - Analyse ta conversation de crush avec l'IA",
+  "description": "GhostMeter : Anti-Ghosting - Détectez le ghosting et analysez vos conversations relationnelles",
   "author": "GhostMeter Team",
   "license": "MIT",
   "scripts": {

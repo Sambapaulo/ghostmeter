@@ -1,7 +1,7 @@
 {
-  "name": "GhostMeter",
+  "name": "GhostMeter : Anti-Ghosting",
   "short_name": "GhostMeter",
-  "description": "Analyse tes conversations avec l'IA - Décryptez le sens caché de vos échanges",
+  "description": "Détectez le ghosting et analysez vos conversations relationnelles.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -75,14 +75,22 @@
       "label": "Résultats de l'analyse"
     }
   ],
-  "categories": ["lifestyle", "entertainment"],
+  "categories": [
+    "lifestyle",
+    "entertainment"
+  ],
   "shortcuts": [
     {
       "name": "Nouvelle Analyse",
       "short_name": "Analyser",
       "description": "Analyser une nouvelle conversation",
       "url": "/",
-      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ],
   "related_applications": [],
