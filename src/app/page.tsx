@@ -2694,7 +2694,7 @@ export default function Home() {
         
         <div className="pt-20 pb-8 px-4 flex flex-col items-center justify-center min-h-screen">
           {/* Animated Ghost Logo that slides across the screen */}
-          <div className="absolute top-20 left-0 right-0 h-24 overflow-hidden pointer-events-none">
+          <div className="fixed inset-0 pointer-events-none z-0">
             <div className="ghost-slide">
               <GhostLogo size={80} />
             </div>

@@ -1,4 +1,4 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
@@ -184,28 +184,34 @@
 }
 
 @keyframes ghost-dance {
-  0% { 
-    transform: translateX(calc(100vw - 100px)) translateY(0px) rotate(0deg); 
-    opacity: 1;
+  0% {
+    transform: translate(0vw, 0vh) rotate(0deg);
+    opacity: 0.9;
   }
-  10% { 
-    transform: translateX(calc(80vw - 80px)) translateY(-5px) rotate(-5deg); 
+  15% {
+    transform: translate(85vw, 5vh) rotate(15deg);
   }
-  25% { 
-    transform: translateX(calc(50vw - 40px)) translateY(5px) rotate(5deg); 
+  25% {
+    transform: translate(90vw, 40vh) rotate(-10deg);
   }
-  50% { 
-    transform: translateX(0px) translateY(0px) rotate(-5deg); 
+  40% {
+    transform: translate(60vw, 80vh) rotate(20deg);
   }
-  75% { 
-    transform: translateX(calc(50vw - 40px)) translateY(-5px) rotate(5deg); 
+  50% {
+    transform: translate(20vw, 85vh) rotate(-15deg);
   }
-  90% { 
-    transform: translateX(calc(80vw - 80px)) translateY(5px) rotate(-5deg); 
+  65% {
+    transform: translate(5vw, 50vh) rotate(10deg);
   }
-  100% { 
-    transform: translateX(calc(100vw - 100px)) translateY(0px) rotate(0deg); 
-    opacity: 1;
+  75% {
+    transform: translate(15vw, 15vh) rotate(-20deg);
+  }
+  85% {
+    transform: translate(50vw, 5vh) rotate(15deg);
+  }
+  100% {
+    transform: translate(0vw, 0vh) rotate(0deg);
+    opacity: 0.9;
   }
 }
 
@@ -236,7 +242,7 @@
 }
 
 .ghost-slide {
-  animation: ghost-dance 6s ease-in-out infinite;
+  animation: ghost-dance 15s ease-in-out infinite;
   position: absolute;
   left: 0;
 }
