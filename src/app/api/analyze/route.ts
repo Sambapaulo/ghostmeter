@@ -83,6 +83,7 @@ Reponds UNIQUEMENT avec un JSON valide (sans markdown, sans backticks):
     return NextResponse.json({ success: true, analysis });
   } catch (error) {
     console.error('Analysis error:', error);
+console.error('Error details:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
     return NextResponse.json({ error: 'Erreur lors de l\'analyse' }, { status: 500 });
   }
 }
