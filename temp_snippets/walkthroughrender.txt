@@ -1,0 +1,11 @@
+
+        {/* Walkthrough overlay */}
+        {showWalkthrough && (
+          <Walkthrough 
+            onComplete={() => {
+              setShowWalkthrough(false)
+              localStorage.setItem('ghostmeter_walkthrough', 'true')
+            }}
+            language={language}
+          />
+        )}

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useCallback } from 'react'
 import {
@@ -9,6 +9,7 @@ import dynamic from 'next/dynamic'
 import { Language, languages, t, getStoredLanguage, setStoredLanguage } from '@/lib/translations'
 
 import GoogleSignIn from '@/components/GoogleSignIn'
+import Walkthrough from '@/components/Walkthrough'
 
 const OCRUploader = dynamic(() => import('@/components/OCRUploader'), { ssr: false })
 
@@ -648,6 +649,7 @@ export default function Home() {
   const [showAbout, setShowAbout] = useState(false)
   const [showCGU, setShowCGU] = useState(false)
   const [showContact, setShowContact] = useState(false)
+  const [showWalkthrough, setShowWalkthrough] = useState(false)
   const [authMode, setAuthMode] = useState<'save' | 'login'>('login')
   
   // Language state
@@ -721,6 +723,12 @@ export default function Home() {
       }
     }
     requestNotificationPermissionAsync()
+
+    // Check if first visit
+    const hasSeenWalkthrough = localStorage.getItem('ghostmeter_walkthrough')
+    if (!hasSeenWalkthrough) {
+      setShowWalkthrough(true)
+    }
     
     // Maintenance mode disabled - not needed for this app
     // const checkMaintenance = async () => {
@@ -1931,6 +1939,24 @@ export default function Home() {
               <ChevronRight className="w-4 h-4 text-gray-300" />
             </button>
           </div>
+          {/* Tutorial button */}
+          <div className="border-t border-gray-100 dark:border-gray-700 mt-2 pt-4">
+            <button
+              onClick={() => {
+                localStorage.removeItem('ghostmeter_walkthrough')
+                setShowWalkthrough(true)
+                setShowMenu(false)
+              }}
+              className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
+            >
+              <span className="text-xl">📖</span>
+              <div className="flex-1 text-left">
+                <p className="font-medium">{language === 'fr' ? 'Revoir le tutoriel' : 'Replay tutorial'}</p>
+                <p className="text-xs text-gray-400">{language === 'fr' ? 'Guide de démarrage' : 'Getting started guide'}</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-gray-300" />
+            </button>
+          </div>
           
           {/* Dark Mode Toggle */}
           <div className="border-t border-gray-100 dark:border-gray-700 mt-4 pt-4">
@@ -2616,6 +2642,17 @@ export default function Home() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
         <MenuDrawer />
+
+        {/* Walkthrough overlay */}
+        {showWalkthrough && (
+          <Walkthrough
+            onComplete={() => {
+              setShowWalkthrough(false)
+              localStorage.setItem('ghostmeter_walkthrough', 'true')
+            }}
+            language={language}
+          />
+        )}
         <HistoryModal />
         <PremiumModal />
         <AboutModal />
@@ -2771,6 +2808,17 @@ export default function Home() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
         <MenuDrawer />
+
+        {/* Walkthrough overlay */}
+        {showWalkthrough && (
+          <Walkthrough
+            onComplete={() => {
+              setShowWalkthrough(false)
+              localStorage.setItem('ghostmeter_walkthrough', 'true')
+            }}
+            language={language}
+          />
+        )}
         <HistoryModal />
         <PremiumModal />
         <AboutModal />
@@ -2860,6 +2908,17 @@ export default function Home() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
         <MenuDrawer />
+
+        {/* Walkthrough overlay */}
+        {showWalkthrough && (
+          <Walkthrough
+            onComplete={() => {
+              setShowWalkthrough(false)
+              localStorage.setItem('ghostmeter_walkthrough', 'true')
+            }}
+            language={language}
+          />
+        )}
         <PremiumModal />
         
         <div className="fixed top-0 left-0 right-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-100 dark:border-gray-700">

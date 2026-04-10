@@ -1,0 +1,6 @@
+
+    // Check if first visit - show walkthrough
+    const hasSeenWalkthrough = localStorage.getItem('ghostmeter_walkthrough')
+    if (!hasSeenWalkthrough) {
+      setShowWalkthrough(true)
+    }
