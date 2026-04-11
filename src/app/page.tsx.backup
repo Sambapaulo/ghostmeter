@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useCallback } from 'react'
 import {
@@ -331,10 +331,6 @@ function AuthModal({ isOpen, onClose, onPremiumActivated, mode }: {
   const [successMessage, setSuccessMessage] = useState('')
   const [isRegisterMode, setIsRegisterMode] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [forgotPasswordMode, setForgotPasswordMode] = useState(false)
-  const [forgotEmail, setForgotEmail] = useState('')
-  const [forgotLoading, setForgotLoading] = useState(false)
-  const [forgotSuccess, setForgotSuccess] = useState(false)
   const [language, setLanguage] = useState<Language>('fr') // Local language state for AuthModal
 
   // Reset form when modal opens/closes or mode changes
@@ -346,9 +342,6 @@ function AuthModal({ isOpen, onClose, onPremiumActivated, mode }: {
       setError('')
       setSuccess(false)
       setIsRegisterMode(false)
-      setForgotPasswordMode(false)
-      setForgotEmail('')
-      setForgotSuccess(false)
     }
   }, [isOpen, mode])
 
@@ -491,27 +484,6 @@ function AuthModal({ isOpen, onClose, onPremiumActivated, mode }: {
     }
   }
 
-  const handleForgotPassword = async () => {
-    if (!forgotEmail || !forgotEmail.includes('@')) {
-      setError(language === 'fr' ? 'Email invalide' : 'Invalid email')
-      return
-    }
-    setForgotLoading(true)
-    setError('')
-    try {
-      const res = await fetch('/api/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'request', email: forgotEmail.toLowerCase() })
-      })
-      setForgotSuccess(true)
-    } catch (e) {
-      setError(language === 'fr' ? 'Erreur de connexion' : 'Connection error')
-    } finally {
-      setForgotLoading(false)
-    }
-  }
-
   const handleSubmit = () => {
     if (mode === 'save') {
       handleSave()
@@ -631,55 +603,7 @@ function AuthModal({ isOpen, onClose, onPremiumActivated, mode }: {
                   language={language}
                 />
               
-              {mode === 'login' && !forgotPasswordMode && !forgotSuccess && (
-                <button 
-                  onClick={() => setForgotPasswordMode(true)}
-                  className="text-sm text-purple-500 font-medium w-full text-center mb-2"
-                >
-                  {language === 'fr' ? 'Mot de passe oublie ?' : 'Forgot password?'}
-                </button>
-              )}
-
-              {forgotPasswordMode && !forgotSuccess && (
-                <>
-                  <p className="text-sm text-gray-500 mb-3 text-center">
-                    {language === 'fr' ? 'Entrez votre email pour recevoir un lien' : 'Enter your email to receive a reset link'}
-                  </p>
-                  <input
-                    type="email"
-                    value={forgotEmail}
-                    onChange={(e) => setForgotEmail(e.target.value)}
-                    placeholder="votre@email.com"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 mb-3"
-                  />
-                  <button
-                    onClick={handleForgotPassword}
-                    disabled={forgotLoading}
-                    className="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium hover:opacity-90 disabled:opacity-50 mb-3"
-                  >
-                    {forgotLoading ? '...' : (language === 'fr' ? 'Envoyer le lien' : 'Send link')}
-                  </button>
-                  <button
-                    onClick={() => setForgotPasswordMode(false)}
-                    className="text-sm text-gray-500 w-full text-center"
-                  >
-                    {language === 'fr' ? 'Retour' : 'Back'}
-                  </button>
-                </>
-              )}
-
-              {forgotSuccess && (
-                <div className="text-center py-4">
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Check className="w-6 h-6 text-green-500" />
-                  </div>
-                  <p className="text-green-600 font-medium text-sm">
-                    {language === 'fr' ? 'Email envoye ! Verifiez votre boite.' : 'Email sent! Check your inbox.'}
-                  </p>
-                </div>
-              )}
-
-              {mode === 'login' && !forgotPasswordMode && !forgotSuccess && (
+              {mode === 'login' && (
                 <div className="text-center">
                   <button 
                     onClick={() => setIsRegisterMode(!isRegisterMode)}
