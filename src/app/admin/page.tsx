@@ -271,6 +271,7 @@ export default function AdminPage() {
           messageId: replyModal.message.id,
           replyMessage: replyText,
           adminPassword: password
+            plan
         })
       })
       const data = await res.json()
@@ -382,6 +383,7 @@ export default function AdminPage() {
           body: newsletterBody,
           recipients,
           adminPassword: password
+            plan
         })
       })
       const data = await res.json()
@@ -515,6 +517,7 @@ export default function AdminPage() {
           email, 
           action, 
           adminPassword: password 
+            plan
         })
       })
       const data = await res.json()
@@ -543,6 +546,7 @@ export default function AdminPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ adminPassword: password })
+            plan
       })
       const data = await res.json()
       
@@ -1532,6 +1536,16 @@ Nous avons une grande nouvelle à vous annoncer..."
                                 </span>
                                 <p className="text-xs text-gray-400 mt-1">
                                   {user.premiumSource === 'paypal' ? '💳 PayPal' : user.premiumSource === 'admin' ? '👤 Admin' : '❓ Inconnu'}
+                                  {user.premiumPlan && (
+                                    <p className="text-xs text-purple-600 mt-0.5">
+                                      📦 {user.premiumPlan === '1month' ? '1 mois' : user.premiumPlan === '3months' ? '3 mois' : '12 mois'}
+                                    </p>
+                                  )}
+                                  {user.premiumExpiresAt && (
+                                    <p className="text-xs text-orange-600 mt-0.5">
+                                      ⏰ Expire: {new Date(user.premiumExpiresAt).toLocaleDateString('fr-FR')}
+                                    </p>
+                                  )}
                                 </p>
                               </div>
                             ) : (
@@ -1904,8 +1918,6 @@ Nous avons une grande nouvelle à vous annoncer..."
     </div>
   )
 }
-
-
 
 
 
