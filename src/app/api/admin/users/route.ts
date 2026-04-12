@@ -92,7 +92,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { email, action, adminPassword } = body
+    const { email, action, adminPassword, plan } = body
 
     const currentSettings = await getSettings()
     const envPassword = getAdminPassword()
@@ -139,9 +139,41 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    if (action === 'testPremium') {
+      // Simuler un abonnement payant pour les tests
+      const planName = plan || '3months'
+      const now = new Date()
+      let expiresAt: Date
+      
+      switch (planName) {
+        case '1month':
+          expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
+          break
+        case '3months':
+          expiresAt = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000)
+          break
+        case '12months':
+          expiresAt = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000)
+          break
+        default:
+          expiresAt = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000)
+      }
+      
+      user.isPremium = true
+      user.premiumSince = now.toISOString()
+      user.premiumPlan = planName
+      user.premiumExpiresAt = expiresAt.toISOString()
+      user.adminGranted = false
+      user.paypalOrderId = 'TEST_' + Date.now()
+      await kv.set(key, user)
+      return NextResponse.json({
+        success: true,
+        message: 'Premium TEST active pour ' + email + ' - Plan: ' + planName + ' - Expire: ' + expiresAt.toLocaleDateString('fr-FR')
+      })
+    }
+
     if (action === 'simulateExpiration') {
-      // Mettre la date d'expiration dans le passe
-      user.premiumExpiresAt = new Date(Date.now() - 86400000).toISOString() // Hier
+      user.premiumExpiresAt = new Date(Date.now() - 86400000).toISOString()
       user.adminGranted = false
       await kv.set(key, user)
       return NextResponse.json({

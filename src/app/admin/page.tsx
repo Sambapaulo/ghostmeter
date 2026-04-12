@@ -499,7 +499,7 @@ export default function AdminPage() {
     }
   }
 
-  const handleUserAction = async (email: string, action: 'addPremium' | 'removePremium' | 'deleteUser' | 'simulateExpiration') => {
+  const handleUserAction = async (email: string, action: 'addPremium' | 'removePremium' | 'deleteUser' | 'simulateExpiration' | 'testPremium', plan?: string) => {
     if (action === 'deleteUser') {
       if (!confirm(`Êtes-vous sûr de vouloir supprimer le compte ${email} ?`)) {
         return
@@ -1571,6 +1571,34 @@ Nous avons une grande nouvelle à vous annoncer..."
                               </button>
                             )}
                             <button
+                            {!user.isPremium && (
+                              <>
+                                <button
+                                  onClick={() => handleUserAction(user.email, 'testPremium', '1month')}
+                                  disabled={userActionLoading === user.email}
+                                  className="p-2 hover:bg-purple-100 rounded-lg text-purple-600 transition-colors disabled:opacity-50 text-[10px] font-medium"
+                                  title="Test 1 mois"
+                                >
+                                  1M
+                                </button>
+                                <button
+                                  onClick={() => handleUserAction(user.email, 'testPremium', '3months')}
+                                  disabled={userActionLoading === user.email}
+                                  className="p-2 hover:bg-purple-100 rounded-lg text-purple-600 transition-colors disabled:opacity-50 text-[10px] font-medium"
+                                  title="Test 3 mois"
+                                >
+                                  3M
+                                </button>
+                                <button
+                                  onClick={() => handleUserAction(user.email, 'testPremium', '12months')}
+                                  disabled={userActionLoading === user.email}
+                                  className="p-2 hover:bg-purple-100 rounded-lg text-purple-600 transition-colors disabled:opacity-50 text-[10px] font-medium"
+                                  title="Test 12 mois"
+                                >
+                                  12M
+                                </button>
+                              </>
+                            )}
                               onClick={() => handleUserAction(user.email, 'deleteUser')}
                               disabled={userActionLoading === user.email}
                               className="p-2 hover:bg-red-100 rounded-lg text-red-500 transition-colors disabled:opacity-50"
@@ -1876,6 +1904,11 @@ Nous avons une grande nouvelle à vous annoncer..."
     </div>
   )
 }
+
+
+
+
+
 
 
 
