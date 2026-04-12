@@ -1,0 +1,17 @@
+{
+  "users": {
+    "des@gmail.com": {
+      "email": "des@gmail.com",
+      "password": "abac58a91fb094528a76d3291d10a9bbacbe8e3ee8ac2977f7a995eb6e9c8417",
+      "isPremium": false,
+      "premiumSince": null,
+      "analysesCount": 0,
+      "createdAt": "2026-04-12T22:20:48.002Z",
+      "lastActive": "2026-04-12T23:02:44.205Z",
+      "sessionId": "2e035fb7f9ebc6ef1fcf50328f9f3ead274fffccf19fc05202a6e256adfcf4ca",
+      "sessionCreatedAt": "2026-04-12T23:02:44.205Z"
+    }
+  },
+  "tokens": {},
+  "promos": {}
+}

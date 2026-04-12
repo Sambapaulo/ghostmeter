@@ -68,3 +68,4 @@ capacitor.config.json
 
 
 .env.local
+.env*.local

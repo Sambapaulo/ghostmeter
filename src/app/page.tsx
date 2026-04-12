@@ -10,6 +10,8 @@ import { Language, languages, t, getStoredLanguage, setStoredLanguage } from '@/
 
 import GoogleSignIn from '@/components/GoogleSignIn'
 import Walkthrough from '@/components/Walkthrough'
+import PaywallModal from '@/components/PaywallModal'
+import PaymentModal from '@/components/PaymentModal'
 
 const OCRUploader = dynamic(() => import('@/components/OCRUploader'), { ssr: false })
 
@@ -705,6 +707,9 @@ export default function Home() {
   const [conversation, setConversation] = useState('')
   const [selectedContext, setSelectedContext] = useState('crush')
   const [remaining, setRemaining] = useState(3)
+  const [showPaywall, setShowPaywall] = useState(false)
+  const [showPayment, setShowPayment] = useState(false)
+  const [selectedPlan, setSelectedPlan] = useState<'1month' | '3months' | '12months'>('3months')
   const [isPremium, setIsPremium] = useState(false)
   const [userEmail, setUserEmail] = useState<string | null>(null)
   
@@ -719,7 +724,7 @@ export default function Home() {
   
   const [showMenu, setShowMenu] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
-  const [showPremium, setShowPremium] = useState(false)
+  
   const [showOCR, setShowOCR] = useState(false)
   const [showAuth, setShowAuth] = useState(false)
   const [showAbout, setShowAbout] = useState(false)
@@ -1212,8 +1217,8 @@ export default function Home() {
       } else if (showCoachHistory) {
         setShowCoachHistory(false)
         return true
-      } else if (showPremium) {
-        setShowPremium(false)
+      } else if (showPaywall) {
+        // removed
         return true
       } else if (showAuth) {
         setShowAuth(false)
@@ -1299,7 +1304,7 @@ export default function Home() {
       delete (window as any).handleNativeBackButton
       delete (window as any).exitGhostMeterApp
     }
-  }, [appState, showOCR, showMenu, showHistory, showCoachHistory, showPremium, showAuth, showAbout, showCGU, showContact, showNotificationSettings, isAPKMode])
+  }, [appState, showOCR, showMenu, showHistory, showCoachHistory, showPaywall, showAuth, showAbout, showCGU, showContact, showNotificationSettings, isAPKMode])
 
   // Check for app updates on mount
   useEffect(() => {
@@ -1488,6 +1493,10 @@ export default function Home() {
 
   const handleAnalyze = async () => {
     if (conversation.trim().length < 20) return
+    if (!isPremium && remaining <= 0) {
+      setShowPaywall(true)
+      return
+    }
     
     setIsLoading(true)
     setAppState('analyzing')
@@ -1546,7 +1555,7 @@ export default function Home() {
     }
 
     if (!isPremium) {
-      setShowPremium(true)
+      setShowPaywall(true)
       return
     }
 
@@ -1604,7 +1613,7 @@ export default function Home() {
 
     // Vérifier la limite pour les utilisateurs gratuits
     if (!isPremium && coachQuestionsRemaining <= 0) {
-      setShowPremium(true)
+      setShowPaywall(true)
       return
     }
 
@@ -1749,7 +1758,7 @@ export default function Home() {
     if (!userEmail) {
       // Show auth modal first to create/login account
       setAuthMode('login')
-      setShowPremium(false)
+      // removed
       setPromoCode('')
       setPromoResult(null)
       setShowAuth(true)
@@ -1805,7 +1814,7 @@ export default function Home() {
           setIsPremium(true)
           setRemaining(999)
           localStorage.setItem('ghostmeter_premium', 'true')
-          setShowPremium(false)
+          // removed
           setPromoCode('')
           setPromoResult(null)
           alert('🎉 Premium activé gratuitement !')
@@ -1967,7 +1976,7 @@ export default function Home() {
           
           {!isPremium && (
             <button 
-              onClick={() => { setShowPremium(true); setShowMenu(false) }}
+              onClick={() => { setShowPaywall(true); setShowMenu(false) }}
               className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors mt-1"
             >
               <Crown className="w-5 h-5 text-yellow-500" />
@@ -2198,174 +2207,6 @@ export default function Home() {
       </div>
     </div>
   )
-
-  // PREMIUM MODAL
-  const PremiumModal = () => {
-    const getPackPrice = () => {
-      switch (selectedPack) {
-        case '1month': return settings.pack1Month
-        case '3months': return settings.pack3Months
-        case '12months': return settings.pack12Months
-        default: return settings.pack3Months
-      }
-    }
-
-    // Calculate discounted price dynamically based on current pack
-    const getCurrentDiscountedPrice = () => {
-      const basePrice = getPackPrice()
-      if (!promoResult?.valid) return basePrice
-      if (promoResult.discountType === 'percent') {
-        return basePrice * (1 - promoResult.discount / 100)
-      } else {
-        return Math.max(0, basePrice - promoResult.discount)
-      }
-    }
-
-    const getPackMonths = () => {
-      switch (selectedPack) {
-        case '1month': return 1
-        case '3months': return 3
-        case '12months': return 12
-        default: return 3
-      }
-    }
-
-    return (
-      <div className={`fixed inset-0 z-50 transition-all ${showPremium ? 'visible' : 'invisible'}`}>
-        <div className="absolute inset-0 bg-black/50" onClick={() => setShowPremium(false)} />
-        <div className="absolute inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
-          <div className="bg-gradient-to-r from-purple-500 via-pink-500 to-violet-500 p-6 text-white text-center relative">
-            <button onClick={() => setShowPremium(false)} className="absolute top-3 right-3 p-1 hover:bg-white/20 rounded-full"><X className="w-5 h-5" /></button>
-            <Crown className="w-12 h-12 mx-auto mb-3" />
-            <h2 className="text-2xl font-bold">{t('premium.title', language)}</h2>
-            <p className="text-white/80 mt-1">{t('premium.subtitle', language)}</p>
-          </div>
-          
-          {/* Pack Selection */}
-          <div className="p-4 border-b border-gray-100 dark:border-gray-700">
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3 text-center">{t('premium.choose_plan', language)}</p>
-            <div className="grid grid-cols-3 gap-2">
-              {/* 1 Month */}
-              <button
-                onClick={() => setSelectedPack('1month')}
-                className={`p-3 rounded-xl text-center transition-all ${
-                  selectedPack === '1month' 
-                    ? 'bg-purple-100 dark:bg-purple-900/50 border-2 border-purple-500' 
-                    : 'bg-gray-50 dark:bg-gray-700 border-2 border-transparent hover:border-purple-300'
-                }`}
-              >
-                <p className="text-lg font-bold text-purple-600 dark:text-purple-400">{settings.pack1Month.toFixed(2)}{settings.premiumCurrency}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{t('premium.pack_1month', language)}</p>
-                <p className="text-[10px] text-gray-400">{settings.pack1Month.toFixed(2)}{settings.premiumCurrency}{t('premium.per_month_short', language)}</p>
-              </button>
-
-              {/* 3 Months */}
-              <button
-                onClick={() => setSelectedPack('3months')}
-                className={`p-3 rounded-xl text-center transition-all relative ${
-                  selectedPack === '3months' 
-                    ? 'bg-purple-100 dark:bg-purple-900/50 border-2 border-purple-500' 
-                    : 'bg-gray-50 dark:bg-gray-700 border-2 border-transparent hover:border-purple-300'
-                }`}
-              >
-                <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] px-2 py-0.5 rounded-full font-medium">
-                  ⭐ {t('premium.popular', language)}
-                </span>
-                <p className="text-lg font-bold text-purple-600 dark:text-purple-400">{settings.pack3Months.toFixed(2)}{settings.premiumCurrency}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{t('premium.pack_3months', language)}</p>
-                <p className="text-[10px] text-purple-500 font-medium">{(settings.pack3Months / 3).toFixed(2)}{settings.premiumCurrency}{t('premium.per_month_short', language)}</p>
-              </button>
-
-              {/* 12 Months */}
-              <button
-                onClick={() => setSelectedPack('12months')}
-                className={`p-3 rounded-xl text-center transition-all relative ${
-                  selectedPack === '12months' 
-                    ? 'bg-purple-100 dark:bg-purple-900/50 border-2 border-purple-500' 
-                    : 'bg-gray-50 dark:bg-gray-700 border-2 border-transparent hover:border-purple-300'
-                }`}
-              >
-                <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-[10px] px-2 py-0.5 rounded-full font-medium">
-                  🔥 {t('premium.savings', language)}
-                </span>
-                <p className="text-lg font-bold text-purple-600 dark:text-purple-400">{settings.pack12Months.toFixed(2)}{settings.premiumCurrency}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{t('premium.pack_12months', language)}</p>
-                <p className="text-[10px] text-orange-500 font-medium">{(settings.pack12Months / 12).toFixed(2)}{settings.premiumCurrency}{t('premium.per_month_short', language)}</p>
-              </button>
-            </div>
-          </div>
-          
-          {/* Promo Code */}
-          <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-            <PromoCodeInput 
-              onValidate={(code) => {
-                setPromoCode(code)
-                validatePromoCode(code)
-              }}
-              isValidating={isValidatingPromo}
-              currency={settings.premiumCurrency}
-              language={language}
-            />
-            {promoResult && promoResult.valid && (
-              <div className="mt-2 p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                <p className="text-green-600 dark:text-green-400 text-xs font-medium">✅ {promoResult.message}</p>
-                <p className="text-green-700 dark:text-green-300 text-xs">
-                  {promoResult.discountType === 'percent' 
-                    ? t('premium.discount_percent', language, { discount: String(promoResult.discount) })
-                    : t('premium.discount_amount', language, { discount: String(promoResult.discount), currency: settings.premiumCurrency })}
-                </p>
-              </div>
-            )}
-            {promoResult && !promoResult.valid && <p className="text-red-500 text-xs mt-2">❌ {promoResult.message}</p>}
-          </div>
-          
-          {/* Features */}
-          <div className="p-4">
-            <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-              <div className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" /><span>{t('premium.feature_unlimited_analyses', language)}</span></div>
-              <div className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" /><span>{t('premium.feature_unlimited_coach', language)}</span></div>
-              <div className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" /><span>{t('premium.feature_unlimited_replies', language)}</span></div>
-              <div className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" /><span>{t('premium.feature_cloud_backup', language)}</span></div>
-              <div className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" /><span>{t('premium.feature_multi_device', language)}</span></div>
-            </div>
-          </div>
-          
-          {/* Payment Button */}
-          <div className="p-4 flex gap-2">
-            <button onClick={() => setShowPremium(false)} className="flex-1 py-3 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700">{t('close', language)}</button>
-            <button 
-              onClick={() => activatePremium()} 
-              disabled={isProcessingPayment}
-              className="flex-1 py-3 bg-gradient-to-r from-purple-500 via-pink-500 to-violet-500 text-white rounded-xl font-semibold hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              {isProcessingPayment ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  {t('premium.redirecting_short', language)}
-                </>
-              ) : (
-                <>
-                  <CreditCard className="w-4 h-4" />
-                  {userEmail ? (
-                    promoResult?.valid ? (
-                      <span className="flex items-center gap-2">
-                        <span className="line-through text-white/50 text-sm">{getPackPrice().toFixed(2)}{settings.premiumCurrency}</span>
-                        <span>{getCurrentDiscountedPrice().toFixed(2)}{settings.premiumCurrency}</span>
-                      </span>
-                    ) : (
-                      t('premium.pay', language, { price: getPackPrice().toFixed(2) + settings.premiumCurrency })
-                    )
-                  ) : t('auth.register_title', language)}
-                </>
-              )}
-            </button>
-          </div>
-          
-          <p className="text-center text-xs text-gray-400 pb-4">{t('premium.payment_secure', language)}</p>
-        </div>
-      </div>
-    )
-  }
 
   // ABOUT MODAL
   const AboutModal = () => (
@@ -2730,10 +2571,11 @@ export default function Home() {
           />
         )}
         <HistoryModal />
-        <PremiumModal />
         <AboutModal />
         <CGUModal />
         <ContactModal />
+        <PaywallModal isOpen={showPaywall} onClose={() => setShowPaywall(false)} onOpenPayment={() => { setShowPaywall(false); setShowPayment(true); }} language={language} />
+        <PaymentModal isOpen={showPayment} onClose={() => setShowPayment(false)} language={language} settings={settings} onPayment={(planId) => { setSelectedPlan(planId); activatePremium(); }} isProcessing={isProcessingPayment} />
         <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} onPremiumActivated={handlePremiumFromServer} mode={authMode} />
         
         {showOCR && <OCRUploader onTextExtracted={(t) => { setConversation(t); setShowOCR(false) }} onClose={() => setShowOCR(false)} />}
@@ -2856,12 +2698,12 @@ export default function Home() {
             
             <p className="text-xs text-gray-400 dark:text-gray-500 mb-4 text-center">{t('home.use_paste', language)}</p>
 
-            <button onClick={handleAnalyze} disabled={conversation.trim().length < 20 || isLoading || (!isPremium && remaining <= 0)} className="w-full py-3 text-white font-semibold rounded-xl bg-gradient-to-r from-purple-500 via-pink-500 to-violet-500 hover:opacity-90 disabled:opacity-50 transition-all">{isLoading ? t('home.analyzing', language) : t('home.analyze', language)}</button>
+            <button onClick={handleAnalyze} disabled={conversation.trim().length < 20 || isLoading} className="w-full py-3 text-white font-semibold rounded-xl bg-gradient-to-r from-purple-500 via-pink-500 to-violet-500 hover:opacity-90 disabled:opacity-50 transition-all">{isLoading ? t('home.analyzing', language) : t('home.analyze', language)}</button>
 
             <p className="text-center text-sm text-gray-400 dark:text-gray-500 mt-3">{isPremium ? <span className="text-purple-500 font-medium">{t('home.premium_unlimited', language)}</span> : t('home.analyses_remaining', language, { remaining: String(remaining), total: String(settings.freeAnalysesPerDay) })}</p>
             
             {!isPremium && remaining <= 0 && (
-              <button onClick={() => setShowPremium(true)} className="w-full mt-2 py-2 border border-purple-200 dark:border-purple-700 text-purple-500 rounded-xl text-sm font-medium hover:bg-purple-50 dark:hover:bg-purple-900/30">{t('home.get_premium_more', language)}</button>
+              <button onClick={() => setShowPaywall(true)} className="w-full mt-2 py-2 border border-purple-200 dark:border-purple-700 text-purple-500 rounded-xl text-sm font-medium hover:bg-purple-50 dark:hover:bg-purple-900/30">{t('home.get_premium_more', language)}</button>
             )}
           </div>
         </div>
@@ -2896,7 +2738,6 @@ export default function Home() {
           />
         )}
         <HistoryModal />
-        <PremiumModal />
         <AboutModal />
         <CGUModal />
         <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} onPremiumActivated={handlePremiumFromServer} mode={authMode} />
@@ -2968,7 +2809,7 @@ export default function Home() {
               <button onClick={() => { setAnalysis(null); setAppState('home') }} className="py-3 bg-gray-100 dark:bg-gray-700 dark:text-white rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"><RefreshCw className="w-4 h-4 mx-auto mb-1" />{t('results.new', language)}</button>
               <button onClick={handleShare} className="py-3 bg-gray-100 dark:bg-gray-700 dark:text-white rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"><Share2 className="w-4 h-4 mx-auto mb-1" />{t('results.share', language)}</button>
               {!isPremium ? (
-                <button onClick={() => setShowPremium(true)} className="py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium hover:opacity-90"><Crown className="w-4 h-4 mx-auto mb-1" />{t('menu.premium', language)}</button>
+                <button onClick={() => setShowPaywall(true)} className="py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium hover:opacity-90"><Crown className="w-4 h-4 mx-auto mb-1" />{t('menu.premium', language)}</button>
               ) : (
                 <div className="py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium flex items-center justify-center gap-1"><Crown className="w-4 h-4" />{t('menu.premium_active', language)}</div>
               )}
@@ -2995,7 +2836,6 @@ export default function Home() {
             language={language}
           />
         )}
-        <PremiumModal />
         
         <div className="fixed top-0 left-0 right-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-100 dark:border-gray-700">
           <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
@@ -3224,7 +3064,6 @@ export default function Home() {
   if (appState === 'coach') {
     return (
       <div className="min-h-screen bg-gradient-to-b from-purple-50 to-pink-50 dark:from-gray-900 dark:to-gray-800">
-        <PremiumModal />
         
         {/* Coach History Modal */}
         {showCoachHistory && (

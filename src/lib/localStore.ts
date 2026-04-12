@@ -1,5 +1,6 @@
-// Stockage en memoire pour le developpement local (quand KV n'est pas disponible)
-// Ce module est partage entre les differentes APIs d'authentification
+import { createHash, randomBytes } from 'crypto';
+import fs from 'fs';
+import path from 'path';
 
 export interface User {
   email: string;
@@ -15,6 +16,7 @@ export interface User {
   adminGranted?: boolean;
   sessionId?: string;
   sessionCreatedAt?: string;
+  name?: string;
 }
 
 interface ResetToken {
@@ -22,9 +24,67 @@ interface ResetToken {
   expires: number;
 }
 
-// Maps pour le stockage local
-export const localUserStore = new Map<string, User>();
-export const localTokenStore = new Map<string, ResetToken>();
+interface PromoCode {
+  code: string;
+  discountPercent: number;
+  maxUses: number;
+  currentUses: number;
+  expiresAt: number;
+}
+
+// Chemin du fichier de stockage
+const DATA_FILE = path.join(process.cwd(), 'data', 'users.json');
+
+// Stockage en memoire (charge au demarrage)
+let localUserStore = new Map<string, User>();
+let localTokenStore = new Map<string, ResetToken>();
+let localPromoStore = new Map<string, PromoCode>();
+let isLoaded = false;
+
+// Charger les donnees depuis le fichier
+function loadData() {
+  if (isLoaded) return;
+  try {
+    const dir = path.dirname(DATA_FILE);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    if (fs.existsSync(DATA_FILE)) {
+      const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
+      if (data.users) {
+        localUserStore = new Map(Object.entries(data.users));
+      }
+      if (data.tokens) {
+        localTokenStore = new Map(Object.entries(data.tokens));
+      }
+      if (data.promos) {
+        localPromoStore = new Map(Object.entries(data.promos));
+      }
+      console.log('Donnees chargees:', localUserStore.size, 'utilisateurs');
+    }
+  } catch (e) {
+    console.error('Erreur chargement donnees:', e);
+  }
+  isLoaded = true;
+}
+
+// Sauvegarder les donnees dans le fichier
+function saveData() {
+  try {
+    const dir = path.dirname(DATA_FILE);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    const data = {
+      users: Object.fromEntries(localUserStore),
+      tokens: Object.fromEntries(localTokenStore),
+      promos: Object.fromEntries(localPromoStore)
+    };
+    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+  } catch (e) {
+    console.error('Erreur sauvegarde donnees:', e);
+  }
+}
 
 // Fonction pour verifier si KV est disponible
 export function isKVAvailable(): boolean {
@@ -33,35 +93,32 @@ export function isKVAvailable(): boolean {
 
 // Fonction pour recuperer un utilisateur
 export async function getUser(email: string): Promise<User | null> {
-  const key = email.toLowerCase();
-  
   if (!isKVAvailable()) {
-    return localUserStore.get(key) || null;
+    loadData();
+    return localUserStore.get(email.toLowerCase()) || null;
   }
-  
   const { kv } = await import('@vercel/kv');
-  return await kv.get<User>('user:' + key);
+  return await kv.get<User>('user:' + email.toLowerCase());
 }
 
 // Fonction pour sauvegarder un utilisateur
 export async function setUser(email: string, user: User): Promise<void> {
-  const key = email.toLowerCase();
-  
   if (!isKVAvailable()) {
-    localUserStore.set(key, user);
+    loadData();
+    localUserStore.set(email.toLowerCase(), user);
+    saveData();
     return;
   }
-  
   const { kv } = await import('@vercel/kv');
-  await kv.set('user:' + key, user);
+  await kv.set('user:' + email.toLowerCase(), user);
 }
 
 // Fonction pour recuperer un token de reset
 export async function getResetToken(token: string): Promise<ResetToken | null> {
   if (!isKVAvailable()) {
+    loadData();
     return localTokenStore.get(token) || null;
   }
-  
   const { kv } = await import('@vercel/kv');
   return await kv.get<ResetToken>('reset:' + token);
 }
@@ -69,10 +126,11 @@ export async function getResetToken(token: string): Promise<ResetToken | null> {
 // Fonction pour sauvegarder un token de reset
 export async function setResetToken(token: string, data: ResetToken, ttlSeconds?: number): Promise<void> {
   if (!isKVAvailable()) {
+    loadData();
     localTokenStore.set(token, data);
+    saveData();
     return;
   }
-  
   const { kv } = await import('@vercel/kv');
   if (ttlSeconds) {
     await kv.set('reset:' + token, data, { ex: ttlSeconds });
@@ -84,10 +142,53 @@ export async function setResetToken(token: string, data: ResetToken, ttlSeconds?
 // Fonction pour supprimer un token de reset
 export async function deleteResetToken(token: string): Promise<void> {
   if (!isKVAvailable()) {
+    loadData();
     localTokenStore.delete(token);
+    saveData();
     return;
   }
-  
   const { kv } = await import('@vercel/kv');
   await kv.del('reset:' + token);
+}
+
+// Fonction pour recuperer un code promo
+export async function getPromoCode(code: string): Promise<PromoCode | null> {
+  if (!isKVAvailable()) {
+    loadData();
+    return localPromoStore.get(code.toUpperCase()) || null;
+  }
+  const { kv } = await import('@vercel/kv');
+  return await kv.get<PromoCode>('promo:' + code.toUpperCase());
+}
+
+// Fonction pour sauvegarder un code promo
+export async function setPromoCode(code: string, data: PromoCode): Promise<void> {
+  if (!isKVAvailable()) {
+    loadData();
+    localPromoStore.set(code.toUpperCase(), data);
+    saveData();
+    return;
+  }
+  const { kv } = await import('@vercel/kv');
+  await kv.set('promo:' + code.toUpperCase(), data);
+}
+
+// Fonction pour mettre a jour les utilisations d'un code promo
+export async function incrementPromoUse(code: string): Promise<void> {
+  if (!isKVAvailable()) {
+    loadData();
+    const promo = localPromoStore.get(code.toUpperCase());
+    if (promo) {
+      promo.currentUses++;
+      localPromoStore.set(code.toUpperCase(), promo);
+      saveData();
+    }
+    return;
+  }
+  const { kv } = await import('@vercel/kv');
+  const promo = await kv.get<PromoCode>('promo:' + code.toUpperCase());
+  if (promo) {
+    promo.currentUses++;
+    await kv.set('promo:' + code.toUpperCase(), promo);
+  }
 }
