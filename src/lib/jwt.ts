@@ -7,6 +7,7 @@ const key = new TextEncoder().encode(SECRET_KEY)
 export interface AdminSession {
   isAdmin: boolean
   loginTime: number
+  [key: string]: unknown
 }
 
 // Générer un token JWT
