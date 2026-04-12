@@ -200,6 +200,7 @@ interface AppSettings {
   pack3Months: number;
   pack12Months: number;
   premiumCurrency: string;
+  adminPassword?: string;
 }
 
 // Default settings
