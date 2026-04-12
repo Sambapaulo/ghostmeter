@@ -11,7 +11,7 @@ interface PaymentModalProps {
     pack12Months: number
     premiumCurrency: string
   }
-  onPayment: (planId: string) => void
+  onPayment: (planId: '1month' | '3months' | '12months') => void
   isProcessing?: boolean
 }
 
