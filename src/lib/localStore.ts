@@ -1,11 +1,13 @@
-// Stockage en mémoire pour le développement local (quand KV n'est pas disponible)
-// Ce module est partagé entre les différentes APIs d'authentification
+// Stockage en memoire pour le developpement local (quand KV n'est pas disponible)
+// Ce module est partage entre les differentes APIs d'authentification
 
 export interface User {
   email: string;
   password: string;
   isPremium: boolean;
   premiumSince: string | null;
+  premiumPlan?: '1month' | '3months' | '12months' | null;
+  premiumExpiresAt?: string | null;
   analysesCount: number;
   createdAt: string;
   lastActive: string;
@@ -24,12 +26,12 @@ interface ResetToken {
 export const localUserStore = new Map<string, User>();
 export const localTokenStore = new Map<string, ResetToken>();
 
-// Fonction pour vérifier si KV est disponible
+// Fonction pour verifier si KV est disponible
 export function isKVAvailable(): boolean {
   return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
 }
 
-// Fonction pour récupérer un utilisateur
+// Fonction pour recuperer un utilisateur
 export async function getUser(email: string): Promise<User | null> {
   const key = email.toLowerCase();
   
@@ -54,7 +56,7 @@ export async function setUser(email: string, user: User): Promise<void> {
   await kv.set('user:' + key, user);
 }
 
-// Fonction pour récupérer un token de reset
+// Fonction pour recuperer un token de reset
 export async function getResetToken(token: string): Promise<ResetToken | null> {
   if (!isKVAvailable()) {
     return localTokenStore.get(token) || null;

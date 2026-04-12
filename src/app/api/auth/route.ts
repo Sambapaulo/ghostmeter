@@ -1,20 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createHash, randomBytes } from 'crypto';
-import { isKVAvailable, getUser, setUser } from '@/lib/localStore';
-
-interface User {
-  email: string;
-  password: string;
-  isPremium: boolean;
-  premiumSince: string | null;
-  analysesCount: number;
-  createdAt: string;
-  lastActive: string;
-  paypalOrderId?: string;
-  adminGranted?: boolean;
-  sessionId?: string;
-  sessionCreatedAt?: string;
-}
+import { isKVAvailable, getUser, setUser, User } from '@/lib/localStore';
 
 function hashPassword(password: string): string {
   return createHash('sha256').update(password + 'ghostmeter_salt_2024').digest('hex');
@@ -26,7 +12,7 @@ function generateSessionId(): string {
 
 async function verifyGoogleToken(accessToken: string) {
   try {
-    const response = await fetch(`https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${accessToken}`);
+    const response = await fetch('https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=' + accessToken);
     if (!response.ok) return null;
     const tokenInfo = await response.json();
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
@@ -37,6 +23,23 @@ async function verifyGoogleToken(accessToken: string) {
   }
 }
 
+function checkPremiumValid(user: User): { isPremium: boolean; expired: boolean } {
+  if (!user.isPremium) return { isPremium: false, expired: false };
+  
+  // Admin granted premium n'expire jamais
+  if (user.adminGranted) return { isPremium: true, expired: false };
+  
+  // Verifier la date d'expiration
+  if (user.premiumExpiresAt) {
+    const expiresAt = new Date(user.premiumExpiresAt);
+    if (expiresAt < new Date()) {
+      return { isPremium: false, expired: true };
+    }
+  }
+  
+  return { isPremium: true, expired: false };
+}
+
 export async function GET(request: NextRequest) {
   const email = request.nextUrl.searchParams.get('email');
   const sessionId = request.nextUrl.searchParams.get('sessionId');
@@ -45,12 +48,19 @@ export async function GET(request: NextRequest) {
   const user = await getUser(email);
   if (!user) return NextResponse.json({ exists: false, isPremium: false });
   
+  // Verifier si l'abonnement a expire
+  const premiumCheck = checkPremiumValid(user);
+  if (premiumCheck.expired) {
+    user.isPremium = false;
+    await setUser(email, user);
+  }
+  
   const sessionValid = sessionId && user.sessionId === sessionId;
   if (sessionId && !sessionValid && user.sessionId) {
     return NextResponse.json({ exists: true, isPremium: false, sessionValid: false, error: 'SESSION_INVALID' });
   }
-  const hasValidPremium = user.isPremium && (!!user.paypalOrderId || !!user.adminGranted);
-  return NextResponse.json({ exists: true, isPremium: hasValidPremium, premiumSince: hasValidPremium ? user.premiumSince : null, analysesCount: user.analysesCount, sessionValid: true });
+  const hasValidPremium = premiumCheck.isPremium && (!!user.paypalOrderId || !!user.adminGranted);
+  return NextResponse.json({ exists: true, isPremium: hasValidPremium, premiumSince: hasValidPremium ? user.premiumSince : null, premiumPlan: user.premiumPlan || null, premiumExpiresAt: user.premiumExpiresAt || null, analysesCount: user.analysesCount, sessionValid: true });
 }
 
 export async function POST(request: NextRequest) {
@@ -58,9 +68,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { email, password, action, sessionId: clientSessionId, accessToken, name } = body;
 
-    // Log pour le développement
     if (!isKVAvailable()) {
-      console.log('Mode local: utilisation du stockage en mémoire');
+      console.log('Mode local: utilisation du stockage en memoire');
     }
 
     if (action === 'google') {
@@ -75,9 +84,15 @@ export async function POST(request: NextRequest) {
         existingUser.sessionId = newSessionId;
         existingUser.sessionCreatedAt = now;
         existingUser.lastActive = now;
+        
+        const premiumCheck = checkPremiumValid(existingUser);
+        if (premiumCheck.expired) {
+          existingUser.isPremium = false;
+        }
+        
         await setUser(googleEmail, existingUser);
-        const hasValidPremium = existingUser.isPremium && (!!existingUser.paypalOrderId || !!existingUser.adminGranted);
-        return NextResponse.json({ success: true, user: { email: existingUser.email, isPremium: hasValidPremium }, sessionId: newSessionId });
+        const hasValidPremium = premiumCheck.isPremium && (!!existingUser.paypalOrderId || !!existingUser.adminGranted);
+        return NextResponse.json({ success: true, user: { email: existingUser.email, isPremium: hasValidPremium, premiumPlan: existingUser.premiumPlan, premiumExpiresAt: existingUser.premiumExpiresAt }, sessionId: newSessionId });
       } else {
         const newUser: User = { email: googleEmail, password: '', isPremium: false, premiumSince: null, analysesCount: 0, createdAt: now, lastActive: now, sessionId: newSessionId, sessionCreatedAt: now };
         await setUser(googleEmail, newUser);
@@ -108,18 +123,30 @@ export async function POST(request: NextRequest) {
       existingUser.sessionId = newSessionId;
       existingUser.sessionCreatedAt = now;
       existingUser.lastActive = now;
+      
+      const premiumCheck = checkPremiumValid(existingUser);
+      if (premiumCheck.expired) {
+        existingUser.isPremium = false;
+      }
+      
       await setUser(email, existingUser);
-      const hasValidPremium = existingUser.isPremium && (!!existingUser.paypalOrderId || !!existingUser.adminGranted);
-      return NextResponse.json({ success: true, user: { email: existingUser.email, isPremium: hasValidPremium }, sessionId: newSessionId, isNew: false });
+      const hasValidPremium = premiumCheck.isPremium && (!!existingUser.paypalOrderId || !!existingUser.adminGranted);
+      return NextResponse.json({ success: true, user: { email: existingUser.email, isPremium: hasValidPremium, premiumPlan: existingUser.premiumPlan, premiumExpiresAt: existingUser.premiumExpiresAt }, sessionId: newSessionId, isNew: false });
     }
 
     if (action === 'checkSession') {
       if (!existingUser) return NextResponse.json({ valid: false, error: 'USER_NOT_FOUND' });
       if (!clientSessionId || existingUser.sessionId !== clientSessionId) return NextResponse.json({ valid: false, error: 'SESSION_INVALID', message: 'Votre compte a ete connecte sur un autre appareil' });
       existingUser.lastActive = now;
+      
+      const premiumCheck = checkPremiumValid(existingUser);
+      if (premiumCheck.expired) {
+        existingUser.isPremium = false;
+      }
+      
       await setUser(email, existingUser);
-      const hasValidPremium = existingUser.isPremium && (!!existingUser.paypalOrderId || !!existingUser.adminGranted);
-      return NextResponse.json({ valid: true, isPremium: hasValidPremium });
+      const hasValidPremium = premiumCheck.isPremium && (!!existingUser.paypalOrderId || !!existingUser.adminGranted);
+      return NextResponse.json({ valid: true, isPremium: hasValidPremium, premiumPlan: existingUser.premiumPlan, premiumExpiresAt: existingUser.premiumExpiresAt });
     }
 
     if (action === 'checkExists') {
