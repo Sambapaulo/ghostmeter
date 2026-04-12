@@ -270,8 +270,7 @@ export default function AdminPage() {
         body: JSON.stringify({
           messageId: replyModal.message.id,
           replyMessage: replyText,
-          adminPassword: password
-            plan
+          adminPassword: password,
         })
       })
       const data = await res.json()
@@ -382,8 +381,7 @@ export default function AdminPage() {
           subject: newsletterSubject,
           body: newsletterBody,
           recipients,
-          adminPassword: password
-            plan
+          adminPassword: password,
         })
       })
       const data = await res.json()
@@ -516,7 +514,7 @@ export default function AdminPage() {
         body: JSON.stringify({ 
           email, 
           action, 
-          adminPassword: password 
+          adminPassword: password,
             plan
         })
       })
@@ -546,7 +544,6 @@ export default function AdminPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ adminPassword: password })
-            plan
       })
       const data = await res.json()
       
@@ -1918,7 +1915,3 @@ Nous avons une grande nouvelle à vous annoncer..."
     </div>
   )
 }
-
-
-
-
