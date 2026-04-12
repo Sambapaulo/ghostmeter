@@ -192,3 +192,42 @@ export async function incrementPromoUse(code: string): Promise<void> {
     await kv.set('promo:' + code.toUpperCase(), promo);
   }
 }
+
+// Settings interface
+interface AppSettings {
+  freeAnalysesPerDay: number;
+  pack1Month: number;
+  pack3Months: number;
+  pack12Months: number;
+  premiumCurrency: string;
+}
+
+// Default settings
+const defaultSettings: AppSettings = {
+  freeAnalysesPerDay: 3,
+  pack1Month: 1.99,
+  pack3Months: 4.99,
+  pack12Months: 14.99,
+  premiumCurrency: '€'
+};
+
+// Get application settings
+export async function getSettings(): Promise<AppSettings> {
+  if (!isKVAvailable()) {
+    loadData();
+    return defaultSettings;
+  }
+  const { kv } = await import('@vercel/kv');
+  const settings = await kv.get<AppSettings>('settings:app');
+  return settings || defaultSettings;
+}
+
+// Update application settings
+export async function updateSettings(settings: Partial<AppSettings>): Promise<void> {
+  if (!isKVAvailable()) {
+    return;
+  }
+  const { kv } = await import('@vercel/kv');
+  const current = await getSettings();
+  await kv.set('settings:app', { ...current, ...settings });
+}
