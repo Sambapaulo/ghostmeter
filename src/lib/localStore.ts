@@ -1,7 +1,7 @@
 // Stockage en mémoire pour le développement local (quand KV n'est pas disponible)
 // Ce module est partagé entre les différentes APIs d'authentification
 
-interface User {
+export interface User {
   email: string;
   password: string;
   isPremium: boolean;
