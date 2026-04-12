@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { kv } from '@vercel/kv';
 import { createHash, randomBytes } from 'crypto';
+import { isKVAvailable, getUser, setUser } from '@/lib/localStore';
 
 interface User {
   email: string;
@@ -41,8 +41,10 @@ export async function GET(request: NextRequest) {
   const email = request.nextUrl.searchParams.get('email');
   const sessionId = request.nextUrl.searchParams.get('sessionId');
   if (!email) return NextResponse.json({ error: 'Email requis' }, { status: 400 });
-  const user = await kv.get<User>('user:' + email.toLowerCase());
+  
+  const user = await getUser(email);
   if (!user) return NextResponse.json({ exists: false, isPremium: false });
+  
   const sessionValid = sessionId && user.sessionId === sessionId;
   if (sessionId && !sessionValid && user.sessionId) {
     return NextResponse.json({ exists: true, isPremium: false, sessionValid: false, error: 'SESSION_INVALID' });
@@ -56,32 +58,35 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { email, password, action, sessionId: clientSessionId, accessToken, name } = body;
 
+    // Log pour le développement
+    if (!isKVAvailable()) {
+      console.log('Mode local: utilisation du stockage en mémoire');
+    }
+
     if (action === 'google') {
       if (!accessToken) return NextResponse.json({ error: 'Access token required' }, { status: 400 });
       const tokenInfo = await verifyGoogleToken(accessToken);
       if (!tokenInfo) return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 });
       const googleEmail = tokenInfo.email.toLowerCase();
-      const key = 'user:' + googleEmail;
-      const existingUser = await kv.get<User>(key);
+      const existingUser = await getUser(googleEmail);
       const now = new Date().toISOString();
       const newSessionId = generateSessionId();
       if (existingUser) {
         existingUser.sessionId = newSessionId;
         existingUser.sessionCreatedAt = now;
         existingUser.lastActive = now;
-        await kv.set(key, existingUser);
+        await setUser(googleEmail, existingUser);
         const hasValidPremium = existingUser.isPremium && (!!existingUser.paypalOrderId || !!existingUser.adminGranted);
         return NextResponse.json({ success: true, user: { email: existingUser.email, isPremium: hasValidPremium }, sessionId: newSessionId });
       } else {
         const newUser: User = { email: googleEmail, password: '', isPremium: false, premiumSince: null, analysesCount: 0, createdAt: now, lastActive: now, sessionId: newSessionId, sessionCreatedAt: now };
-        await kv.set(key, newUser);
+        await setUser(googleEmail, newUser);
         return NextResponse.json({ success: true, user: { email: newUser.email, isPremium: false }, sessionId: newSessionId, isNew: true });
       }
     }
 
     if (!email) return NextResponse.json({ error: 'Email requis' }, { status: 400 });
-    const key = 'user:' + email.toLowerCase();
-    const existingUser = await kv.get<User>(key);
+    const existingUser = await getUser(email);
     const now = new Date().toISOString();
 
     if (action === 'register') {
@@ -90,7 +95,7 @@ export async function POST(request: NextRequest) {
       const hashedPassword = hashPassword(password);
       const newSessionId = generateSessionId();
       const newUser: User = { email: email.toLowerCase(), password: hashedPassword, isPremium: false, premiumSince: null, analysesCount: 0, createdAt: now, lastActive: now, sessionId: newSessionId, sessionCreatedAt: now };
-      await kv.set(key, newUser);
+      await setUser(email, newUser);
       return NextResponse.json({ success: true, user: { email: newUser.email, isPremium: newUser.isPremium }, sessionId: newSessionId, isNew: true });
     }
 
@@ -103,7 +108,7 @@ export async function POST(request: NextRequest) {
       existingUser.sessionId = newSessionId;
       existingUser.sessionCreatedAt = now;
       existingUser.lastActive = now;
-      await kv.set(key, existingUser);
+      await setUser(email, existingUser);
       const hasValidPremium = existingUser.isPremium && (!!existingUser.paypalOrderId || !!existingUser.adminGranted);
       return NextResponse.json({ success: true, user: { email: existingUser.email, isPremium: hasValidPremium }, sessionId: newSessionId, isNew: false });
     }
@@ -112,7 +117,7 @@ export async function POST(request: NextRequest) {
       if (!existingUser) return NextResponse.json({ valid: false, error: 'USER_NOT_FOUND' });
       if (!clientSessionId || existingUser.sessionId !== clientSessionId) return NextResponse.json({ valid: false, error: 'SESSION_INVALID', message: 'Votre compte a ete connecte sur un autre appareil' });
       existingUser.lastActive = now;
-      await kv.set(key, existingUser);
+      await setUser(email, existingUser);
       const hasValidPremium = existingUser.isPremium && (!!existingUser.paypalOrderId || !!existingUser.adminGranted);
       return NextResponse.json({ valid: true, isPremium: hasValidPremium });
     }
@@ -127,7 +132,7 @@ export async function POST(request: NextRequest) {
         if (clientSessionId && existingUser.sessionId !== clientSessionId) return NextResponse.json({ error: 'SESSION_INVALID', success: false }, { status: 401 });
         existingUser.analysesCount = (existingUser.analysesCount || 0) + 1;
         existingUser.lastActive = now;
-        await kv.set(key, existingUser);
+        await setUser(email, existingUser);
       }
       return NextResponse.json({ success: true });
     }
