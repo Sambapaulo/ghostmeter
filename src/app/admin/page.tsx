@@ -1570,7 +1570,6 @@ Nous avons une grande nouvelle à vous annoncer..."
                                 )}
                               </button>
                             )}
-                            <button
                             {!user.isPremium && (
                               <>
                                 <button
@@ -1599,6 +1598,7 @@ Nous avons une grande nouvelle à vous annoncer..."
                                 </button>
                               </>
                             )}
+                            <button
                               onClick={() => handleUserAction(user.email, 'deleteUser')}
                               disabled={userActionLoading === user.email}
                               className="p-2 hover:bg-red-100 rounded-lg text-red-500 transition-colors disabled:opacity-50"
@@ -1904,8 +1904,6 @@ Nous avons une grande nouvelle à vous annoncer..."
     </div>
   )
 }
-
-
 
 
 
