@@ -1,12 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Resend } from 'resend';
 import { isKVAvailable, getUser, setUser, getResetToken, setResetToken, deleteResetToken, User } from '@/lib/localStore';
 import { createHash } from 'crypto';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 function hashPassword(password: string): string {
   return createHash('sha256').update(password + 'ghostmeter_salt_2024').digest('hex');
+}
+
+async function sendEmail(to: string, subject: string, htmlContent: string): Promise<boolean> {
+  const BREVO_API_KEY = process.env.BREVO_API_KEY;
+  
+  if (!BREVO_API_KEY) {
+    console.error('BREVO_API_KEY non configure');
+    return false;
+  }
+
+  try {
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'content-type': 'application/json',
+        'api-key': BREVO_API_KEY
+      },
+      body: JSON.stringify({
+        sender: {
+          name: 'GhostMeter',
+          email: 'noreply@brevo.com'
+        },
+        to: [{ email: to }],
+        subject: subject,
+        htmlContent: htmlContent
+      })
+    });
+
+    if (response.ok) {
+      console.log('Email envoye avec succes a:', to);
+      return true;
+    } else {
+      const error = await response.text();
+      console.error('Erreur envoi email Brevo:', error);
+      return false;
+    }
+  } catch (error) {
+    console.error('Erreur envoi email:', error);
+    return false;
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -34,19 +72,13 @@ export async function POST(request: NextRequest) {
       
       await setResetToken(resetToken, { email: email.toLowerCase(), expires }, 3600);
 
-      const resetUrl = process.env.NEXT_PUBLIC_APP_URL + '/reset-password?token=' + resetToken + '&email=' + encodeURIComponent(email);
+      const resetUrl = (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000') + '/reset-password?token=' + resetToken + '&email=' + encodeURIComponent(email);
       
-      try {
-        await resend.emails.send({
-          from: 'onboarding@resend.dev',
-          to: email,
-          subject: 'Reinitialisation de votre mot de passe GhostMeter',
-          html: '<h1>Reinitialisation de mot de passe</h1><p>Cliquez sur le lien ci-dessous pour reinitialiser votre mot de passe:</p><a href="' + resetUrl + '">' + resetUrl + '</a><p>Ce lien expire dans 1 heure.</p>'
-        });
-        console.log('Email envoye avec succes a:', email);
-      } catch (emailError) {
-        console.error('Erreur envoi email:', emailError);
-      }
+      await sendEmail(
+        email,
+        'Reinitialisation de votre mot de passe GhostMeter',
+        '<html><body><h1>Reinitialisation de mot de passe</h1><p>Cliquez sur le lien ci-dessous pour reinitialiser votre mot de passe:</p><a href="' + resetUrl + '">' + resetUrl + '</a><p>Ce lien expire dans 1 heure.</p></body></html>'
+      );
 
       return NextResponse.json({ success: true, message: 'Si ce compte existe, un email a ete envoye' });
     }
