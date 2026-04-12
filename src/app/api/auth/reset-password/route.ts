@@ -25,7 +25,7 @@ async function sendEmail(to: string, subject: string, htmlContent: string): Prom
       body: JSON.stringify({
         sender: {
           name: 'GhostMeter',
-          email: 'noreply@brevo.com'
+          email: 'topetchic@gmail.com'
         },
         to: [{ email: to }],
         subject: subject,
