@@ -499,7 +499,7 @@ export default function AdminPage() {
     }
   }
 
-  const handleUserAction = async (email: string, action: 'addPremium' | 'removePremium' | 'deleteUser') => {
+  const handleUserAction = async (email: string, action: 'addPremium' | 'removePremium' | 'deleteUser' | 'simulateExpiration') => {
     if (action === 'deleteUser') {
       if (!confirm(`Êtes-vous sûr de vouloir supprimer le compte ${email} ?`)) {
         return
@@ -1876,4 +1876,6 @@ Nous avons une grande nouvelle à vous annoncer..."
     </div>
   )
 }
+
+
 

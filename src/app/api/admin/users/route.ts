@@ -48,7 +48,6 @@ export async function GET() {
           }
         }
 
-        // Verifier si l'abonnement a expire
         let isActuallyPremium = userData.isPremium
         if (userData.premiumExpiresAt && !userData.adminGranted) {
           const expiresAt = new Date(userData.premiumExpiresAt)
@@ -137,6 +136,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         message: 'Premium active pour ' + email + ' (par admin - illimite)'
+      })
+    }
+
+    if (action === 'simulateExpiration') {
+      // Mettre la date d'expiration dans le passe
+      user.premiumExpiresAt = new Date(Date.now() - 86400000).toISOString() // Hier
+      user.adminGranted = false
+      await kv.set(key, user)
+      return NextResponse.json({
+        success: true,
+        message: 'Expiration simulee pour ' + email + ' - Reconnectez-vous pour voir l\'effet'
       })
     }
 
