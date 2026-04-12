@@ -27,6 +27,8 @@ interface PremiumUser {
   email: string
   isPremium: boolean
   premiumSince: string | null
+  premiumPlan: string | null
+  premiumExpiresAt: string | null
   premiumSource: 'paypal' | 'admin' | null
   analysesCount: number
   createdAt: string
@@ -891,6 +893,12 @@ export default function AdminPage() {
                             {user.isPremium && (
                               <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">
                                 Premium
+                                {user.premiumPlan && user.premiumPlan !== 'admin' && (
+                                  <span className="ml-1">({user.premiumPlan === '1month' ? '1 mois' : user.premiumPlan === '3months' ? '3 mois' : '12 mois'})</span>
+                                )}
+                                {user.premiumExpiresAt && user.premiumPlan !== 'admin' && (
+                                  <span className="ml-1 text-green-500 text-[10px]">- Exp: {new Date(user.premiumExpiresAt).toLocaleDateString('fr-FR')}</span>
+                                )}
                               </span>
                             )}
                             <span className="text-xs text-gray-400">{user.analysesCount} analyses</span>
@@ -1868,3 +1876,4 @@ Nous avons une grande nouvelle à vous annoncer..."
     </div>
   )
 }
+
