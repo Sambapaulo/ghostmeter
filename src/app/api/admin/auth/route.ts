@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateAdminToken, isAdminAuthenticated } from '@/lib/jwt'
-import { getSettings, updateSettings } from '@/lib/localStore'
+import { getSettings } from '@/lib/kv'
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,23 +9,25 @@ export async function POST(request: NextRequest) {
     
     // Action: Login
     if (action === 'login') {
+      // Lire les settings depuis kv.ts (cle ghostmeter:settings)
+      // meme source que settings/route.ts
       const settings = await getSettings()
       
       if (!settings?.adminPassword) {
-        return NextResponse.json({ error: 'Admin non configuré' }, { status: 500 })
+        return NextResponse.json({ error: 'Admin non configure' }, { status: 500 })
       }
       
       if (password !== settings.adminPassword) {
         return NextResponse.json({ error: 'Mot de passe incorrect' }, { status: 401 })
       }
       
-      // Générer le token JWT
+      // Generer le token JWT
       const token = await generateAdminToken()
       
-      // Créer la réponse avec le cookie HTTP-only
+      // Creer la reponse avec le cookie HTTP-only
       const response = NextResponse.json({ 
         success: true, 
-        message: 'Connexion réussie' 
+        message: 'Connexion reussie' 
       })
       
       response.cookies.set('admin_session', token, {

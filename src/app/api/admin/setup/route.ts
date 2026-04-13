@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { updateSettings, getSettings } from '@/lib/localStore'
+import { getSettings, saveSettings } from '@/lib/kv'
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,11 +10,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Le mot de passe doit contenir au moins 6 caracteres' }, { status: 400 })
     }
 
-    await updateSettings({ adminPassword })
+    // Lire les settings actuels depuis kv.ts (cle ghostmeter:settings)
+    // et y merge le nouveau mot de passe
+    const currentSettings = await getSettings()
+    currentSettings.adminPassword = adminPassword
+    const saved = await saveSettings(currentSettings)
 
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Mot de passe admin configure' 
+    if (!saved) {
+      console.error('[SETUP] Erreur: saveSettings a echoue')
+      return NextResponse.json({ error: 'Erreur de sauvegarde' }, { status: 500 })
+    }
+
+    console.log('[SETUP] Mot de passe admin configure avec succes via kv.ts')
+    return NextResponse.json({
+      success: true,
+      message: 'Mot de passe admin configure'
     })
   } catch (error) {
     console.error('Setup error:', error)
@@ -25,6 +35,6 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   const settings = await getSettings()
   return NextResponse.json({
-    hasPassword: !!settings?.adminPassword
+    hasPassword: !!settings?.adminPassword && settings.adminPassword !== 'ghostmeter2024'
   })
 }
