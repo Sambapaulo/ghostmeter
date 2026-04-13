@@ -22,35 +22,9 @@ interface ResetToken {
   expires: number;
 }
 
-interface PromoCode {
-  code: string;
-  discountPercent: number;
-  maxUses: number;
-  currentUses: number;
-  expiresAt: number | null;
-}
-
-interface AppSettings {
-  freeAnalysesPerDay: number;
-  pack1Month: number;
-  pack3Months: number;
-  pack12Months: number;
-  premiumCurrency: string;
-  adminPassword?: string;
-}
-
 // Maps pour le stockage local
 export const localUserStore = new Map<string, User>();
 export const localTokenStore = new Map<string, ResetToken>();
-const localPromoStore = new Map<string, PromoCode>();
-
-const defaultSettings: AppSettings = {
-  freeAnalysesPerDay: 3,
-  pack1Month: 1.99,
-  pack3Months: 4.99,
-  pack12Months: 14.99,
-  premiumCurrency: '€'
-};
 
 // Fonction pour verifier si KV est disponible
 export function isKVAvailable(): boolean {
@@ -60,9 +34,11 @@ export function isKVAvailable(): boolean {
 // Fonction pour recuperer un utilisateur
 export async function getUser(email: string): Promise<User | null> {
   const key = email.toLowerCase();
+  
   if (!isKVAvailable()) {
     return localUserStore.get(key) || null;
   }
+  
   const { kv } = await import('@vercel/kv');
   return await kv.get<User>('user:' + key);
 }
@@ -70,10 +46,12 @@ export async function getUser(email: string): Promise<User | null> {
 // Fonction pour sauvegarder un utilisateur
 export async function setUser(email: string, user: User): Promise<void> {
   const key = email.toLowerCase();
+  
   if (!isKVAvailable()) {
     localUserStore.set(key, user);
     return;
   }
+  
   const { kv } = await import('@vercel/kv');
   await kv.set('user:' + key, user);
 }
@@ -83,6 +61,7 @@ export async function getResetToken(token: string): Promise<ResetToken | null> {
   if (!isKVAvailable()) {
     return localTokenStore.get(token) || null;
   }
+  
   const { kv } = await import('@vercel/kv');
   return await kv.get<ResetToken>('reset:' + token);
 }
@@ -93,6 +72,7 @@ export async function setResetToken(token: string, data: ResetToken, ttlSeconds?
     localTokenStore.set(token, data);
     return;
   }
+  
   const { kv } = await import('@vercel/kv');
   if (ttlSeconds) {
     await kv.set('reset:' + token, data, { ex: ttlSeconds });
@@ -107,63 +87,7 @@ export async function deleteResetToken(token: string): Promise<void> {
     localTokenStore.delete(token);
     return;
   }
+  
   const { kv } = await import('@vercel/kv');
   await kv.del('reset:' + token);
-}
-
-// Fonction pour recuperer un code promo
-export async function getPromoCode(code: string): Promise<PromoCode | null> {
-  if (!isKVAvailable()) {
-    return localPromoStore.get(code.toUpperCase()) || null;
-  }
-  const { kv } = await import('@vercel/kv');
-  return await kv.get<PromoCode>('promo:' + code.toUpperCase());
-}
-
-// Fonction pour sauvegarder un code promo
-export async function setPromoCode(code: string, data: PromoCode): Promise<void> {
-  if (!isKVAvailable()) {
-    localPromoStore.set(code.toUpperCase(), data);
-    return;
-  }
-  const { kv } = await import('@vercel/kv');
-  await kv.set('promo:' + code.toUpperCase(), data);
-}
-
-// Fonction pour mettre a jour les utilisations d'un code promo
-export async function incrementPromoUse(code: string): Promise<void> {
-  if (!isKVAvailable()) {
-    const promo = localPromoStore.get(code.toUpperCase());
-    if (promo) {
-      promo.currentUses++;
-      localPromoStore.set(code.toUpperCase(), promo);
-    }
-    return;
-  }
-  const { kv } = await import('@vercel/kv');
-  const promo = await kv.get<PromoCode>('promo:' + code.toUpperCase());
-  if (promo) {
-    promo.currentUses++;
-    await kv.set('promo:' + code.toUpperCase(), promo);
-  }
-}
-
-// Fonction pour recuperer les settings
-export async function getSettings(): Promise<AppSettings> {
-  if (!isKVAvailable()) {
-    return defaultSettings;
-  }
-  const { kv } = await import('@vercel/kv');
-  const settings = await kv.get<AppSettings>('settings:app');
-  return settings || defaultSettings;
-}
-
-// Fonction pour mettre a jour les settings
-export async function updateSettings(settings: Partial<AppSettings>): Promise<void> {
-  if (!isKVAvailable()) {
-    return;
-  }
-  const { kv } = await import('@vercel/kv');
-  const current = await getSettings();
-  await kv.set('settings:app', { ...current, ...settings });
 }
