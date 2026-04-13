@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { 
   Settings, Lock, DollarSign, Tag, Users, Plus, Trash2, 
@@ -64,6 +65,7 @@ interface AppSettings {
 }
 
 export default function AdminPage() {
+  const router = useRouter()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -355,6 +357,7 @@ export default function AdminPage() {
     setPassword('')
     setNewPassword('')
     setConfirmPassword('')
+    router.push('/admin/login')
   }
 
   const saveSettings = async (newSettings: AppSettings) => {
@@ -591,56 +594,19 @@ export default function AdminPage() {
     user.email.toLowerCase().includes(userSearch.toLowerCase())
   )
 
-  // LOGIN SCREEN
+  // LOGIN SCREEN - redirect to /admin/login
   if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Lock className="w-8 h-8 text-white" />
-            </div>
-            <h1 className="text-2xl font-bold text-gray-800">Admin GhostMeter</h1>
-            <p className="text-gray-500 text-sm mt-1">Connectez-vous pour accéder au panneau</p>
-          </div>
+    // Check session storage first
+    useEffect(() => {
+      const savedPassword = sessionStorage.getItem('admin_auth')
+      if (savedPassword) {
+        verifyAndRestoreSession(savedPassword)
+      } else {
+        router.push('/admin/login')
+      }
+    }, [])
 
-          <form onSubmit={handleLogin}>
-            <div className="relative mb-4">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Mot de passe admin"
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 pr-12"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
-
-            {error && (
-              <p className="text-red-500 text-sm mb-4 text-center">{error}</p>
-            )}
-
-            <button
-              type="submit"
-              disabled={isLoading || !password}
-              className="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-xl hover:opacity-90 disabled:opacity-50 transition-all"
-            >
-              {isLoading ? 'Connexion...' : 'Se connecter'}
-            </button>
-          </form>
-
-          <p className="text-center text-xs text-gray-400 mt-6">
-            Mot de passe par défaut: ghostmeter2024
-          </p>
-        </div>
-      </div>
-    )
+    return null
   }
 
   // ADMIN DASHBOARD
