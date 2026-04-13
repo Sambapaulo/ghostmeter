@@ -11,7 +11,7 @@ interface PaymentModalProps {
     pack12Months: number
     premiumCurrency: string
   }
-  onPayment: (planId: '1month' | '3months' | '12months') => void
+  onPayment: (planId: '1month' | '3months' | '12months', promoData?: { code: string; result: { valid: boolean; discount: number; discountType: string } | null }) => void
   isProcessing?: boolean
 }
 
@@ -61,6 +61,11 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     return Math.max(0, basePrice - promoResult.discount)
   }
 
+  const handlePayment = () => {
+    const promoData = promoCode && promoResult ? { code: promoCode, result: promoResult } : undefined
+    onPayment(selectedPack, promoData)
+  }
+
   const features = language === 'fr' ? [
     'Analyses illimitées',
     'Coach relationnel illimité',
@@ -78,6 +83,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     { id: '3months' as const, name: language === 'fr' ? '3 Mois' : '3 Months', price: settings.pack3Months, perMonth: settings.pack3Months / 3, popular: true },
     { id: '12months' as const, name: language === 'fr' ? '1 An' : '1 Year', price: settings.pack12Months, perMonth: settings.pack12Months / 12 }
   ]
+
+  const finalPrice = getCurrentDiscountedPrice()
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
@@ -134,7 +141,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
               disabled={isValidatingPromo || !promoCode.trim()}
               className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-sm font-medium disabled:opacity-50"
             >
-              {isValidatingPromo ? '...' : language === 'fr' ? 'OK' : 'OK'}
+              {isValidatingPromo ? '...' : 'OK'}
             </button>
           </div>
           {promoResult && (
@@ -160,7 +167,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
             {language === 'fr' ? 'Fermer' : 'Close'}
           </button>
           <button
-            onClick={() => onPayment(selectedPack)}
+            onClick={handlePayment}
             disabled={isProcessing}
             className="flex-1 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-semibold hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
           >
@@ -169,15 +176,20 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                 <Loader2 className="w-4 h-4 animate-spin" />
                 {language === 'fr' ? 'Redirection...' : 'Redirecting...'}
               </>
+            ) : finalPrice === 0 ? (
+              <>
+                <Crown className="w-4 h-4" />
+                {language === 'fr' ? 'Activer Premium' : 'Activate Premium'}
+              </>
             ) : promoResult?.valid ? (
               <span className="flex items-center gap-2">
                 <span className="line-through text-white/50 text-sm">{getPackPrice().toFixed(2)}{settings.premiumCurrency}</span>
-                <span>{getCurrentDiscountedPrice().toFixed(2)}{settings.premiumCurrency}</span>
+                <span>{finalPrice.toFixed(2)}{settings.premiumCurrency}</span>
               </span>
             ) : (
               <>
                 <CreditCard className="w-4 h-4" />
-                {language === 'fr' ? `Payer ${getPackPrice().toFixed(2)}${settings.premiumCurrency}` : `Pay ${getPackPrice().toFixed(2)}${settings.premiumCurrency}`}
+                {language === 'fr' ? `Payer ${finalPrice.toFixed(2)}${settings.premiumCurrency}` : `Pay ${finalPrice.toFixed(2)}${settings.premiumCurrency}`}
               </>
             )}
           </button>
