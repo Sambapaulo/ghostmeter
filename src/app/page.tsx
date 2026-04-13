@@ -3270,11 +3270,11 @@ export default function Home() {
             </p>
           )}
         </div>
-      </div>
 
-      {/* Modals - Paywall & Payment accessible depuis le coach */}
-      <PaywallModal isOpen={showPaywall} onClose={() => setShowPaywall(false)} onOpenPayment={() => { setShowPaywall(false); setShowPayment(true); }} language={language} showExhausted={paywallExhausted} />
-      <PaymentModal isOpen={showPayment} onClose={() => setShowPayment(false)} language={language} settings={settings} onPayment={(planId, promoData) => { setSelectedPlan(planId); const promoParam = promoData?.result?.valid ? { code: promoData.code, discount: promoData.result.discount, discountType: promoData.result.discountType, valid: promoData.result.valid } : undefined; activatePremium(promoParam); }} isProcessing={isProcessingPayment} />
+        {/* Modals - Paywall & Payment accessible depuis le coach */}
+        <PaywallModal isOpen={showPaywall} onClose={() => setShowPaywall(false)} onOpenPayment={() => { setShowPaywall(false); setShowPayment(true); }} language={language} showExhausted={paywallExhausted} />
+        <PaymentModal isOpen={showPayment} onClose={() => setShowPayment(false)} language={language} settings={settings} onPayment={(planId, promoData) => { setSelectedPlan(planId); const promoParam = promoData?.result?.valid ? { code: promoData.code, discount: promoData.result.discount, discountType: promoData.result.discountType, valid: promoData.result.valid } : undefined; activatePremium(promoParam); }} isProcessing={isProcessingPayment} />
+      </div>
     )
   }
 
