@@ -2575,7 +2575,7 @@ export default function Home() {
         <CGUModal />
         <ContactModal />
         <PaywallModal isOpen={showPaywall} onClose={() => setShowPaywall(false)} onOpenPayment={() => { setShowPaywall(false); setShowPayment(true); }} language={language} />
-        <PaymentModal isOpen={showPayment} onClose={() => setShowPayment(false)} language={language} settings={settings} onPayment={(planId, promoData) => { if (promoData) { setPromoCode(promoData.code); setPromoResult(promoData.result); } setSelectedPlan(planId); setTimeout(() => activatePremium(), 0); }} isProcessing={isProcessingPayment} />
+        <PaymentModal isOpen={showPayment} onClose={() => setShowPayment(false)} language={language} settings={settings} onPayment={(planId, promoData) => { if (promoData && promoData.result) { setPromoCode(promoData.code); setPromoResult({ valid: promoData.result.valid, discountedPrice: 0, discount: promoData.result.discount, discountType: promoData.result.discountType, message: '' }); } setSelectedPlan(planId); setTimeout(() => activatePremium(), 0); }} isProcessing={isProcessingPayment} />
         <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} onPremiumActivated={handlePremiumFromServer} mode={authMode} />
         
         {showOCR && <OCRUploader onTextExtracted={(t) => { setConversation(t); setShowOCR(false) }} onClose={() => setShowOCR(false)} />}
