@@ -26,6 +26,8 @@ export default function AdminLoginPage() {
       const data = await res.json()
 
       if (data.success) {
+        // Sauvegarder dans sessionStorage pour que /admin/page.tsx puisse verifier
+        sessionStorage.setItem('admin_auth', password)
         router.push('/admin')
         router.refresh()
       } else {
