@@ -7,7 +7,7 @@ import {
   Check, X, Eye, EyeOff, LogOut, Save, RefreshCw, Copy,
   Percent, Euro, Clock, Gift, Key, Crown, Mail, Calendar,
   TrendingUp, AlertCircle, Search, ChevronDown, ChevronUp, MessageCircle, Reply, Send, Loader2, Download,
-  Megaphone, Wrench, Pause, Play, BarChart3
+  Megaphone, Wrench, Pause, Play, BarChart3, ClipboardList
 } from 'lucide-react'
 
 // Import the stats chart component with SSR disabled
@@ -69,7 +69,7 @@ export default function AdminPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const [activeTab, setActiveTab] = useState<'stats' | 'pricing' | 'promos' | 'users' | 'messages' | 'newsletter' | 'maintenance' | 'security' | 'logs'>('stats')
+  const [activeTab, setActiveTab] = useState<'stats' | 'pricing' | 'promos' | 'users' | 'messages' | 'newsletter' | 'maintenance' | 'security' | 'logs' | 'journal'>('stats')
   
   const [settings, setSettings] = useState<AppSettings>({
     premiumPrice: 1.99,
@@ -114,6 +114,10 @@ export default function AdminPage() {
   const [replyModal, setReplyModal] = useState<{ open: boolean; message: ContactMessage | null }>({ open: false, message: null })
   const [replyText, setReplyText] = useState('')
   const [replySending, setReplySending] = useState(false)
+
+  // Journal Utilisateurs state
+  const [journalStats, setJournalStats] = useState<any>(null)
+  const [journalLoading, setJournalLoading] = useState(false)
 
   // Prepare chart data from users
   const getChartData = () => {
@@ -194,6 +198,7 @@ export default function AdminPage() {
       fetchSettings()
       fetchUsers()
       fetchMessages()
+      fetchJournalStats()
     }
   }, [isAuthenticated])
 
@@ -233,6 +238,21 @@ export default function AdminPage() {
       console.error('Failed to load messages')
     } finally {
       setMessagesLoading(false)
+    }
+  }
+
+  const fetchJournalStats = async () => {
+    setJournalLoading(true)
+    try {
+      const res = await fetch('/api/admin/logs?type=stats')
+      const data = await res.json()
+      if (data.success) {
+        setJournalStats(data.stats)
+      }
+    } catch (e) {
+      console.error('Failed to load journal stats')
+    } finally {
+      setJournalLoading(false)
     }
   }
 
@@ -784,6 +804,17 @@ export default function AdminPage() {
                   ON
                 </span>
               )}
+            </button>
+            <button
+              onClick={() => { setActiveTab('journal'); fetchJournalStats(); }}
+              className={`flex-1 py-3 px-4 text-sm font-medium flex items-center justify-center gap-2 ${
+                activeTab === 'journal' 
+                  ? 'text-purple-600 border-b-2 border-purple-600 bg-purple-50' 
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <ClipboardList className="w-4 h-4" />
+              Journal
             </button>
             <button
               onClick={() => setActiveTab('security')}
@@ -1859,6 +1890,268 @@ Nous avons une grande nouvelle à vous annoncer..."
                     Assurez-vous de mémoriser le nouveau mot de passe.
                   </p>
                 </div>
+              </div>
+            )}
+
+            {/* JOURNAL UTILISATEURS TAB */}
+            {activeTab === 'journal' && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
+                      <ClipboardList className="w-5 h-5 text-indigo-600" />
+                    </div>
+                    <div>
+                      <h2 className="font-semibold text-lg">Journal Utilisateurs</h2>
+                      <p className="text-xs text-gray-400">Activite des utilisateurs sur l&apos;application</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={fetchJournalStats}
+                    disabled={journalLoading}
+                    className="flex items-center gap-2 px-3 py-2 bg-indigo-500 text-white rounded-lg text-sm font-medium hover:bg-indigo-600 disabled:opacity-50 transition-colors"
+                  >
+                    <RefreshCw className={`w-4 h-4 ${journalLoading ? 'animate-spin' : ''}`} />
+                    Rafraichir
+                  </button>
+                </div>
+
+                {journalLoading && !journalStats ? (
+                  <div className="text-center py-12">
+                    <Loader2 className="w-8 h-8 animate-spin text-indigo-500 mx-auto mb-3" />
+                    <p className="text-gray-500">Chargement du journal...</p>
+                  </div>
+                ) : journalStats ? (
+                  <>
+                    {/* Aujourd'hui - KPI Cards */}
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Aujourd&apos;hui</h3>
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Users className="w-4 h-4 text-blue-500" />
+                            <p className="text-xs text-blue-600 font-medium">Connexions</p>
+                          </div>
+                          <p className="text-2xl font-bold text-blue-700">{journalStats.today?.logins || 0}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border border-green-200">
+                          <div className="flex items-center gap-2 mb-1">
+                            <BarChart3 className="w-4 h-4 text-green-500" />
+                            <p className="text-xs text-green-600 font-medium">Analyses</p>
+                          </div>
+                          <p className="text-2xl font-bold text-green-700">{journalStats.today?.analyses || 0}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border border-purple-200">
+                          <div className="flex items-center gap-2 mb-1">
+                            <MessageCircle className="w-4 h-4 text-purple-500" />
+                            <p className="text-xs text-purple-600 font-medium">Coach</p>
+                          </div>
+                          <p className="text-2xl font-bold text-purple-700">{journalStats.today?.coach || 0}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 border border-orange-200">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Crown className="w-4 h-4 text-orange-500" />
+                            <p className="text-xs text-orange-600 font-medium">Paiements</p>
+                          </div>
+                          <p className="text-2xl font-bold text-orange-700">{journalStats.today?.payments || 0}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl p-4 border border-pink-200">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Gift className="w-4 h-4 text-pink-500" />
+                            <p className="text-xs text-pink-600 font-medium">Promos</p>
+                          </div>
+                          <p className="text-2xl font-bold text-pink-700">{journalStats.today?.promosUsed || 0}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl p-4 border border-indigo-200">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Mail className="w-4 h-4 text-indigo-500" />
+                            <p className="text-xs text-indigo-600 font-medium">Inscriptions</p>
+                          </div>
+                          <p className="text-2xl font-bold text-indigo-700">{journalStats.today?.signups || 0}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Totaux + Taux de Conversion */}
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Totaux</h3>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div className="bg-white rounded-xl p-4 border border-gray-200">
+                          <p className="text-xs text-gray-500">Utilisateurs uniques</p>
+                          <p className="text-2xl font-bold text-gray-800">{journalStats.total?.users || 0}</p>
+                        </div>
+                        <div className="bg-white rounded-xl p-4 border border-gray-200">
+                          <p className="text-xs text-gray-500">Total connexions</p>
+                          <p className="text-2xl font-bold text-gray-800">{journalStats.total?.logins || 0}</p>
+                        </div>
+                        <div className="bg-white rounded-xl p-4 border border-gray-200">
+                          <p className="text-xs text-gray-500">Utilisateurs Premium</p>
+                          <p className="text-2xl font-bold text-gray-800">{journalStats.total?.premiumUsers || 0}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-4 border border-emerald-300">
+                          <p className="text-xs text-emerald-600 font-medium">Taux de Conversion</p>
+                          <p className="text-2xl font-bold text-emerald-700">{journalStats.total?.conversionRate || 0}%</p>
+                          <p className="text-[10px] text-emerald-500 mt-1">gratuit vers premium</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Graphique Connexions par jour (7 jours) */}
+                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                      <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
+                        <BarChart3 className="w-4 h-4 text-blue-600" />
+                        <h3 className="font-medium text-gray-700">Connexions par jour (7 derniers jours)</h3>
+                      </div>
+                      <div className="p-4">
+                        <div className="flex items-end gap-2 h-40">
+                          {journalStats.dailyLogins?.map((d: { date: string; count: number }, i: number) => {
+                            const maxCount = Math.max(...(journalStats.dailyLogins?.map((x: { count: number }) => x.count) || [1]), 1)
+                            const height = Math.max((d.count / maxCount) * 100, 4)
+                            return (
+                              <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                                <span className="text-xs font-bold text-blue-700">{d.count}</span>
+                                <div
+                                  className="w-full bg-gradient-to-t from-blue-500 to-blue-400 rounded-t-lg transition-all duration-500 min-h-[4px]"
+                                  style={{ height: `${height}%` }}
+                                />
+                                <span className="text-[10px] text-gray-400 text-center leading-tight">{d.date}</span>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Graphiques Analyses + Coach (cote a cote) */}
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                        <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
+                          <BarChart3 className="w-4 h-4 text-green-600" />
+                          <h3 className="font-medium text-gray-700">Analyses / jour</h3>
+                        </div>
+                        <div className="p-4">
+                          <div className="flex items-end gap-2 h-32">
+                            {journalStats.dailyAnalyses?.map((d: { date: string; count: number }, i: number) => {
+                              const maxCount = Math.max(...(journalStats.dailyAnalyses?.map((x: { count: number }) => x.count) || [1]), 1)
+                              const height = Math.max((d.count / maxCount) * 100, 4)
+                              return (
+                                <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                                  <span className="text-xs font-bold text-green-700">{d.count}</span>
+                                  <div
+                                    className="w-full bg-gradient-to-t from-green-500 to-green-400 rounded-t-lg transition-all duration-500 min-h-[4px]"
+                                    style={{ height: `${height}%` }}
+                                  />
+                                  <span className="text-[10px] text-gray-400 text-center leading-tight">{d.date}</span>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                        <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
+                          <MessageCircle className="w-4 h-4 text-purple-600" />
+                          <h3 className="font-medium text-gray-700">Questions Coach / jour</h3>
+                        </div>
+                        <div className="p-4">
+                          <div className="flex items-end gap-2 h-32">
+                            {journalStats.dailyCoach?.map((d: { date: string; count: number }, i: number) => {
+                              const maxCount = Math.max(...(journalStats.dailyCoach?.map((x: { count: number }) => x.count) || [1]), 1)
+                              const height = Math.max((d.count / maxCount) * 100, 4)
+                              return (
+                                <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                                  <span className="text-xs font-bold text-purple-700">{d.count}</span>
+                                  <div
+                                    className="w-full bg-gradient-to-t from-purple-500 to-purple-400 rounded-t-lg transition-all duration-500 min-h-[4px]"
+                                    style={{ height: `${height}%` }}
+                                  />
+                                  <span className="text-[10px] text-gray-400 text-center leading-tight">{d.date}</span>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Utilisation des codes promo */}
+                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                      <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
+                        <Gift className="w-4 h-4 text-pink-600" />
+                        <h3 className="font-medium text-gray-700">Utilisation des codes promo</h3>
+                      </div>
+                      <div className="p-4">
+                        {journalStats.promoUsage?.length > 0 ? (
+                          <div className="space-y-2">
+                            {journalStats.promoUsage.map((p: { code: string; count: number }, i: number) => (
+                              <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 bg-pink-100 rounded-lg flex items-center justify-center">
+                                    <Tag className="w-4 h-4 text-pink-600" />
+                                  </div>
+                                  <div>
+                                    <p className="text-sm font-semibold text-gray-800 font-mono">{p.code}</p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-lg font-bold text-gray-800">{p.count}</span>
+                                  <span className="text-xs text-gray-400">utilisation{p.count > 1 ? 's' : ''}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-8">
+                            <Gift className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                            <p className="text-sm text-gray-400">Aucune utilisation de code promo enregistree</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Conversions recentes */}
+                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                      <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
+                        <Crown className="w-4 h-4 text-amber-600" />
+                        <h3 className="font-medium text-gray-700">Conversions recentes (gratuit vers premium)</h3>
+                      </div>
+                      <div className="divide-y divide-gray-100 max-h-64 overflow-y-auto">
+                        {journalStats.recentConversions?.length > 0 ? (
+                          journalStats.recentConversions.map((c: { email: string; date: string; plan?: string }, i: number) => (
+                            <div key={i} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center">
+                                  <Crown className="w-4 h-4 text-white" />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium text-gray-800">{c.email}</p>
+                                  <p className="text-xs text-gray-400">{c.date}</p>
+                                </div>
+                              </div>
+                              {c.plan && (
+                                <span className="text-xs px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full font-medium">
+                                  {c.plan === '1month' ? '1 mois' : c.plan === '3months' ? '3 mois' : c.plan === '12months' ? '12 mois' : c.plan}
+                                </span>
+                              )}
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-center py-8">
+                            <Crown className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                            <p className="text-sm text-gray-400">Aucune conversion enregistree</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-12">
+                    <ClipboardList className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                    <p className="text-gray-500">Aucune donnee disponible</p>
+                    <p className="text-xs text-gray-400 mt-1">Les donnees apparaitront une fois que les utilisateurs commenceront a utiliser l&apos;app</p>
+                  </div>
+                )}
               </div>
             )}
           </div>

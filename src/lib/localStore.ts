@@ -250,28 +250,103 @@ export async function getUserLogs(limit: number = 100, email?: string): Promise<
   return logs;
 }
 
-// Stats rapides
+// Stats rapides (version etendue pour le Journal Utilisateurs)
 export async function getActivityStats(): Promise<{
-  today: { analyses: number; coach: number; payments: number; signups: number };
-  total: { analyses: number; coach: number; payments: number; users: number };
+  today: { analyses: number; coach: number; payments: number; signups: number; logins: number; promosUsed: number };
+  total: { analyses: number; coach: number; payments: number; users: number; logins: number; promosUsed: number; premiumUsers: number; conversionRate: number };
+  dailyLogins: { date: string; count: number }[];
+  dailyAnalyses: { date: string; count: number }[];
+  dailyCoach: { date: string; count: number }[];
+  promoUsage: { code: string; count: number }[];
+  recentConversions: { email: string; date: string; plan?: string }[];
 }> {
   const logs = await getUserLogs(5000);
   const today = new Date().setHours(0,0,0,0);
   
   const todayLogs = logs.filter(l => l.timestamp >= today);
-  
+
+  // Logins par jour (7 derniers jours)
+  const dailyLoginsMap = new Map<string, number>();
+  const dailyAnalysesMap = new Map<string, number>();
+  const dailyCoachMap = new Map<string, number>();
+
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().split('T')[0];
+    dailyLoginsMap.set(key, 0);
+    dailyAnalysesMap.set(key, 0);
+    dailyCoachMap.set(key, 0);
+  }
+
+  logs.forEach(l => {
+    const dateKey = new Date(l.timestamp).toISOString().split('T')[0];
+    if (dailyLoginsMap.has(dateKey)) {
+      if (l.action === 'login') dailyLoginsMap.set(dateKey, (dailyLoginsMap.get(dateKey) || 0) + 1);
+      if (l.action === 'analyze') dailyAnalysesMap.set(dateKey, (dailyAnalysesMap.get(dateKey) || 0) + 1);
+      if (l.action === 'coach_question') dailyCoachMap.set(dateKey, (dailyCoachMap.get(dateKey) || 0) + 1);
+    }
+  });
+
+  // Utilisation des codes promo
+  const promoUsageMap = new Map<string, number>();
+  logs.filter(l => l.action === 'promo_used').forEach(l => {
+    const code = l.details.replace('Code promo utilise: ', '').toUpperCase();
+    promoUsageMap.set(code, (promoUsageMap.get(code) || 0) + 1);
+  });
+
+  // Conversions recentes (gratuit -> premium)
+  const recentConversions = logs
+    .filter(l => l.action === 'payment' || (l.action === 'promo_used' && l.details.includes('Premium active')))
+    .slice(0, 20)
+    .map(l => ({
+      email: l.email,
+      date: new Date(l.timestamp).toLocaleDateString('fr-FR'),
+      plan: l.plan
+    }));
+
+  // Calcul du taux de conversion total
+  const uniqueUsers = new Set(logs.map(l => l.email));
+  const premiumPayments = new Set(
+    logs.filter(l => l.action === 'payment').map(l => l.email)
+  );
+  const premiumPromos = new Set(
+    logs.filter(l => l.action === 'promo_used').map(l => l.email)
+  );
+  const allPremiumUsers = new Set([...premiumPayments, ...premiumPromos]);
+
   return {
     today: {
       analyses: todayLogs.filter(l => l.action === 'analyze').length,
       coach: todayLogs.filter(l => l.action === 'coach_question').length,
       payments: todayLogs.filter(l => l.action === 'payment').length,
       signups: todayLogs.filter(l => l.action === 'register').length,
+      logins: todayLogs.filter(l => l.action === 'login').length,
+      promosUsed: todayLogs.filter(l => l.action === 'promo_used').length,
     },
     total: {
       analyses: logs.filter(l => l.action === 'analyze').length,
       coach: logs.filter(l => l.action === 'coach_question').length,
       payments: logs.filter(l => l.action === 'payment').length,
-      users: new Set(logs.map(l => l.email)).size,
-    }
+      users: uniqueUsers.size,
+      logins: logs.filter(l => l.action === 'login').length,
+      promosUsed: logs.filter(l => l.action === 'promo_used').length,
+      premiumUsers: allPremiumUsers.size,
+      conversionRate: uniqueUsers.size > 0 ? Math.round((allPremiumUsers.size / uniqueUsers.size) * 100) : 0,
+    },
+    dailyLogins: Array.from(dailyLoginsMap.entries()).map(([date, count]) => ({
+      date: new Date(date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' }),
+      count
+    })),
+    dailyAnalyses: Array.from(dailyAnalysesMap.entries()).map(([date, count]) => ({
+      date: new Date(date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' }),
+      count
+    })),
+    dailyCoach: Array.from(dailyCoachMap.entries()).map(([date, count]) => ({
+      date: new Date(date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' }),
+      count
+    })),
+    promoUsage: Array.from(promoUsageMap.entries()).map(([code, count]) => ({ code, count })),
+    recentConversions
   };
 }

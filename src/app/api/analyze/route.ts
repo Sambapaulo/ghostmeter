@@ -24,7 +24,7 @@ const openai = new OpenAI({
 
 export async function POST(request: NextRequest) {
   try {
-    const { conversation, context } = await request.json();
+    const { conversation, context, email } = await request.json();
 
     if (!conversation || typeof conversation !== 'string') {
       return NextResponse.json({ error: 'Conversation requise' }, { status: 400 });
@@ -79,6 +79,11 @@ Réponds UNIQUEMENT avec un JSON valide (sans markdown, sans backticks):
     if (!Array.isArray(analysis.highlights.positive)) analysis.highlights.positive = [];
     if (!Array.isArray(analysis.highlights.negative)) analysis.highlights.negative = [];
     if (!Array.isArray(analysis.highlights.neutral)) analysis.highlights.neutral = [];
+
+    // Log l'analyse dans le journal utilisateur
+    if (email) {
+      await addUserLog(email, 'analyze', `Analyse conversation (contexte: ${context || 'crush'}, score: ${analysis.overallScore})`);
+    }
 
     return NextResponse.json({ success: true, analysis });
   } catch (error) {

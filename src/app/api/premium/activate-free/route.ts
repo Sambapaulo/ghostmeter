@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { kv } from '@vercel/kv';
 import { getSettings, saveSettings } from '@/lib/kv';
+import { addUserLog } from '@/lib/localStore';
 
 interface User {
   email: string;
@@ -95,6 +96,9 @@ export async function POST(request: NextRequest) {
       settings.promoCodes[promoIndex].currentUses += 1;
       await saveSettings(settings);
     }
+
+    // Log l'utilisation du code promo
+    await addUserLog(email, 'promo_used', `Premium active via code promo: ${promoCode.toUpperCase()}`);
 
     return NextResponse.json({
       success: true,

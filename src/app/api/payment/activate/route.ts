@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { kv } from '@vercel/kv';
+import { addUserLog } from '@/lib/localStore';
 
 interface User {
   email: string;
@@ -95,6 +96,9 @@ export async function POST(request: NextRequest) {
       provider,
       expiry: expiryDate.toISOString()
     });
+
+    // Log le paiement dans le journal utilisateur
+    await addUserLog(email, 'payment', `Paiement pack ${packId} via ${provider || 'unknown'}`, { plan: packId });
 
     return NextResponse.json({
       success: true,

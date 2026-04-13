@@ -123,8 +123,8 @@ IMPORTANTE: Responde SIEMPRE en español.`
 
 export async function POST(request: NextRequest) {
   try {
-    const body: CoachRequest = await request.json();
-    const { message, conversationHistory = [], context, language = 'fr' } = body;
+    const body: CoachRequest & { email?: string } = await request.json();
+    const { message, conversationHistory = [], context, language = 'fr', email } = body;
 
     if (!message || message.trim().length < 2) {
       return NextResponse.json({ error: 'Message trop court' }, { status: 400 });
@@ -191,6 +191,11 @@ ${language === 'fr' ? "Message de l'utilisateur" : language === 'en' ? "User's m
         reply: getFallbackCoachReply(message, context, language),
         fallback: true
       });
+    }
+
+    // Log la question coach dans le journal utilisateur
+    if (email) {
+      await addUserLog(email, 'coach_question', `Question coach: ${message.substring(0, 80)}${message.length > 80 ? '...' : ''}`);
     }
 
     return NextResponse.json({
