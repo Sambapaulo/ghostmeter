@@ -508,11 +508,16 @@ export default function AdminPage() {
       const data = await res.json()
       
       if (data.success) {
+        // Mettre a jour le password state ET sessionStorage avec le nouveau mot de passe
+        setPassword(newPassword)
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('admin_auth', newPassword)
+        }
         setPasswordSuccess(true)
         setNewPassword('')
         setConfirmPassword('')
       } else {
-        setPasswordError('Erreur lors du changement de mot de passe')
+        setPasswordError(data.error || 'Erreur lors du changement de mot de passe')
       }
     } catch (e) {
       setPasswordError('Erreur serveur')

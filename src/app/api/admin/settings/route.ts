@@ -48,12 +48,15 @@ export async function POST(request: NextRequest) {
     if (body.action === 'update') {
       const newSettings = body.settings
 
-      // Preserve the password if not changed
-      if (newSettings.adminPassword === '••••••••' || !newSettings.adminPassword) {
-        newSettings.adminPassword = currentSettings.adminPassword
-      }
+      // Toujours preserver le mot de passe actuel (ne jamais l'ecraser)
+      newSettings.adminPassword = currentSettings.adminPassword
 
-      await saveSettings(newSettings)
+      const saved = await saveSettings(newSettings)
+      if (!saved) {
+        console.error('[UPDATE SETTINGS] Erreur: saveSettings a echoue')
+        return NextResponse.json({ success: false, error: 'Erreur de sauvegarde' }, { status: 500 })
+      }
+      
       return NextResponse.json({ success: true })
     }
 
@@ -65,7 +68,21 @@ export async function POST(request: NextRequest) {
       
       if (body.currentPassword === currentValidPassword) {
         currentSettings.adminPassword = body.newPassword
-        await saveSettings(currentSettings)
+        const saved = await saveSettings(currentSettings)
+        
+        if (!saved) {
+          console.error('[CHANGE PASSWORD] Erreur: saveSettings a echoue, le mot de passe n\'est PAS sauvegarde')
+          return NextResponse.json({ success: false, error: 'Erreur de sauvegarde. Le mot de passe n\'a pas ete enregistre.' }, { status: 500 })
+        }
+        
+        // Verifier que le mot de passe a bien ete sauvegarde en le relisant
+        const verifySettings = await getSettings()
+        if (verifySettings.adminPassword !== body.newPassword) {
+          console.error('[CHANGE PASSWORD] Erreur de verification: le mot de passe lu ne correspond pas')
+          return NextResponse.json({ success: false, error: 'Erreur de verification. Reessayez.' }, { status: 500 })
+        }
+        
+        console.log('[CHANGE PASSWORD] Mot de passe change et verifie avec succes')
         return NextResponse.json({ success: true })
       } else {
         return NextResponse.json({ success: false, error: 'Mot de passe actuel incorrect' }, { status: 401 })
