@@ -5,12 +5,12 @@ import { jwtVerify } from 'jose'
 const SECRET_KEY = process.env.JWT_SECRET || 'ghostmeter-super-secret-key-change-in-production'
 const key = new TextEncoder().encode(SECRET_KEY)
 
-// Routes protégées
+// Routes protegees
 const protectedRoutes = ['/admin']
 const protectedApiRoutes = ['/api/admin/']
 
-// Routes a exclure de la protection
-const excludedRoutes = ['/admin/login', '/api/admin/auth', '/api/admin/setup']
+// Routes a exclure de la protection (pas de redirect/cookie check)
+const excludedRoutes = ['/api/admin/auth', '/api/admin/setup']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -28,10 +28,14 @@ export async function middleware(request: NextRequest) {
     const token = request.cookies.get('admin_session')?.value
 
     if (!token) {
-      // Pour les pages, rediriger vers login
+      // La page /admin gere elle-meme l'affichage du login
+      // On ne redirige pas, on laisse la page gerer
+      if (pathname === '/admin') {
+        return NextResponse.next()
+      }
+      // Pour les sous-pages admin, rediriger vers /admin
       if (isProtectedPage) {
-        const loginUrl = new URL('/admin/login', request.url)
-        return NextResponse.redirect(loginUrl)
+        return NextResponse.redirect(new URL('/admin', request.url))
       }
       // Pour les API, retourner 401
       return NextResponse.json({ error: 'Non autorise' }, { status: 401 })
@@ -42,9 +46,12 @@ export async function middleware(request: NextRequest) {
       return NextResponse.next()
     } catch (error) {
       // Token invalide ou expire
+      if (pathname === '/admin') {
+        // Laisser la page /admin gerer le re-login
+        return NextResponse.next()
+      }
       if (isProtectedPage) {
-        const loginUrl = new URL('/admin/login', request.url)
-        const response = NextResponse.redirect(loginUrl)
+        const response = NextResponse.redirect(new URL('/admin', request.url))
         response.cookies.delete('admin_session')
         return response
       }
