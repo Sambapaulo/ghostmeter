@@ -6,13 +6,15 @@ interface PaywallModalProps {
   onClose: () => void
   onOpenPayment: () => void
   language?: string
+  showExhausted?: boolean
 }
 
 const PaywallModal: React.FC<PaywallModalProps> = ({ 
   isOpen, 
   onClose, 
   onOpenPayment,
-  language = 'fr'
+  language = 'fr',
+  showExhausted = false
 }) => {
   if (!isOpen) return null
 
@@ -44,12 +46,20 @@ const PaywallModal: React.FC<PaywallModalProps> = ({
             <Crown className="w-8 h-8 text-white" />
           </div>
           <h3 className="text-2xl font-bold text-white mb-2">
-            {language === 'fr' ? 'Analyses gratuites épuisées !' : 'Free analyses exhausted!'}
+            {showExhausted
+              ? (language === 'fr' ? 'Analyses gratuites épuisées !' : 'Free analyses exhausted!')
+              : (language === 'fr' ? 'Passez au niveau supérieur' : 'Take it to the next level')
+            }
           </h3>
           <p className="text-gray-400 text-sm">
-            {language === 'fr' 
-              ? 'Passez Premium pour continuer a utiliser GhostMeter sans limite'
-              : 'Go Premium to continue using GhostMeter without limits'}
+            {showExhausted
+              ? (language === 'fr' 
+                ? 'Passez Premium pour continuer a utiliser GhostMeter sans limite'
+                : 'Go Premium to continue using GhostMeter without limits')
+              : (language === 'fr'
+                ? 'Debloquez tout le potentiel de GhostMeter avec Premium'
+                : 'Unlock the full potential of GhostMeter with Premium')
+            }
           </p>
         </div>
 

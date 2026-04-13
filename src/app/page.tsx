@@ -708,6 +708,7 @@ export default function Home() {
   const [selectedContext, setSelectedContext] = useState('crush')
   const [remaining, setRemaining] = useState(3)
   const [showPaywall, setShowPaywall] = useState(false)
+  const [paywallExhausted, setPaywallExhausted] = useState(false)
   const [showPayment, setShowPayment] = useState(false)
   const [selectedPlan, setSelectedPlan] = useState<'1month' | '3months' | '12months'>('3months')
   const [isPremium, setIsPremium] = useState(false)
@@ -1494,6 +1495,7 @@ export default function Home() {
   const handleAnalyze = async () => {
     if (conversation.trim().length < 20) return
     if (!isPremium && remaining <= 0) {
+      setPaywallExhausted(true)
       setShowPaywall(true)
       return
     }
@@ -1555,6 +1557,7 @@ export default function Home() {
     }
 
     if (!isPremium) {
+      setPaywallExhausted(true)
       setShowPaywall(true)
       return
     }
@@ -1613,6 +1616,7 @@ export default function Home() {
 
     // Vérifier la limite pour les utilisateurs gratuits
     if (!isPremium && coachQuestionsRemaining <= 0) {
+      setPaywallExhausted(true)
       setShowPaywall(true)
       return
     }
@@ -1977,7 +1981,7 @@ export default function Home() {
           
           {!isPremium && (
             <button 
-              onClick={() => { setShowPaywall(true); setShowMenu(false) }}
+              onClick={() => { setPaywallExhausted(false); setShowPaywall(true); setShowMenu(false) }}
               className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors mt-1"
             >
               <Crown className="w-5 h-5 text-yellow-500" />
@@ -2575,7 +2579,7 @@ export default function Home() {
         <AboutModal />
         <CGUModal />
         <ContactModal />
-        <PaywallModal isOpen={showPaywall} onClose={() => setShowPaywall(false)} onOpenPayment={() => { setShowPaywall(false); setShowPayment(true); }} language={language} />
+        <PaywallModal isOpen={showPaywall} onClose={() => setShowPaywall(false)} onOpenPayment={() => { setShowPaywall(false); setShowPayment(true); }} language={language} showExhausted={paywallExhausted} />
         <PaymentModal isOpen={showPayment} onClose={() => setShowPayment(false)} language={language} settings={settings} onPayment={(planId, promoData) => { setSelectedPlan(planId); const promoParam = promoData?.result?.valid ? { code: promoData.code, discount: promoData.result.discount, discountType: promoData.result.discountType, valid: promoData.result.valid } : undefined; activatePremium(promoParam); }} isProcessing={isProcessingPayment} />
         <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} onPremiumActivated={handlePremiumFromServer} mode={authMode} />
         
@@ -2810,7 +2814,7 @@ export default function Home() {
               <button onClick={() => { setAnalysis(null); setAppState('home') }} className="py-3 bg-gray-100 dark:bg-gray-700 dark:text-white rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"><RefreshCw className="w-4 h-4 mx-auto mb-1" />{t('results.new', language)}</button>
               <button onClick={handleShare} className="py-3 bg-gray-100 dark:bg-gray-700 dark:text-white rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"><Share2 className="w-4 h-4 mx-auto mb-1" />{t('results.share', language)}</button>
               {!isPremium ? (
-                <button onClick={() => setShowPaywall(true)} className="py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium hover:opacity-90"><Crown className="w-4 h-4 mx-auto mb-1" />{t('menu.premium', language)}</button>
+                <button onClick={() => { setPaywallExhausted(false); setShowPaywall(true) }} className="py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium hover:opacity-90"><Crown className="w-4 h-4 mx-auto mb-1" />{t('menu.premium', language)}</button>
               ) : (
                 <div className="py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium flex items-center justify-center gap-1"><Crown className="w-4 h-4" />{t('menu.premium_active', language)}</div>
               )}
