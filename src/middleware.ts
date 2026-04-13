@@ -9,21 +9,24 @@ const key = new TextEncoder().encode(SECRET_KEY)
 const protectedRoutes = ['/admin']
 const protectedApiRoutes = ['/api/admin/']
 
+// Routes a exclure de la protection
+const excludedRoutes = ['/admin/login', '/api/admin/auth', '/api/admin/setup']
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  
-  // Vérifier si c'est une route protégée
-  const isProtectedPage = protectedRoutes.some(route => pathname === route || pathname.startsWith(route + '/'))
-  const isProtectedApi = protectedApiRoutes.some(route => pathname.startsWith(route))
-  
-  // Exclure la route d'authentification de la protection
-  if (pathname === '/api/admin/auth' || pathname === '/api/admin/setup') {
+
+  // Exclure les routes publiques
+  if (excludedRoutes.some(route => pathname === route)) {
     return NextResponse.next()
   }
-  
+
+  // Verifier si c'est une route protegee
+  const isProtectedPage = protectedRoutes.some(route => pathname === route || pathname.startsWith(route + '/'))
+  const isProtectedApi = protectedApiRoutes.some(route => pathname.startsWith(route))
+
   if (isProtectedPage || isProtectedApi) {
     const token = request.cookies.get('admin_session')?.value
-    
+
     if (!token) {
       // Pour les pages, rediriger vers login
       if (isProtectedPage) {
@@ -31,27 +34,27 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(loginUrl)
       }
       // Pour les API, retourner 401
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+      return NextResponse.json({ error: 'Non autorise' }, { status: 401 })
     }
-    
+
     try {
       await jwtVerify(token, key, { algorithms: ['HS256'] })
       return NextResponse.next()
     } catch (error) {
-      // Token invalide ou expiré
+      // Token invalide ou expire
       if (isProtectedPage) {
         const loginUrl = new URL('/admin/login', request.url)
         const response = NextResponse.redirect(loginUrl)
         response.cookies.delete('admin_session')
         return response
       }
-      
-      const response = NextResponse.json({ error: 'Session expirée' }, { status: 401 })
+
+      const response = NextResponse.json({ error: 'Session expiree' }, { status: 401 })
       response.cookies.delete('admin_session')
       return response
     }
   }
-  
+
   return NextResponse.next()
 }
 
