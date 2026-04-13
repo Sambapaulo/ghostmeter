@@ -2533,7 +2533,7 @@ export default function Home() {
   // MAINTENANCE MODE PAGE - DISABLED
   // if (maintenanceMode) {
   //   return (
-  //     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+  //     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex items-center justify-center p-4">
   //       <div className="text-center max-w-md">
   //         <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
   //           <span className="text-4xl">👻</span>
@@ -2558,7 +2558,7 @@ export default function Home() {
   // HOME PAGE
   if (appState === 'home') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
         <MenuDrawer />
 
         {/* Walkthrough overlay */}
@@ -2715,7 +2715,7 @@ export default function Home() {
   // ANALYZING PAGE
   if (appState === 'analyzing') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex flex-col items-center justify-center p-8">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex flex-col items-center justify-center p-8">
         <div className="animate-bounce"><GhostLogo size={100} /></div>
         <p className="text-xl mt-6 text-gray-500 dark:text-gray-400">{t('analyzing', language)}</p>
       </div>
@@ -2725,7 +2725,7 @@ export default function Home() {
   // RESULTS PAGE
   if (appState === 'results' && analysis) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
         <MenuDrawer />
 
         {/* Walkthrough overlay */}
@@ -2824,7 +2824,7 @@ export default function Home() {
   // REPLY GENERATOR PAGE
   if (appState === 'reply') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
         <MenuDrawer />
 
         {/* Walkthrough overlay */}
@@ -3064,7 +3064,7 @@ export default function Home() {
   // COACH PAGE
   if (appState === 'coach') {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-purple-50 to-pink-50 dark:from-gray-900 dark:to-gray-800">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
         
         {/* Coach History Modal */}
         {showCoachHistory && (
