@@ -17,7 +17,7 @@ export async function middleware(request: NextRequest) {
   const isProtectedApi = protectedApiRoutes.some(route => pathname.startsWith(route))
   
   // Exclure la route d'authentification de la protection
-  if (pathname === '/api/admin/auth') {
+  if (pathname === '/api/admin/auth' || pathname === '/api/admin/setup') {
     return NextResponse.next()
   }
   
