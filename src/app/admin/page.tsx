@@ -634,6 +634,10 @@ export default function AdminPage() {
               {isLoading ? 'Connexion...' : 'Se connecter'}
             </button>
           </form>
+
+          <p className="text-center text-xs text-gray-400 mt-6">
+            Mot de passe par défaut: ghostmeter2024
+          </p>
         </div>
       </div>
     )
