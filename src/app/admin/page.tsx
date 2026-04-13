@@ -1806,6 +1806,7 @@ Nous avons une grande nouvelle à vous annoncer..."
                     <div className="relative">
                       <input
                         type={showNewPassword ? 'text' : 'password'}
+                          autoComplete="new-password"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         placeholder="Minimum 6 caractères"
@@ -1826,6 +1827,7 @@ Nous avons une grande nouvelle à vous annoncer..."
                     <div className="relative">
                       <input
                         type={showConfirmPassword ? 'text' : 'password'}
+                          autoComplete="new-password"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="Retapez le mot de passe"
