@@ -1788,24 +1788,25 @@ export default function Home() {
       // Determine the price to charge (promo price or pack price)
       // Calculate discounted price dynamically based on current pack
       let priceToCharge: number
-      if (promoResult?.valid) {
-        if (promoResult.discountType === 'percent') {
-          priceToCharge = basePrice * (1 - promoResult.discount / 100)
+      const effectivePromo = promoDataParam;
+      if (effectivePromo?.valid) {
+        if (effectivePromo.discountType === 'percent') {
+          priceToCharge = basePrice * (1 - effectivePromo.discount / 100)
         } else {
-          priceToCharge = Math.max(0, basePrice - promoResult.discount)
+          priceToCharge = Math.max(0, basePrice - effectivePromo.discount)
         }
       } else {
         priceToCharge = basePrice
       }
 
       // If price is 0 (100% promo code), activate premium directly without PayPal
-      if (priceToCharge === 0 && promoResult?.valid && promoCode) {
+      if (priceToCharge === 0 && effectivePromo?.valid && effectivePromo.code) {
         const freeRes = await fetch('/api/premium/activate-free', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             email: userEmail,
-            promoCode: promoCode
+            promoCode: effectivePromo.code
           })
         })
         const freeData = await freeRes.json()
