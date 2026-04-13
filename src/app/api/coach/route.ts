@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { addUserLog } from '@/lib/localStore';
 
 // AI Coach API - GhostMeter v1.6.0
 

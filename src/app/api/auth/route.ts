@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createHash, randomBytes } from 'crypto';
+import { addUserLog } from '@/lib/localStore';
 import { isKVAvailable, getUser, setUser, User } from '@/lib/localStore';
 
 function hashPassword(password: string): string {
@@ -111,6 +112,7 @@ export async function POST(request: NextRequest) {
       const newSessionId = generateSessionId();
       const newUser: User = { email: email.toLowerCase(), password: hashedPassword, isPremium: false, premiumSince: null, analysesCount: 0, createdAt: now, lastActive: now, sessionId: newSessionId, sessionCreatedAt: now };
       await setUser(email, newUser);
+      await addUserLog(email, 'register', 'Nouveau compte cree');
       return NextResponse.json({ success: true, user: { email: newUser.email, isPremium: newUser.isPremium }, sessionId: newSessionId, isNew: true });
     }
 
@@ -130,6 +132,7 @@ export async function POST(request: NextRequest) {
       }
       
       await setUser(email, existingUser);
+      await addUserLog(email, 'login', 'Connexion reussie');
       const hasValidPremium = premiumCheck.isPremium && (!!existingUser.paypalOrderId || !!existingUser.adminGranted);
       return NextResponse.json({ success: true, user: { email: existingUser.email, isPremium: hasValidPremium, premiumPlan: existingUser.premiumPlan, premiumExpiresAt: existingUser.premiumExpiresAt }, sessionId: newSessionId, isNew: false });
     }

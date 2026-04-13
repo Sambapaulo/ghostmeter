@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { addUserLog } from '@/lib/localStore';
 import OpenAI from 'openai';
 
 interface AnalysisResult {

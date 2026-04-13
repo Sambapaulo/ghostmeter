@@ -167,3 +167,111 @@ export async function updateSettings(settings: Partial<AppSettings>): Promise<vo
   const current = await getSettings();
   await kv.set('settings:app', { ...current, ...settings });
 }
+
+// Interfaces pour les logs
+export interface AdminLog {
+  id: string;
+  timestamp: number;
+  action: 'login' | 'logout' | 'change_password' | 'update_settings' | 'create_promo' | 'delete_promo' | 'grant_premium' | 'revoke_premium' | 'send_newsletter';
+  details: string;
+  ip?: string;
+}
+
+export interface UserActivityLog {
+  id: string;
+  timestamp: number;
+  email: string;
+  action: 'login' | 'register' | 'logout' | 'analyze' | 'coach_question' | 'payment' | 'promo_used';
+  details: string;
+  plan?: string;
+  price?: number;
+}
+
+// Maps pour les logs
+const localAdminLogs = new Map<string, AdminLog>();
+const localUserLogs = new Map<string, UserActivityLog>();
+
+// Fonctions pour les logs admin
+export async function addAdminLog(action: AdminLog['action'], details: string, ip?: string): Promise<void> {
+  const log: AdminLog = {
+    id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+    timestamp: Date.now(),
+    action,
+    details,
+    ip
+  };
+  
+  if (!isKVAvailable()) {
+    localAdminLogs.set(log.id, log);
+    return;
+  }
+  const { kv } = await import('@vercel/kv');
+  await kv.lpush('logs:admin', log);
+  await kv.ltrim('logs:admin', 0, 999); // Garder les 1000 derniers
+}
+
+export async function getAdminLogs(limit: number = 100): Promise<AdminLog[]> {
+  if (!isKVAvailable()) {
+    return Array.from(localAdminLogs.values()).sort((a, b) => b.timestamp - a.timestamp).slice(0, limit);
+  }
+  const { kv } = await import('@vercel/kv');
+  return await kv.lrange('logs:admin', 0, limit - 1) as AdminLog[];
+}
+
+// Fonctions pour les logs utilisateur
+export async function addUserLog(email: string, action: UserActivityLog['action'], details: string, extra?: { plan?: string; price?: number }): Promise<void> {
+  const log: UserActivityLog = {
+    id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+    timestamp: Date.now(),
+    email: email.toLowerCase(),
+    action,
+    details,
+    ...extra
+  };
+  
+  if (!isKVAvailable()) {
+    localUserLogs.set(log.id, log);
+    return;
+  }
+  const { kv } = await import('@vercel/kv');
+  await kv.lpush('logs:users', log);
+  await kv.ltrim('logs:users', 0, 4999); // Garder les 5000 derniers
+}
+
+export async function getUserLogs(limit: number = 100, email?: string): Promise<UserActivityLog[]> {
+  if (!isKVAvailable()) {
+    let logs = Array.from(localUserLogs.values());
+    if (email) logs = logs.filter(l => l.email === email.toLowerCase());
+    return logs.sort((a, b) => b.timestamp - a.timestamp).slice(0, limit);
+  }
+  const { kv } = await import('@vercel/kv');
+  let logs = await kv.lrange('logs:users', 0, limit - 1) as UserActivityLog[];
+  if (email) logs = logs.filter(l => l.email === email.toLowerCase());
+  return logs;
+}
+
+// Stats rapides
+export async function getActivityStats(): Promise<{
+  today: { analyses: number; coach: number; payments: number; signups: number };
+  total: { analyses: number; coach: number; payments: number; users: number };
+}> {
+  const logs = await getUserLogs(5000);
+  const today = new Date().setHours(0,0,0,0);
+  
+  const todayLogs = logs.filter(l => l.timestamp >= today);
+  
+  return {
+    today: {
+      analyses: todayLogs.filter(l => l.action === 'analyze').length,
+      coach: todayLogs.filter(l => l.action === 'coach_question').length,
+      payments: todayLogs.filter(l => l.action === 'payment').length,
+      signups: todayLogs.filter(l => l.action === 'register').length,
+    },
+    total: {
+      analyses: logs.filter(l => l.action === 'analyze').length,
+      coach: logs.filter(l => l.action === 'coach_question').length,
+      payments: logs.filter(l => l.action === 'payment').length,
+      users: new Set(logs.map(l => l.email)).size,
+    }
+  };
+}

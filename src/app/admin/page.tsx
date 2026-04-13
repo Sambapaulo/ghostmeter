@@ -69,7 +69,7 @@ export default function AdminPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const [activeTab, setActiveTab] = useState<'stats' | 'pricing' | 'promos' | 'users' | 'messages' | 'newsletter' | 'maintenance' | 'security'>('stats')
+  const [activeTab, setActiveTab] = useState<'stats' | 'pricing' | 'promos' | 'users' | 'messages' | 'newsletter' | 'maintenance' | 'security' | 'logs'>('stats')
   
   const [settings, setSettings] = useState<AppSettings>({
     premiumPrice: 1.99,
