@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     if (body.action === 'login') {
       // Use environment variable password if set, otherwise use stored password
       const validPassword = adminPassword !== 'ghostmeter2024' ? adminPassword : currentSettings.adminPassword
-      
+
       if (body.password === validPassword) {
         return NextResponse.json({
           success: true,
@@ -45,26 +45,32 @@ export async function POST(request: NextRequest) {
     // UPDATE SETTINGS
     if (body.action === 'update') {
       const newSettings = body.settings
-      
+
       // Preserve the password if not changed
       if (newSettings.adminPassword === '••••••••' || !newSettings.adminPassword) {
         newSettings.adminPassword = currentSettings.adminPassword
       }
-      
+
       await saveSettings(newSettings)
       return NextResponse.json({ success: true })
     }
 
     // CHANGE PASSWORD
     if (body.action === 'changePassword') {
-      const validPassword = adminPassword !== 'ghostmeter2024' ? adminPassword : currentSettings.adminPassword
+      // Utiliser le mot de passe stocke dans les settings
+      const storedPassword = currentSettings.adminPassword || 'ghostmeter2024'
       
-      if (body.currentPassword === validPassword) {
+      // Verifier si le mot de passe actuel est correct
+      // Accepter soit le mot de passe stocke, soit le mot de passe d'environnement
+      const isCorrectPassword = body.currentPassword === storedPassword || 
+                                 (adminPassword !== 'ghostmeter2024' && body.currentPassword === adminPassword)
+      
+      if (isCorrectPassword) {
         currentSettings.adminPassword = body.newPassword
         await saveSettings(currentSettings)
         return NextResponse.json({ success: true })
       } else {
-        return NextResponse.json({ success: false, error: 'Invalid current password' }, { status: 401 })
+        return NextResponse.json({ success: false, error: 'Mot de passe actuel incorrect' }, { status: 401 })
       }
     }
 
