@@ -26,8 +26,10 @@ export async function POST(request: NextRequest) {
 
     // LOGIN ACTION
     if (body.action === 'login') {
-      // Use environment variable password if set, otherwise use stored password
-      const validPassword = adminPassword !== 'ghostmeter2024' ? adminPassword : currentSettings.adminPassword
+      // Priorite : mot de passe stocke dans les settings (change par l'admin)
+      // Fallback : variable d'environnement ADMIN_PASSWORD, puis mot de passe par defaut
+      const envPassword = adminPassword !== 'ghostmeter2024' ? adminPassword : null
+      const validPassword = currentSettings.adminPassword || envPassword || 'ghostmeter2024'
 
       if (body.password === validPassword) {
         return NextResponse.json({
@@ -57,15 +59,11 @@ export async function POST(request: NextRequest) {
 
     // CHANGE PASSWORD
     if (body.action === 'changePassword') {
-      // Utiliser le mot de passe stocke dans les settings
-      const storedPassword = currentSettings.adminPassword || 'ghostmeter2024'
+      // Priorite : mot de passe stocke dans les settings, puis env var, puis default
+      const envPassword = adminPassword !== 'ghostmeter2024' ? adminPassword : null
+      const currentValidPassword = currentSettings.adminPassword || envPassword || 'ghostmeter2024'
       
-      // Verifier si le mot de passe actuel est correct
-      // Accepter soit le mot de passe stocke, soit le mot de passe d'environnement
-      const isCorrectPassword = body.currentPassword === storedPassword || 
-                                 (adminPassword !== 'ghostmeter2024' && body.currentPassword === adminPassword)
-      
-      if (isCorrectPassword) {
+      if (body.currentPassword === currentValidPassword) {
         currentSettings.adminPassword = body.newPassword
         await saveSettings(currentSettings)
         return NextResponse.json({ success: true })
