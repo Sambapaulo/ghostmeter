@@ -27,7 +27,8 @@ export async function POST(request: NextRequest) {
     const { getSettings, getAdminPassword } = await import('@/lib/kv');
     const currentSettings = await getSettings();
     const envPassword = getAdminPassword();
-    const validPassword = envPassword !== 'ghostmeter2024' ? envPassword : currentSettings.adminPassword;
+    const storedPassword = envPassword !== 'ghostmeter2024' ? envPassword : null;
+    const validPassword = currentSettings.adminPassword || storedPassword || 'ghostmeter2024';
     
     if (adminPassword !== validPassword) {
       return NextResponse.json({ error: 'Mot de passe admin incorrect' }, { status: 401 });
