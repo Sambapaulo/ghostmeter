@@ -157,15 +157,19 @@ export default function AdminPage() {
   useEffect(() => {
     // Only run on client side
     if (typeof window === 'undefined') return
-    
+
     try {
       const savedPassword = sessionStorage.getItem('admin_auth')
       if (savedPassword) {
         // Verify the saved password is still valid
         verifyAndRestoreSession(savedPassword)
+      } else {
+        // No session, redirect to login page
+        router.push('/admin/login')
       }
     } catch (e) {
       console.error('Session restore error:', e)
+      router.push('/admin/login')
     }
   }, [])
 
@@ -596,16 +600,6 @@ export default function AdminPage() {
 
   // LOGIN SCREEN - redirect to /admin/login
   if (!isAuthenticated) {
-    // Check session storage first
-    useEffect(() => {
-      const savedPassword = sessionStorage.getItem('admin_auth')
-      if (savedPassword) {
-        verifyAndRestoreSession(savedPassword)
-      } else {
-        router.push('/admin/login')
-      }
-    }, [])
-
     return null
   }
 
