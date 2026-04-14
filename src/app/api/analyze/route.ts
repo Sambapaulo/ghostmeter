@@ -40,9 +40,12 @@ export async function POST(request: NextRequest) {
 INTERET (interestScore) - GLOBAL, mais reflechir QUI est interesse:
 - Compliments ("t'es sympa", "t'es belle") = signe d'interet de celui qui le dit
 - Questions ouvertes ("tu fais quoi ce week-end ?") = INTERESSE (60-80%) de la part de celui qui pose
-- Propositions de rendez-vous = FORTEMENT INTERESSE (70-85%)
-- Reponses uniques sans rebond ("merci", "ok", "rien de special", "ah ok") = FAIBLE INTERET ou DESINTERET (5-20%) de la part de celui qui repond
-- Reponses fermes qui ne relancent pas la conversation = signal de desinteret
+- Propositions de rendez-vous ("tu veux qu'on se voie ?") = FORTEMENT INTERESSE (70-85%) de la part de celui qui propose
+- "Je te dis ça", "je te redis", "on verra" = la personne qui dit ça RETARDE et est EVASIF = faible engagement (20-35%)
+- "ok" ou "d'accord" en reponse a une reponse evasive ("je te dis ça") = reponse NORMALE, PAS du desinteret — c'est l'autre qui n'a pas donne de reponse claire
+- Reponses uniques sans rebond ("merci", "ok", "rien de special", "ah ok") = FAIBLE INTERET ou DESINTERET (5-20%) UNIQUEMENT si l'autre avait initie quelque chose d'engageant (compliment, question ouverte)
+- IMPORTANT: une reponse "ok" APRES une reponse evasive ou retardatrice n'est PAS du desinteret — ne pas le compter comme negatif
+- Si quelqu'un revient plus tard (ex: "2h plus tard") pour relancer = il EST interesse malgre un debut evasif
 - Reciprocite dans les messages = les DEUX sont interesses
 - Si UN SEUL initie/complimente/pose des questions et l'autre repond de facon minimale, l'interet global est DESSEQUILIBRE (30-45%)
 
@@ -66,11 +69,15 @@ MANIPULATION (manipulationScore) - TRES IMPORTANT:
 - Reponses normales, honnetes, respectueuses = 0-10%
 
 IDENTIFIER QUI INITIE vs QUI BLOQUE - CRUCIAL:
-- Celui/celle qui pose des questions, complimente ou propose = montre de l'interet = comportement ACTIF/POSITIF
+- Celui/celle qui pose des questions, complimente ou propose = montre de l interet = comportement ACTIF/POSITIF
 - Celui/celle qui repond par des mots seuls ("ok", "merci", "ah ok", "rien de special") = BLOQUE la conversation = comportement PASSIF/NEGATIF
-- Quand une personne pose une question legitime sur les limites, la confiance ou un comportement qui la blesse, c'est une DEMANDE DE CLARTE, pas de la culpabilisation
-- Le conseil doit identifier clairement QUI ne s'investit pas et s'adresser a la personne qui essaie
-- Ne JAMAIS donner un conseil genrique ("initiez des conversations plus engageantes") a quelqu'un qui initie DEJA
+- MAIS "ok" apres une reponse evasive ("je te dis ca", "on verra") = reponse normale, le BLOCAGE vient de celui qui a ete evasif
+- Celui qui dit "je te dis ca" / "je te redis" = RETARDEUR, c est LUI qui ne s engage pas
+- Prendre en compte le CONTEXTE TEMPOREL: si quelqu un revient apres un delai pour relancer, il est interesse
+- Quand une personne pose une question legitime sur les limites ou la confiance = DEMANDE DE CLARTE
+- Le conseil doit identifier clairement QUI ne s investit pas et s adresser a la personne qui essaie
+- Ne JAMAIS dire a quelqu un qui a propose de se voir qu il "bloque" parce qu il a dit "ok" a une reponse evasive
+- Le punchline doit refleter la dynamique REELLE, pas un resume generique
 
 SCORE GLOBAL (overallScore):
 - C'est un indicateur de SANTE RELATIONNELLE et de RECIPROCITE
