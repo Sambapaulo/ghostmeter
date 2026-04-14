@@ -53,6 +53,7 @@ export async function GET(request: NextRequest) {
   const premiumCheck = checkPremiumValid(user);
   if (premiumCheck.expired) {
     user.isPremium = false;
+    user.referralPremium = false;
     await setUser(email, user);
   }
   
@@ -60,8 +61,8 @@ export async function GET(request: NextRequest) {
   if (sessionId && !sessionValid && user.sessionId) {
     return NextResponse.json({ exists: true, isPremium: false, sessionValid: false, error: 'SESSION_INVALID' });
   }
-  const hasValidPremium = premiumCheck.isPremium && (!!user.paypalOrderId || !!user.adminGranted);
-  return NextResponse.json({ exists: true, isPremium: hasValidPremium, premiumSince: hasValidPremium ? user.premiumSince : null, premiumPlan: user.premiumPlan || null, premiumExpiresAt: user.premiumExpiresAt || null, analysesCount: user.analysesCount, sessionValid: true });
+  const hasValidPremium = premiumCheck.isPremium && (!!user.paypalOrderId || !!user.adminGranted || !!user.referralPremium);
+  return NextResponse.json({ exists: true, isPremium: hasValidPremium, premiumSince: hasValidPremium ? user.premiumSince : null, premiumPlan: user.premiumPlan || null, premiumExpiresAt: user.premiumExpiresAt || null, referralPremium: !!user.referralPremium, analysesCount: user.analysesCount, sessionValid: true });
 }
 
 export async function POST(request: NextRequest) {
@@ -92,8 +93,8 @@ export async function POST(request: NextRequest) {
         }
         
         await setUser(googleEmail, existingUser);
-        const hasValidPremium = premiumCheck.isPremium && (!!existingUser.paypalOrderId || !!existingUser.adminGranted);
-        return NextResponse.json({ success: true, user: { email: existingUser.email, isPremium: hasValidPremium, premiumPlan: existingUser.premiumPlan, premiumExpiresAt: existingUser.premiumExpiresAt }, sessionId: newSessionId });
+        const hasValidPremium = premiumCheck.isPremium && (!!existingUser.paypalOrderId || !!existingUser.adminGranted || !!existingUser.referralPremium);
+        return NextResponse.json({ success: true, user: { email: existingUser.email, isPremium: hasValidPremium, premiumPlan: existingUser.premiumPlan, premiumExpiresAt: existingUser.premiumExpiresAt, referralPremium: !!existingUser.referralPremium }, sessionId: newSessionId });
       } else {
         const newUser: User = { email: googleEmail, password: '', isPremium: false, premiumSince: null, analysesCount: 0, createdAt: now, lastActive: now, sessionId: newSessionId, sessionCreatedAt: now };
         await setUser(googleEmail, newUser);
@@ -133,8 +134,8 @@ export async function POST(request: NextRequest) {
       
       await setUser(email, existingUser);
       await addUserLog(email, 'login', 'Connexion reussie');
-      const hasValidPremium = premiumCheck.isPremium && (!!existingUser.paypalOrderId || !!existingUser.adminGranted);
-      return NextResponse.json({ success: true, user: { email: existingUser.email, isPremium: hasValidPremium, premiumPlan: existingUser.premiumPlan, premiumExpiresAt: existingUser.premiumExpiresAt }, sessionId: newSessionId, isNew: false });
+      const hasValidPremium = premiumCheck.isPremium && (!!existingUser.paypalOrderId || !!existingUser.adminGranted || !!existingUser.referralPremium);
+      return NextResponse.json({ success: true, user: { email: existingUser.email, isPremium: hasValidPremium, premiumPlan: existingUser.premiumPlan, premiumExpiresAt: existingUser.premiumExpiresAt, referralPremium: !!existingUser.referralPremium }, sessionId: newSessionId, isNew: false });
     }
 
     if (action === 'checkSession') {
@@ -148,8 +149,8 @@ export async function POST(request: NextRequest) {
       }
       
       await setUser(email, existingUser);
-      const hasValidPremium = premiumCheck.isPremium && (!!existingUser.paypalOrderId || !!existingUser.adminGranted);
-      return NextResponse.json({ valid: true, isPremium: hasValidPremium, premiumPlan: existingUser.premiumPlan, premiumExpiresAt: existingUser.premiumExpiresAt });
+      const hasValidPremium = premiumCheck.isPremium && (!!existingUser.paypalOrderId || !!existingUser.adminGranted || !!existingUser.referralPremium);
+      return NextResponse.json({ valid: true, isPremium: hasValidPremium, premiumPlan: existingUser.premiumPlan, premiumExpiresAt: existingUser.premiumExpiresAt, referralPremium: !!existingUser.referralPremium });
     }
 
     if (action === 'checkExists') {

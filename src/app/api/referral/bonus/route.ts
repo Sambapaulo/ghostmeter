@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { kv } from '@vercel/kv'
+import { getUser } from '@/lib/localStore'
 
 // GET - Returns the bonus analyses/days a user has from referrals
 export async function GET(request: NextRequest) {
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
     // Get bonus analyses
     const bonusAnalyses = (await kv.get(`referral:bonus:${email}:analyses`)) as number | null
 
-    // Get premium days
+    // Get premium days (statistique uniquement, le vrai premium est dans le User record)
     const premiumDays = (await kv.get(`referral:bonus:${email}:premium_days`)) as number | null
 
     // Get user's own referral code
@@ -38,11 +39,29 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Verifier si le User a un premium actif via parrainage
+    let referralPremiumExpiresAt: string | null = null
+    let isReferralPremium = false
+    try {
+      const user = await getUser(email.toLowerCase())
+      if (user && user.referralPremium && user.premiumExpiresAt) {
+        const expiresAt = new Date(user.premiumExpiresAt)
+        if (expiresAt > new Date()) {
+          referralPremiumExpiresAt = user.premiumExpiresAt
+          isReferralPremium = true
+        }
+      }
+    } catch (err) {
+      // Non bloquant
+    }
+
     return NextResponse.json({
       bonusAnalyses: bonusAnalyses || 0,
       premiumDays: premiumDays || 0,
       referralCode,
-      referralStats
+      referralStats,
+      referralPremiumExpiresAt,
+      isReferralPremium
     })
   } catch (error) {
     console.error('[REFERRAL BONUS] Error:', error)

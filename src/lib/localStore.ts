@@ -13,6 +13,7 @@ export interface User {
   lastActive: string;
   paypalOrderId?: string;
   adminGranted?: boolean;
+  referralPremium?: boolean;
   sessionId?: string;
   sessionCreatedAt?: string;
 }

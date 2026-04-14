@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { kv } from '@vercel/kv'
+import { getUser, setUser } from '@/lib/localStore'
 
 interface ReferralConfig {
   enabled: boolean
@@ -99,6 +100,45 @@ export async function POST(request: NextRequest) {
       await kv.incrby(`referral:bonus:${referrerEmail}:analyses`, config.referrerRewardAmount)
     } else if (config.referrerRewardType === 'premium_days') {
       await kv.incrby(`referral:bonus:${referrerEmail}:premium_days`, config.referrerRewardAmount)
+
+      // Activer le premium du parrain directement dans son User record
+      try {
+        const referrerUser = await getUser(referrerEmail.toLowerCase())
+        if (referrerUser) {
+          const now = new Date()
+          let newExpiresAt: Date
+
+          // Si le parrain est deja premium (admin ou paypal), on ne touche pas
+          if (referrerUser.adminGranted || (referrerUser.paypalOrderId && !referrerUser.referralPremium)) {
+            console.log('[REFERRAL] Referrer already has premium (admin/paypal), skipping premium activation')
+          } else {
+            // Calculer la nouvelle date d'expiration
+            if (referrerUser.referralPremium && referrerUser.premiumExpiresAt && new Date(referrerUser.premiumExpiresAt) > now) {
+              // Premium referral deja actif et non expire : ajouter les jours a la date actuelle
+              newExpiresAt = new Date(referrerUser.premiumExpiresAt)
+              newExpiresAt.setDate(newExpiresAt.getDate() + config.referrerRewardAmount)
+            } else {
+              // Nouveau premium referral ou expire : partir de maintenant
+              newExpiresAt = new Date()
+              newExpiresAt.setDate(newExpiresAt.getDate() + config.referrerRewardAmount)
+            }
+
+            referrerUser.isPremium = true
+            referrerUser.referralPremium = true
+            referrerUser.premiumExpiresAt = newExpiresAt.toISOString()
+            if (!referrerUser.premiumSince) {
+              referrerUser.premiumSince = now.toISOString()
+            }
+            await setUser(referrerEmail.toLowerCase(), referrerUser)
+            console.log(`[REFERRAL] Referrer ${referrerEmail} premium activated until ${newExpiresAt.toISOString()}`)
+          }
+        } else {
+          console.log(`[REFERRAL] Referrer ${referrerEmail} not found in user store (may not have account yet)`)
+        }
+      } catch (err) {
+        console.error('[REFERRAL] Error activating referrer premium:', err)
+        // Non bloquant : le bonus est quand meme enregistre dans Redis
+      }
     }
 
     // Increment referred bonus
@@ -106,6 +146,38 @@ export async function POST(request: NextRequest) {
       await kv.incrby(`referral:bonus:${email}:analyses`, config.referredRewardAmount)
     } else if (config.referredRewardType === 'premium_days') {
       await kv.incrby(`referral:bonus:${email}:premium_days`, config.referredRewardAmount)
+
+      // Activer le premium du filleul aussi
+      try {
+        const referredUser = await getUser(email.toLowerCase())
+        if (referredUser) {
+          const now = new Date()
+          let newExpiresAt: Date
+
+          if (referredUser.adminGranted || (referredUser.paypalOrderId && !referredUser.referralPremium)) {
+            console.log('[REFERRAL] Referred already has premium (admin/paypal), skipping')
+          } else {
+            if (referredUser.referralPremium && referredUser.premiumExpiresAt && new Date(referredUser.premiumExpiresAt) > now) {
+              newExpiresAt = new Date(referredUser.premiumExpiresAt)
+              newExpiresAt.setDate(newExpiresAt.getDate() + config.referredRewardAmount)
+            } else {
+              newExpiresAt = new Date()
+              newExpiresAt.setDate(newExpiresAt.getDate() + config.referredRewardAmount)
+            }
+
+            referredUser.isPremium = true
+            referredUser.referralPremium = true
+            referredUser.premiumExpiresAt = newExpiresAt.toISOString()
+            if (!referredUser.premiumSince) {
+              referredUser.premiumSince = now.toISOString()
+            }
+            await setUser(email.toLowerCase(), referredUser)
+            console.log(`[REFERRAL] Referred ${email} premium activated until ${newExpiresAt.toISOString()}`)
+          }
+        }
+      } catch (err) {
+        console.error('[REFERRAL] Error activating referred premium:', err)
+      }
     }
 
     // Increment global stats

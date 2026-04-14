@@ -94,6 +94,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'home.analyzing': 'Analyse en cours...',
     'home.remaining': 'Analyses restantes aujourd\'hui',
     'home.premium_unlimited': 'Illimité avec Premium',
+    'home.premium_referral_countdown': 'Premium Parrainage - {time} restantes',
     'home.get_premium': 'Obtenir Premium',
 
     // Contexts
@@ -461,6 +462,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'home.analyzing': 'Analyzing...',
     'home.remaining': 'Analyses remaining today',
     'home.premium_unlimited': 'Unlimited with Premium',
+    'home.premium_referral_countdown': 'Referral Premium - {time} left',
     'home.get_premium': 'Get Premium',
 
     // Contexts
@@ -828,6 +830,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'home.analyzing': 'Analyse läuft...',
     'home.remaining': 'Analysen übrig heute',
     'home.premium_unlimited': 'Unbegrenzt mit Premium',
+    'home.premium_referral_countdown': 'Empfehlungs-Premium - {time} übrig',
     'home.get_premium': 'Premium holen',
 
     // Contexts
@@ -1195,6 +1198,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'home.analyzing': 'Analizando...',
     'home.remaining': 'Análisis restantes hoy',
     'home.premium_unlimited': 'Ilimitado con Premium',
+    'home.premium_referral_countdown': 'Premium Referido - {time} restantes',
     'home.get_premium': 'Obtener Premium',
 
     // Contexts

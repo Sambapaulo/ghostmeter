@@ -819,15 +819,6 @@ export default function Home() {
     if (refCodeFromUrl) {
       localStorage.setItem('ghostmeter_referral_code_used', refCodeFromUrl)
     }
-
-    // Load bonus analyses from referral
-    const savedBonus = localStorage.getItem('ghostmeter_bonus_analyses')
-    if (savedBonus) {
-      const bonus = parseInt(savedBonus, 10)
-      if (!isNaN(bonus) && bonus > 0) {
-        setBonusAnalyses(bonus)
-      }
-    }
     
     // Maintenance mode disabled - not needed for this app
     // const checkMaintenance = async () => {
@@ -1059,16 +1050,28 @@ export default function Home() {
   const [showReferral, setShowReferral] = useState(false)
   const [referralCode, setReferralCode] = useState<string | null>(null)
   const [bonusAnalyses, setBonusAnalyses] = useState(0)
+  const [premiumExpiresAt, setPremiumExpiresAt] = useState<string | null>(null)
+  const [referralPremium, setReferralPremium] = useState(false)
 
   // Apply referral reward when claimed (from ReferralModal or auto-claim)
   const handleReferralReward = useCallback((reward: { type: 'free_analyses' | 'premium_days'; amount: number }) => {
     if (reward.type === 'free_analyses') {
       setBonusAnalyses(prev => prev + reward.amount)
       setRemaining(prev => prev + reward.amount)
+      // Sauvegarder le bonus restant dans localStorage
+      const currentBonus = parseInt(localStorage.getItem('ghostmeter_bonus_remaining') || '0', 10)
+      localStorage.setItem('ghostmeter_bonus_remaining', String(currentBonus + reward.amount))
     } else if (reward.type === 'premium_days') {
       setIsPremium(true)
       setRemaining(999)
+      setReferralPremium(true)
+      const expiresAt = new Date()
+      expiresAt.setDate(expiresAt.getDate() + reward.amount)
+      const expiresAtStr = expiresAt.toISOString()
+      setPremiumExpiresAt(expiresAtStr)
       localStorage.setItem('ghostmeter_premium', 'true')
+      localStorage.setItem('ghostmeter_premium_expires', expiresAtStr)
+      localStorage.setItem('ghostmeter_referral_premium', 'true')
     }
   }, [])
 
@@ -1366,6 +1369,8 @@ export default function Home() {
   // Load saved data and settings on mount (sequential loading to avoid race conditions)
   useEffect(() => {
     const savedPremium = localStorage.getItem('ghostmeter_premium') === 'true'
+    const savedReferralPremium = localStorage.getItem('ghostmeter_referral_premium') === 'true'
+    const savedPremiumExpires = localStorage.getItem('ghostmeter_premium_expires')
     const email = localStorage.getItem('ghostmeter_email')
     if (email) setUserEmail(email)
 
@@ -1373,47 +1378,99 @@ export default function Home() {
     const saved = localStorage.getItem('ghostmeter_history')
     if (saved) setSavedConversations(JSON.parse(saved))
 
-    // Step 1: Load settings, then Step 2: Load referral bonus (sequential, no race)
+    // Load bonus remaining from localStorage (NOT from server - prevents re-application)
+    const savedBonusRemaining = parseInt(localStorage.getItem('ghostmeter_bonus_remaining') || '0', 10)
+    if (savedBonusRemaining > 0) {
+      setBonusAnalyses(savedBonusRemaining)
+    }
+
+    // Check referral premium expiry
+    if (savedReferralPremium && savedPremiumExpires) {
+      const expiresAt = new Date(savedPremiumExpires)
+      if (expiresAt > new Date()) {
+        setReferralPremium(true)
+        setPremiumExpiresAt(savedPremiumExpires)
+        setIsPremium(true)
+        setRemaining(999)
+      } else {
+        // Premium expire - nettoyer
+        localStorage.removeItem('ghostmeter_referral_premium')
+        localStorage.removeItem('ghostmeter_premium_expires')
+        localStorage.removeItem('ghostmeter_premium')
+        setReferralPremium(false)
+        setPremiumExpiresAt(null)
+      }
+    }
+
+    // Check daily reset (only for non-premium users)
+    const today = new Date().toDateString()
+    const savedAnalysisDate = localStorage.getItem('ghostmeter_analysis_date')
+    const isPremiumActive = savedPremium && (!savedReferralPremium || (savedPremiumExpires && new Date(savedPremiumExpires) > new Date()))
+
+    if (isPremiumActive) {
+      // Premium actif - analyses illimitees
+      setRemaining(999)
+    } else if (savedAnalysisDate !== today) {
+      // Nouveau jour - reinitialiser le compteur
+      localStorage.setItem('ghostmeter_analysis_date', today)
+      // Le remaining sera mis a jour apres le chargement des settings
+    }
+
+    // Sauvegarder les settings en localStorage pour fallback hors-ligne
+    const cachedSettings = localStorage.getItem('ghostmeter_settings')
+
+    const loadSettings = (settingsData: any) => {
+      if (!settingsData) return
+      const newFreeAnalyses = settingsData.freeAnalysesPerDay || 3
+      const newSettings = {
+        premiumCurrency: settingsData.premiumCurrency || '\u20ac',
+        premiumPeriod: settingsData.premiumPeriod || 'mois',
+        freeAnalysesPerDay: newFreeAnalyses,
+        pack1Month: settingsData.pack1Month || 1.99,
+        pack3Months: settingsData.pack3Months || 4.99,
+        pack12Months: settingsData.pack12Months || 14.99
+      }
+      setSettings(newSettings)
+      localStorage.setItem('ghostmeter_settings', JSON.stringify(newSettings))
+
+      // Ne pas ecraser le remaining si deja premium
+      if (isPremiumActive) return
+
+      // Definir remaining en fonction du jour et du bonus
+      if (savedAnalysisDate !== today) {
+        // Nouveau jour : daily + bonus restant
+        setRemaining(newFreeAnalyses + savedBonusRemaining)
+        localStorage.setItem('ghostmeter_analysis_date', today)
+      } else {
+        // Meme jour : garder le remaining actuel (ou utiliser les settings caches si c'est le 1er chargement)
+        const savedRemaining = parseInt(localStorage.getItem('ghostmeter_remaining_today') || '0', 10)
+        if (savedRemaining > 0) {
+          setRemaining(savedRemaining)
+        } else {
+          setRemaining(newFreeAnalyses + savedBonusRemaining)
+        }
+      }
+    }
+
+    // Step 1: Charger les settings depuis le serveur, avec fallback sur le cache local
     fetch('/api/admin/settings?t=' + Date.now())
       .then(res => res.json())
       .then(data => {
-        if (data.success) {
-          const newFreeAnalyses = data.settings.freeAnalysesPerDay || 3
-          setSettings({
-            premiumCurrency: data.settings.premiumCurrency || '\u20ac',
-            premiumPeriod: data.settings.premiumPeriod || 'mois',
-            freeAnalysesPerDay: newFreeAnalyses,
-            pack1Month: data.settings.pack1Month || 1.99,
-            pack3Months: data.settings.pack3Months || 4.99,
-            pack12Months: data.settings.pack12Months || 14.99
-          })
-
-          // Only set remaining if not premium
-          if (!savedPremium) {
-            // If user is logged in, check referral bonus before setting remaining
-            if (email) {
-              return fetch('/api/referral/bonus?email=' + encodeURIComponent(email))
-                .then(res => res.json())
-                .then(bonusData => {
-                  const bonus = bonusData.bonusAnalyses || 0
-                  if (bonus > 0) setBonusAnalyses(bonus)
-                  // Check premium days from referral
-                  if (bonusData.premiumDays && bonusData.premiumDays > 0) {
-                    setIsPremium(true)
-                    setRemaining(999)
-                    localStorage.setItem('ghostmeter_premium', 'true')
-                  } else {
-                    setRemaining(newFreeAnalyses + bonus)
-                  }
-                })
-                .catch(() => setRemaining(newFreeAnalyses))
-            } else {
-              setRemaining(newFreeAnalyses)
-            }
+        if (data.success && data.settings) {
+          loadSettings(data.settings)
+        } else {
+          // Fallback sur les settings en cache
+          if (cachedSettings) {
+            try { loadSettings(JSON.parse(cachedSettings)) } catch(e) {}
           }
         }
       })
-      .catch(() => {})
+      .catch(() => {
+        // Fallback sur les settings en cache si le serveur est indisponible
+        if (cachedSettings) {
+          try { loadSettings(JSON.parse(cachedSettings)) } catch(e) {}
+        }
+      })
   }, [])
 
   // Check premium status from server if email exists
@@ -1429,9 +1486,13 @@ export default function Home() {
             localStorage.removeItem('ghostmeter_email')
             localStorage.removeItem('ghostmeter_session')
             localStorage.removeItem('ghostmeter_premium')
+            localStorage.removeItem('ghostmeter_referral_premium')
+            localStorage.removeItem('ghostmeter_premium_expires')
             setUserEmail(null)
             setIsPremium(false)
-            setRemaining(settings.freeAnalysesPerDay)
+            setReferralPremium(false)
+            setPremiumExpiresAt(null)
+            setRemaining(settings.freeAnalysesPerDay + bonusAnalyses)
             alert(t('session.logged_elsewhere', language))
             return
           }
@@ -1440,16 +1501,27 @@ export default function Home() {
             setIsPremium(true)
             setRemaining(999)
             localStorage.setItem('ghostmeter_premium', 'true')
+            // Si le serveur indique un premium de parrainage avec date d'expiration
+            if (data.referralPremium && data.premiumExpiresAt) {
+              setReferralPremium(true)
+              setPremiumExpiresAt(data.premiumExpiresAt)
+              localStorage.setItem('ghostmeter_referral_premium', 'true')
+              localStorage.setItem('ghostmeter_premium_expires', data.premiumExpiresAt)
+            }
           } else {
             // User is NOT premium on server - remove local premium
             setIsPremium(false)
-            setRemaining(settings.freeAnalysesPerDay)
+            setReferralPremium(false)
+            setPremiumExpiresAt(null)
+            setRemaining(settings.freeAnalysesPerDay + bonusAnalyses)
             localStorage.removeItem('ghostmeter_premium')
+            localStorage.removeItem('ghostmeter_referral_premium')
+            localStorage.removeItem('ghostmeter_premium_expires')
           }
         })
         .catch(() => {})
     }
-  }, [userEmail, settings.freeAnalysesPerDay])
+  }, [userEmail, settings.freeAnalysesPerDay, bonusAnalyses])
 
   // Vérification périodique de la session (toutes les 30 secondes)
   useEffect(() => {
@@ -1466,9 +1538,13 @@ export default function Home() {
             localStorage.removeItem('ghostmeter_email')
             localStorage.removeItem('ghostmeter_session')
             localStorage.removeItem('ghostmeter_premium')
+            localStorage.removeItem('ghostmeter_referral_premium')
+            localStorage.removeItem('ghostmeter_premium_expires')
             setUserEmail(null)
             setIsPremium(false)
-            setRemaining(settings.freeAnalysesPerDay)
+            setReferralPremium(false)
+            setPremiumExpiresAt(null)
+            setRemaining(settings.freeAnalysesPerDay + bonusAnalyses)
             alert(t('session.logged_elsewhere', language))
           }
         })
@@ -1479,7 +1555,7 @@ export default function Home() {
     const interval = setInterval(checkSession, 5000)
 
     return () => clearInterval(interval)
-  }, [userEmail, settings.freeAnalysesPerDay])
+  }, [userEmail, settings.freeAnalysesPerDay, bonusAnalyses])
 
   // Handle payment return from PayPal
   useEffect(() => {
@@ -1572,7 +1648,20 @@ export default function Home() {
         setAnalysis(data.analysis)
         saveToHistory(conversation, selectedContext, data.analysis)
         if (!isPremium) {
-          setRemaining(prev => Math.max(0, prev - 1))
+          setRemaining(prev => {
+            const newVal = Math.max(0, prev - 1)
+            // Sauvegarder le remaining dans localStorage pour la persistance intra-jour
+            localStorage.setItem('ghostmeter_remaining_today', String(newVal))
+            // Decrementer le bonus restant si on en a
+            if (bonusAnalyses > 0) {
+              setBonusAnalyses(prevBonus => {
+                const newBonus = Math.max(0, prevBonus - 1)
+                localStorage.setItem('ghostmeter_bonus_remaining', String(newBonus))
+                return newBonus
+              })
+            }
+            return newVal
+          })
         }
         setAppState('results')
       } else {
@@ -1950,9 +2039,13 @@ export default function Home() {
           localStorage.removeItem('ghostmeter_email')
           localStorage.removeItem('ghostmeter_session')
           localStorage.removeItem('ghostmeter_premium')
+          localStorage.removeItem('ghostmeter_referral_premium')
+          localStorage.removeItem('ghostmeter_premium_expires')
           setUserEmail(null)
           setIsPremium(false)
-          setRemaining(settings.freeAnalysesPerDay)
+          setReferralPremium(false)
+          setPremiumExpiresAt(null)
+          setRemaining(settings.freeAnalysesPerDay + bonusAnalyses)
           return
         }
         
@@ -1960,11 +2053,22 @@ export default function Home() {
           setIsPremium(true)
           setRemaining(999)
           localStorage.setItem('ghostmeter_premium', 'true')
+          // Detecter le premium de parrainage avec date d'expiration
+          if (data.referralPremium && data.premiumExpiresAt) {
+            setReferralPremium(true)
+            setPremiumExpiresAt(data.premiumExpiresAt)
+            localStorage.setItem('ghostmeter_referral_premium', 'true')
+            localStorage.setItem('ghostmeter_premium_expires', data.premiumExpiresAt)
+          }
         } else {
           // NOT premium on server - set remaining to daily + bonus
           setIsPremium(false)
+          setReferralPremium(false)
+          setPremiumExpiresAt(null)
           setRemaining(settings.freeAnalysesPerDay + bonusAnalyses)
           localStorage.removeItem('ghostmeter_premium')
+          localStorage.removeItem('ghostmeter_referral_premium')
+          localStorage.removeItem('ghostmeter_premium_expires')
         }
       })
       .catch(() => {})
@@ -1974,8 +2078,13 @@ export default function Home() {
     localStorage.removeItem('ghostmeter_email')
     localStorage.removeItem('ghostmeter_premium')
     localStorage.removeItem('ghostmeter_session')
+    localStorage.removeItem('ghostmeter_referral_premium')
+    localStorage.removeItem('ghostmeter_premium_expires')
+    localStorage.removeItem('ghostmeter_bonus_remaining')
     setUserEmail(null)
     setIsPremium(false)
+    setReferralPremium(false)
+    setPremiumExpiresAt(null)
     setRemaining(settings.freeAnalysesPerDay)
     setBonusAnalyses(0)
     setShowMenu(false)
@@ -1985,6 +2094,50 @@ export default function Home() {
     if (type === 'good') return score >= 70 ? '#22c55e' : score >= 40 ? '#eab308' : '#ef4444'
     return score >= 70 ? '#ef4444' : score >= 40 ? '#eab308' : '#22c55e'
   }
+
+  // Compte a rebours premium parrainage
+  const [countdown, setCountdown] = useState<string>('')
+
+  const getTimeUntilExpiry = useCallback((expiresAt: string): string => {
+    const diff = new Date(expiresAt).getTime() - Date.now()
+    if (diff <= 0) {
+      // Premium expire - nettoyer
+      setIsPremium(false)
+      setReferralPremium(false)
+      setPremiumExpiresAt(null)
+      setRemaining(settings.freeAnalysesPerDay + bonusAnalyses)
+      localStorage.removeItem('ghostmeter_premium')
+      localStorage.removeItem('ghostmeter_referral_premium')
+      localStorage.removeItem('ghostmeter_premium_expires')
+      return ''
+    }
+    const hours = Math.floor(diff / (1000 * 60 * 60))
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+    if (hours > 24) {
+      const days = Math.floor(hours / 24)
+      const remainingHours = hours % 24
+      return language === 'fr' ? `${days}j ${remainingHours}h ${minutes}min` : `${days}d ${remainingHours}h ${minutes}m`
+    }
+    if (hours > 0) {
+      return language === 'fr' ? `${hours}h ${minutes}min ${seconds}s` : `${hours}h ${minutes}m ${seconds}s`
+    }
+    return language === 'fr' ? `${minutes}min ${seconds}s` : `${minutes}m ${seconds}s`
+  }, [language, settings.freeAnalysesPerDay, bonusAnalyses])
+
+  // Mettre a jour le countdown chaque seconde si premium parrainage
+  useEffect(() => {
+    if (!referralPremium || !premiumExpiresAt) {
+      setCountdown('')
+      return
+    }
+    const update = () => {
+      setCountdown(getTimeUntilExpiry(premiumExpiresAt!))
+    }
+    update()
+    const interval = setInterval(update, 1000)
+    return () => clearInterval(interval)
+  }, [referralPremium, premiumExpiresAt, getTimeUntilExpiry])
 
   const contextLabels: Record<string, string> = {
     'crush': 'Crush',
@@ -2802,7 +2955,23 @@ export default function Home() {
 
             <button onClick={handleAnalyze} disabled={conversation.trim().length < 20 || isLoading} className="w-full py-3 text-white font-semibold rounded-xl bg-gradient-to-r from-purple-500 via-pink-500 to-violet-500 hover:opacity-90 disabled:opacity-50 transition-all">{isLoading ? t('home.analyzing', language) : t('home.analyze', language)}</button>
 
-            <p className="text-center text-sm text-gray-400 dark:text-gray-500 mt-3">{isPremium ? <span className="text-purple-500 font-medium">{t('home.premium_unlimited', language)}</span> : t('home.analyses_remaining', language, { remaining: String(remaining), total: String(settings.freeAnalysesPerDay + bonusAnalyses) })}</p>
+            <p className="text-center text-sm text-gray-400 dark:text-gray-500 mt-3">
+              {isPremium ? (
+                <span className="text-purple-500 font-medium">
+                  {referralPremium && countdown ? (
+                    <>
+                      {t('home.premium_referral_countdown', language, {
+                        time: countdown
+                      })}
+                    </>
+                  ) : (
+                    t('home.premium_unlimited', language)
+                  )}
+                </span>
+              ) : (
+                t('home.analyses_remaining', language, { remaining: String(remaining), total: String(settings.freeAnalysesPerDay + bonusAnalyses) })
+              )}
+            </p>
             
             {!isPremium && remaining <= 0 && (
               <button onClick={() => setShowPaywall(true)} className="w-full mt-2 py-2 border border-purple-200 dark:border-purple-700 text-purple-500 rounded-xl text-sm font-medium hover:bg-purple-50 dark:hover:bg-purple-900/30">{t('home.get_premium_more', language)}</button>
