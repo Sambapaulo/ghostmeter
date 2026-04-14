@@ -1443,10 +1443,12 @@ export default function Home() {
         localStorage.setItem('ghostmeter_analysis_date', today)
       } else {
         // Meme jour : garder le remaining actuel (ou utiliser les settings caches si c'est le 1er chargement)
-        const savedRemaining = parseInt(localStorage.getItem('ghostmeter_remaining_today') || '0', 10)
-        if (savedRemaining > 0) {
-          setRemaining(savedRemaining)
+        const remainingKey = localStorage.getItem('ghostmeter_remaining_today')
+        if (remainingKey !== null) {
+          // La cle existe (meme si valeur = "0") → faire confiance a la valeur sauvegardee
+          setRemaining(parseInt(remainingKey, 10))
         } else {
+          // Premiere ouverture de la journee → donner le quota complet
           setRemaining(newFreeAnalyses + savedBonusRemaining)
         }
       }
