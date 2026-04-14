@@ -80,8 +80,14 @@ export async function GET(request: NextRequest) {
         isPremium = true;
         console.log(`[AUTH FALLBACK] Activated referral premium for ${email} from Redis key until ${redisExpiry}`);
       } else if (redisExpiry && new Date(redisExpiry) <= new Date()) {
-        // Cle Redis expiree - la nettoyer
-        try { await kv.del(`referral:premium_until:${email.toLowerCase()}`); } catch(e) {}
+        // Cle Redis expiree - nettoyer toutes les cles liees au premium parrainage
+        try {
+          const ek = email.toLowerCase();
+          await kv.del(`referral:premium_until:${ek}`);
+          await kv.del(`referral:premium_start:${ek}`);
+          await kv.del(`referral:bonus:${ek}:premium_days`);
+          console.log(`[AUTH FALLBACK] Cleaned up expired referral premium keys for ${ek}`);
+        } catch(e) {}
       }
     } catch (err) {
       console.error('[AUTH FALLBACK] Error checking Redis referral premium:', err);

@@ -18,67 +18,90 @@ const defaultConfig: ReferralConfig = {
   referredRewardAmount: 1
 }
 
-// Calcule la nouvelle date d'expiration premium
-function calculateNewExpiry(currentExpiresAt: string | null | undefined, daysToAdd: number): string {
-  const now = new Date()
-  let newExpiresAt: Date
-  if (currentExpiresAt && new Date(currentExpiresAt) > now) {
-    newExpiresAt = new Date(currentExpiresAt)
-  } else {
-    newExpiresAt = new Date()
-  }
-  newExpiresAt.setDate(newExpiresAt.getDate() + daysToAdd)
-  return newExpiresAt.toISOString()
-}
+const DAY_MS = 86400000
 
-// Active le premium dans le User record ET dans une cle Redis dediee (double securite)
+/**
+ * Active le premium de parrainage de maniere atomique (sans race condition).
+ * 
+ * Logique : on utilise un compteur atomique (kv.incrby) pour le nombre total de jours
+ * et un timestamp de depart (referral:premium_start). L'expiration est calculée comme:
+ *   start + totalDays * 24h
+ * 
+ * Si le premium precedent a expire, on reinitialise le compteur et le start.
+ */
 async function activateReferralPremium(
   email: string,
-  currentExpiresAt: string | null | undefined,
   daysToAdd: number,
   label: string
-): Promise<string | null> {
-  const newExpiresAt = calculateNewExpiry(currentExpiresAt, daysToAdd)
-  
-  // 1. Stocker dans la cle Redis dediee (toujours reussit car on utilise kv directement)
-  try {
-    await kv.set(`referral:premium_until:${email.toLowerCase()}`, newExpiresAt)
-    console.log(`[REFERRAL] ${label} Redis key set: referral:premium_until:${email.toLowerCase()} = ${newExpiresAt}`)
-  } catch (err) {
-    console.error(`[REFERRAL] ${label} Failed to set Redis key:`, err)
+): Promise<string> {
+  const emailKey = email.toLowerCase()
+
+  // 1. Le compteur a deja ete incremente par kv.incrby dans l'appelant (operation atomique)
+  // On lit le total actuel des jours premium accumules
+  const totalDays = Number(await kv.get(`referral:bonus:${emailKey}:premium_days`)) || daysToAdd
+
+  // 2. Lire ou initialiser le timestamp de depart
+  let startTs = Number(await kv.get(`referral:premium_start:${emailKey}`))
+  if (!startTs) {
+    // Premiere activation - definir le start
+    startTs = Date.now()
+    await kv.set(`referral:premium_start:${emailKey}`, String(startTs))
+  } else {
+    // Verifier si le premium precedent a expire
+    const prevDays = totalDays - daysToAdd
+    if (prevDays > 0) {
+      const prevExpiry = startTs + prevDays * DAY_MS
+      if (prevExpiry <= Date.now()) {
+        // Premium expire - reinitialiser
+        startTs = Date.now()
+        await kv.set(`referral:premium_start:${emailKey}`, String(startTs))
+        await kv.set(`referral:bonus:${emailKey}:premium_days`, String(daysToAdd))
+      }
+    }
   }
 
-  // 2. Mettre a jour le User record (peut echouer si le compte n'existe pas encore)
+  // 3. Relire le compteur pour etre sur (en cas de reinitialisation)
+  const finalDays = Number(await kv.get(`referral:bonus:${emailKey}:premium_days`)) || daysToAdd
+  const finalStart = Number(await kv.get(`referral:premium_start:${emailKey}`)) || Date.now()
+
+  // 4. Calculer la nouvelle expiration
+  const newExpiryDate = new Date(finalStart + finalDays * DAY_MS)
+  const newExpiryStr = newExpiryDate.toISOString()
+
+  console.log(`[REFERRAL] ${label} ${emailKey}: ${finalDays} days from ${new Date(finalStart).toISOString()} → expires ${newExpiryStr}`)
+
+  // 5. Stocker l'expiration dans Redis
+  await kv.set(`referral:premium_until:${emailKey}`, newExpiryStr)
+
+  // 6. Mettre a jour le User record (best effort)
   try {
-    const user = await getUser(email.toLowerCase())
+    const user = await getUser(emailKey)
     if (user) {
-      // Si le user a deja un premium admin ou paypal non-expire, on ne l'ecrase pas
       if (user.adminGranted) {
-        console.log(`[REFERRAL] ${label} User has adminGranted premium, skipping User record update`)
-        return newExpiresAt // On retourne quand meme la date pour le Redis
+        console.log(`[REFERRAL] ${label} User has adminGranted premium, skipping User record (Redis keys updated)`)
+        return newExpiryStr
       }
       if (user.paypalOrderId && !user.referralPremium) {
-        console.log(`[REFERRAL] ${label} User has PayPal premium, skipping User record update`)
-        return newExpiresAt
+        console.log(`[REFERRAL] ${label} User has PayPal premium, skipping User record (Redis keys updated)`)
+        return newExpiryStr
       }
 
       user.isPremium = true
       user.referralPremium = true
-      user.premiumExpiresAt = newExpiresAt
+      user.premiumExpiresAt = newExpiryStr
       if (!user.premiumSince) {
         user.premiumSince = new Date().toISOString()
       }
-      await setUser(email.toLowerCase(), user)
-      console.log(`[REFERRAL] ${label} User record updated: ${email} premium until ${newExpiresAt}`)
+      await setUser(emailKey, user)
+      console.log(`[REFERRAL] ${label} User record updated: ${emailKey} premium until ${newExpiryStr}`)
     } else {
-      console.log(`[REFERRAL] ${label} User ${email} not found in auth store, Redis key is the fallback`)
+      console.log(`[REFERRAL] ${label} User ${emailKey} not found, Redis keys are the fallback`)
     }
   } catch (err) {
     console.error(`[REFERRAL] ${label} Error updating User record:`, err)
-    // Non bloquant : la cle Redis sert de fallback
   }
 
-  return newExpiresAt
+  return newExpiryStr
 }
 
 export async function POST(request: NextRequest) {
@@ -108,7 +131,7 @@ export async function POST(request: NextRequest) {
 
     if (!config.enabled) {
       return NextResponse.json(
-        { success: false, error: 'Le système de parrainage est désactivé' },
+        { success: false, error: 'Le systeme de parrainage est desactive' },
         { status: 403 }
       )
     }
@@ -129,7 +152,7 @@ export async function POST(request: NextRequest) {
     const existingClaim = await kv.get(`referral:claimed:${email}`)
     if (existingClaim) {
       return NextResponse.json(
-        { success: false, error: 'Vous avez déjà utilisé un code de parrainage' },
+        { success: false, error: 'Vous avez deja utilise un code de parrainage' },
         { status: 400 }
       )
     }
@@ -162,27 +185,10 @@ export async function POST(request: NextRequest) {
     if (config.referrerRewardType === 'free_analyses') {
       await kv.incrby(`referral:bonus:${referrerEmail}:analyses`, config.referrerRewardAmount)
     } else if (config.referrerRewardType === 'premium_days') {
+      // Incrby est atomique - le compteur sera toujours correct meme avec des claims simultanes
       await kv.incrby(`referral:bonus:${referrerEmail}:premium_days`, config.referrerRewardAmount)
-
-      // Lire l'expiration actuelle du parrain (depuis Redis ou User record)
-      let currentReferrerExpiry: string | null = null
-      try {
-        const existingRedisExpiry = await kv.get(`referral:premium_until:${referrerEmail.toLowerCase()}`)
-        if (existingRedisExpiry) currentReferrerExpiry = existingRedisExpiry as string
-      } catch (e) {}
-      if (!currentReferrerExpiry) {
-        try {
-          const referrerUser = await getUser(referrerEmail.toLowerCase())
-          if (referrerUser?.premiumExpiresAt) currentReferrerExpiry = referrerUser.premiumExpiresAt
-        } catch (e) {}
-      }
-
-      await activateReferralPremium(
-        referrerEmail,
-        currentReferrerExpiry,
-        config.referrerRewardAmount,
-        'REFERRER'
-      )
+      // La fonction activeReferralPremium lit le compteur et calcule l'expiration de maniere cumulative
+      await activateReferralPremium(referrerEmail, config.referrerRewardAmount, 'REFERRER')
     }
 
     // === REFERRED REWARD ===
@@ -190,25 +196,7 @@ export async function POST(request: NextRequest) {
       await kv.incrby(`referral:bonus:${email}:analyses`, config.referredRewardAmount)
     } else if (config.referredRewardType === 'premium_days') {
       await kv.incrby(`referral:bonus:${email}:premium_days`, config.referredRewardAmount)
-
-      let currentReferredExpiry: string | null = null
-      try {
-        const existingRedisExpiry = await kv.get(`referral:premium_until:${email.toLowerCase()}`)
-        if (existingRedisExpiry) currentReferredExpiry = existingRedisExpiry as string
-      } catch (e) {}
-      if (!currentReferredExpiry) {
-        try {
-          const referredUser = await getUser(email.toLowerCase())
-          if (referredUser?.premiumExpiresAt) currentReferredExpiry = referredUser.premiumExpiresAt
-        } catch (e) {}
-      }
-
-      await activateReferralPremium(
-        email,
-        currentReferredExpiry,
-        config.referredRewardAmount,
-        'REFERRED'
-      )
+      await activateReferralPremium(email, config.referredRewardAmount, 'REFERRED')
     }
 
     // Increment global stats
@@ -217,7 +205,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Récompenses obtenues !',
+      message: 'Recompenses obtenues !',
       referrerReward: {
         type: config.referrerRewardType,
         amount: config.referrerRewardAmount
