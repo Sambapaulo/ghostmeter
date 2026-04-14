@@ -61,8 +61,34 @@ export async function GET(request: NextRequest) {
   if (sessionId && !sessionValid && user.sessionId) {
     return NextResponse.json({ exists: true, isPremium: false, sessionValid: false, error: 'SESSION_INVALID' });
   }
-  const hasValidPremium = premiumCheck.isPremium && (!!user.paypalOrderId || !!user.adminGranted || !!user.referralPremium);
-  return NextResponse.json({ exists: true, isPremium: hasValidPremium, premiumSince: hasValidPremium ? user.premiumSince : null, premiumPlan: user.premiumPlan || null, premiumExpiresAt: user.premiumExpiresAt || null, referralPremium: !!user.referralPremium, analysesCount: user.analysesCount, sessionValid: true });
+
+  let isPremium = premiumCheck.isPremium && (!!user.paypalOrderId || !!user.adminGranted || !!user.referralPremium);
+
+  // FALLBACK: Si le User record n'indique pas referralPremium, verifier la cle Redis
+  // Cela couvre le cas ou le claim route a echoue a mettre a jour le User record
+  if (!isPremium) {
+    try {
+      const { kv } = await import('@vercel/kv');
+      const redisExpiry = await kv.get(`referral:premium_until:${email.toLowerCase()}`) as string | null;
+      if (redisExpiry && new Date(redisExpiry) > new Date()) {
+        // La cle Redis indique un premium actif - l'activer dans le User record
+        user.isPremium = true;
+        user.referralPremium = true;
+        user.premiumExpiresAt = redisExpiry;
+        if (!user.premiumSince) user.premiumSince = new Date().toISOString();
+        await setUser(email, user);
+        isPremium = true;
+        console.log(`[AUTH FALLBACK] Activated referral premium for ${email} from Redis key until ${redisExpiry}`);
+      } else if (redisExpiry && new Date(redisExpiry) <= new Date()) {
+        // Cle Redis expiree - la nettoyer
+        try { await kv.del(`referral:premium_until:${email.toLowerCase()}`); } catch(e) {}
+      }
+    } catch (err) {
+      console.error('[AUTH FALLBACK] Error checking Redis referral premium:', err);
+    }
+  }
+
+  return NextResponse.json({ exists: true, isPremium, premiumSince: isPremium ? user.premiumSince : null, premiumPlan: user.premiumPlan || null, premiumExpiresAt: (isPremium ? user.premiumExpiresAt : null) || null, referralPremium: !!user.referralPremium, analysesCount: user.analysesCount, sessionValid: true });
 }
 
 export async function POST(request: NextRequest) {
