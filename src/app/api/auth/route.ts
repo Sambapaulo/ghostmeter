@@ -64,13 +64,45 @@ export async function GET(request: NextRequest) {
 
   let isPremium = premiumCheck.isPremium && (!!user.paypalOrderId || !!user.adminGranted || !!user.referralPremium);
 
-  // FALLBACK: Si le User record n'indique pas referralPremium, verifier la cle Redis
-  // Cela couvre le cas ou le claim route a echoue a mettre a jour le User record
+  // FALLBACK: Si le User record n'indique pas referralPremium, verifier les cles Redis
+  // 1) D'abord la cle premium_until (quick path, deja calculee par le claim route)
+  // 2) Si absente ou expiree, recalculer depuis le compteur atomique premium_days + start
   if (!isPremium) {
     try {
       const { kv } = await import('@vercel/kv');
-      const redisExpiry = await kv.get(`referral:premium_until:${email.toLowerCase()}`) as string | null;
-      if (redisExpiry && new Date(redisExpiry) > new Date()) {
+      const ek = email.toLowerCase();
+      let redisExpiry = await kv.get(`referral:premium_until:${ek}`) as string | null;
+      let expiryValid = redisExpiry && new Date(redisExpiry) > new Date();
+
+      // Si premium_until absent/expiree, essayer de recalculer depuis le compteur atomique
+      if (!expiryValid) {
+        const premiumDays = Number(await kv.get(`referral:bonus:${ek}:premium_days`)) || 0;
+        if (premiumDays > 0) {
+          let startTs = Number(await kv.get(`referral:premium_start:${ek}`));
+          if (!startTs) {
+            // Pas de start (ancien systeme) → initialiser maintenant et accorder les jours accumules
+            startTs = Date.now();
+            await kv.set(`referral:premium_start:${ek}`, String(startTs));
+            console.log(`[AUTH RECALC] Initialized start for ${ek} with ${premiumDays} accumulated days`);
+          }
+          const calculatedExpiry = new Date(startTs + premiumDays * 86400000);
+          if (calculatedExpiry > new Date()) {
+            // Premium encore valide - mettre a jour premium_until et activer
+            redisExpiry = calculatedExpiry.toISOString();
+            await kv.set(`referral:premium_until:${ek}`, redisExpiry);
+            expiryValid = true;
+            console.log(`[AUTH RECALC] Recalculated premium for ${ek}: ${premiumDays} days until ${redisExpiry}`);
+          } else {
+            // Premium expire depuis le compteur aussi - nettoyer tout
+            await kv.del(`referral:premium_until:${ek}`);
+            await kv.del(`referral:premium_start:${ek}`);
+            await kv.del(`referral:bonus:${ek}:premium_days`);
+            console.log(`[AUTH RECALC] Cleaned up fully expired referral premium for ${ek}`);
+          }
+        }
+      }
+
+      if (expiryValid && redisExpiry) {
         // La cle Redis indique un premium actif - l'activer dans le User record
         user.isPremium = true;
         user.referralPremium = true;
@@ -78,16 +110,7 @@ export async function GET(request: NextRequest) {
         if (!user.premiumSince) user.premiumSince = new Date().toISOString();
         await setUser(email, user);
         isPremium = true;
-        console.log(`[AUTH FALLBACK] Activated referral premium for ${email} from Redis key until ${redisExpiry}`);
-      } else if (redisExpiry && new Date(redisExpiry) <= new Date()) {
-        // Cle Redis expiree - nettoyer toutes les cles liees au premium parrainage
-        try {
-          const ek = email.toLowerCase();
-          await kv.del(`referral:premium_until:${ek}`);
-          await kv.del(`referral:premium_start:${ek}`);
-          await kv.del(`referral:bonus:${ek}:premium_days`);
-          console.log(`[AUTH FALLBACK] Cleaned up expired referral premium keys for ${ek}`);
-        } catch(e) {}
+        console.log(`[AUTH FALLBACK] Activated referral premium for ${ek} until ${redisExpiry}`);
       }
     } catch (err) {
       console.error('[AUTH FALLBACK] Error checking Redis referral premium:', err);
