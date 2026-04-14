@@ -55,11 +55,19 @@ MANIPULATION (manipulationScore) - TRES IMPORTANT:
 - Retournement de culpabilite ("c'est de ta faute si...", "tu me pousses a...") = 70-85%
 - Menaces emotionnelles ("je vais me sentir mal", "tu vas le regretter") = 75-90%
 - Silent treatment puni (ne plus parler pour punir l'autre) = 50-70%
-- Minimisation des sentiments de l'autre ("tu exageres", "c'est rien", "tu es trop sensible") = 55-75%
+- Minimisation des sentiments de l'autre ("tu exageres", "c'est rien", "tu es trop sensible", "tu abuses", "t'es serieuse la ?") = 55-75%
+- Invalidation emotionnelle (repondre "t'es serieuse ?" a une question legitime au lieu d'y repondre) = 50-65%
 - Love bombing excessif (trop de declarations rapides) = 40-60%
 - Comparaisons degradeantes ("mon ex faisait mieux", "tu n'es pas comme...") = 65-80%
 - "Laisse tomber" apres avoir culpabilise = evitement toxique = 40-55% de manipulation
+- Esquiver une question legitime sur les limites ou la confiance (ex: "pourquoi t'as like sa photo ?") = 45-65%
 - Reponses normales, honnetes, respectueuses = 0-10%
+
+IDENTIFIER LE BON BOURREAUX / LA BONNE VICTIME - CRUCIAL:
+- Quand une personne pose une question legitime sur les limites, la confiance ou un comportement qui la blesse (ex: "pourquoi t'as like sa photo ?"), c'est une DEMANDE DE CLARTE, pas de la culpabilisation
+- Quand l'autre personne esquive la question, minimise ("tu abuses", "t'es serieuse ?") ou retourne la culpabilite, C'EST LUI/MOI qui est toxique, pas celui/celle qui pose la question
+- Le conseil doit TOUJOURS s'adresser a la personne qui a le comportement sain (celle qui pose des questions, qui exprime ses sentiments)
+- NE JAMAIS dire a quelqu'un qui exprime un sentiment ou pose une question legitime de "ne pas culpabiliser l'autre" — c'est l'inverse qui est vrai
 
 SCORE GLOBAL (overallScore):
 - C'est un indicateur de SANTE RELATIONNELLE, pas de compatibilite
@@ -70,7 +78,7 @@ SCORE GLOBAL (overallScore):
 
 CONSEILS ET HIGHLIGHTS:
 - Les "positif" et "negatif" doivent identifier QUI fait QUOI (ex: "Il utilise le chantage emotionnel" et non "Sa part")
-- Le conseil doit s'adresser a la personne qui subit la manipulation
+- Le conseil doit s'adresser a la personne qui subit un comportement toxique ou qui essaie de communiquer sainement
 - Le punchline doit capturer l'essentiel en une phrase percutante
 
 Reponds UNIQUEMENT avec un JSON valide (sans markdown, sans backticks):
