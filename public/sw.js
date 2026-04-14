@@ -1,9 +1,14 @@
-const CACHE_NAME = 'ghostmeter-v5';
+const CACHE_NAME = 'ghostmeter-v6';
 const urlsToCache = [
   '/',
   '/manifest.json',
   '/logo.svg',
 ];
+
+// Never cache API calls - always fetch fresh
+const shouldCache = (url) => {
+  return !url.includes('/api/');
+};
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -17,7 +22,8 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') {
+  // Don't cache API calls - always go to network
+  if (event.request.method !== 'GET' || !shouldCache(event.request.url)) {
     return;
   }
 

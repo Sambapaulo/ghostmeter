@@ -1386,7 +1386,7 @@ export default function Home() {
 
   // Load saved data and settings on mount
   useEffect(() => {
-    fetch('/api/admin/settings')
+    fetch('/api/admin/settings?t=' + Date.now())
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -1398,7 +1398,11 @@ export default function Home() {
             pack3Months: data.settings.pack3Months || 4.99,
             pack12Months: data.settings.pack12Months || 14.99
           })
-          setRemaining(data.settings.freeAnalysesPerDay)
+          // Update remaining only if user is not premium
+          const savedPremium = localStorage.getItem('ghostmeter_premium')
+          if (savedPremium !== 'true' && !isPremium) {
+            setRemaining(data.settings.freeAnalysesPerDay)
+          }
         }
       })
       .catch(() => {})
