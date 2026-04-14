@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { addUserLog } from '@/lib/localStore';
 import OpenAI from 'openai';
 
+// Empêcher le pre-render au build (requiert la clé API OpenAI)
+export const dynamic = 'force-dynamic'
+
 interface AnalysisResult {
   interestScore: number;
   manipulationScore: number;
