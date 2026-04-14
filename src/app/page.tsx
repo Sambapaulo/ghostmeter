@@ -1060,27 +1060,6 @@ export default function Home() {
   const [referralCode, setReferralCode] = useState<string | null>(null)
   const [bonusAnalyses, setBonusAnalyses] = useState(0)
 
-  // Fetch referral bonus on mount (for returning users)
-  useEffect(() => {
-    const email = localStorage.getItem('ghostmeter_email')
-    if (email) {
-      fetch('/api/referral/bonus?email=' + encodeURIComponent(email))
-        .then(res => res.json())
-        .then(data => {
-          if (data.bonusAnalyses && data.bonusAnalyses > 0) {
-            setBonusAnalyses(data.bonusAnalyses)
-            setRemaining(prev => prev + data.bonusAnalyses)
-          }
-          if (data.premiumDays && data.premiumDays > 0) {
-            setIsPremium(true)
-            setRemaining(999)
-            localStorage.setItem('ghostmeter_premium', 'true')
-          }
-        })
-        .catch(() => {})
-    }
-  }, [])
-
   // Apply referral reward when claimed (from ReferralModal or auto-claim)
   const handleReferralReward = useCallback((reward: { type: 'free_analyses' | 'premium_days'; amount: number }) => {
     if (reward.type === 'free_analyses') {
@@ -1384,37 +1363,57 @@ export default function Home() {
     checkForUpdate()
   }, [])
 
-  // Load saved data and settings on mount
+  // Load saved data and settings on mount (sequential loading to avoid race conditions)
   useEffect(() => {
+    const savedPremium = localStorage.getItem('ghostmeter_premium') === 'true'
+    const email = localStorage.getItem('ghostmeter_email')
+    if (email) setUserEmail(email)
+
+    // Load history
+    const saved = localStorage.getItem('ghostmeter_history')
+    if (saved) setSavedConversations(JSON.parse(saved))
+
+    // Step 1: Load settings, then Step 2: Load referral bonus (sequential, no race)
     fetch('/api/admin/settings?t=' + Date.now())
       .then(res => res.json())
       .then(data => {
         if (data.success) {
+          const newFreeAnalyses = data.settings.freeAnalysesPerDay || 3
           setSettings({
-            premiumCurrency: data.settings.premiumCurrency || '€',
+            premiumCurrency: data.settings.premiumCurrency || '\u20ac',
             premiumPeriod: data.settings.premiumPeriod || 'mois',
-            freeAnalysesPerDay: data.settings.freeAnalysesPerDay || 3,
+            freeAnalysesPerDay: newFreeAnalyses,
             pack1Month: data.settings.pack1Month || 1.99,
             pack3Months: data.settings.pack3Months || 4.99,
             pack12Months: data.settings.pack12Months || 14.99
           })
-          // Update remaining only if user is not premium
-          const savedPremium = localStorage.getItem('ghostmeter_premium')
-          if (savedPremium !== 'true' && !isPremium) {
-            setRemaining(data.settings.freeAnalysesPerDay)
+
+          // Only set remaining if not premium
+          if (!savedPremium) {
+            // If user is logged in, check referral bonus before setting remaining
+            if (email) {
+              return fetch('/api/referral/bonus?email=' + encodeURIComponent(email))
+                .then(res => res.json())
+                .then(bonusData => {
+                  const bonus = bonusData.bonusAnalyses || 0
+                  if (bonus > 0) setBonusAnalyses(bonus)
+                  // Check premium days from referral
+                  if (bonusData.premiumDays && bonusData.premiumDays > 0) {
+                    setIsPremium(true)
+                    setRemaining(999)
+                    localStorage.setItem('ghostmeter_premium', 'true')
+                  } else {
+                    setRemaining(newFreeAnalyses + bonus)
+                  }
+                })
+                .catch(() => setRemaining(newFreeAnalyses))
+            } else {
+              setRemaining(newFreeAnalyses)
+            }
           }
         }
       })
       .catch(() => {})
-
-    const saved = localStorage.getItem('ghostmeter_history')
-    if (saved) setSavedConversations(JSON.parse(saved))
-    
-    // Get email but DON'T trust localStorage for premium - verify with server
-    const email = localStorage.getItem('ghostmeter_email')
-    if (email) setUserEmail(email)
-    
-    // Note: Premium status is verified from server in the useEffect below
   }, [])
 
   // Check premium status from server if email exists
@@ -2802,7 +2801,7 @@ export default function Home() {
 
             <button onClick={handleAnalyze} disabled={conversation.trim().length < 20 || isLoading} className="w-full py-3 text-white font-semibold rounded-xl bg-gradient-to-r from-purple-500 via-pink-500 to-violet-500 hover:opacity-90 disabled:opacity-50 transition-all">{isLoading ? t('home.analyzing', language) : t('home.analyze', language)}</button>
 
-            <p className="text-center text-sm text-gray-400 dark:text-gray-500 mt-3">{isPremium ? <span className="text-purple-500 font-medium">{t('home.premium_unlimited', language)}</span> : t('home.analyses_remaining', language, { remaining: String(remaining), total: String(settings.freeAnalysesPerDay) })}</p>
+            <p className="text-center text-sm text-gray-400 dark:text-gray-500 mt-3">{isPremium ? <span className="text-purple-500 font-medium">{t('home.premium_unlimited', language)}</span> : t('home.analyses_remaining', language, { remaining: String(remaining), total: String(settings.freeAnalysesPerDay + bonusAnalyses) })}</p>
             
             {!isPremium && remaining <= 0 && (
               <button onClick={() => setShowPaywall(true)} className="w-full mt-2 py-2 border border-purple-200 dark:border-purple-700 text-purple-500 rounded-xl text-sm font-medium hover:bg-purple-50 dark:hover:bg-purple-900/30">{t('home.get_premium_more', language)}</button>
