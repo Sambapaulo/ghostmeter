@@ -48,15 +48,26 @@ export async function POST(request: NextRequest) {
     if (body.action === 'update') {
       const newSettings = body.settings
 
-      // Toujours preserver le mot de passe actuel (ne jamais l'ecraser)
-      newSettings.adminPassword = currentSettings.adminPassword
+      // Merge with current settings to avoid losing fields not in the form
+      const mergedSettings = {
+        ...currentSettings,
+        ...newSettings,
+        // Toujours preserver le mot de passe actuel (ne jamais l'ecraser)
+        adminPassword: currentSettings.adminPassword
+      }
 
-      const saved = await saveSettings(newSettings)
+      console.log('[UPDATE SETTINGS] Saving:', JSON.stringify(mergedSettings).substring(0, 200))
+
+      const saved = await saveSettings(mergedSettings)
       if (!saved) {
         console.error('[UPDATE SETTINGS] Erreur: saveSettings a echoue')
         return NextResponse.json({ success: false, error: 'Erreur de sauvegarde' }, { status: 500 })
       }
-      
+
+      // Verify save by reading back
+      const verify = await getSettings()
+      console.log('[UPDATE SETTINGS] Verified freeAnalysesPerDay:', verify.freeAnalysesPerDay)
+
       return NextResponse.json({ success: true })
     }
 

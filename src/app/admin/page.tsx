@@ -222,7 +222,7 @@ export default function AdminPage() {
 
   const fetchSettings = async () => {
     try {
-      const res = await fetch('/api/admin/settings')
+      const res = await fetch('/api/admin/settings?t=' + Date.now())
       const data = await res.json()
       if (data.success) {
         setSettings(data.settings)

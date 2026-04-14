@@ -1961,9 +1961,9 @@ export default function Home() {
           setRemaining(999)
           localStorage.setItem('ghostmeter_premium', 'true')
         } else {
-          // NOT premium on server
+          // NOT premium on server - set remaining to daily + bonus
           setIsPremium(false)
-          setRemaining(settings.freeAnalysesPerDay)
+          setRemaining(settings.freeAnalysesPerDay + bonusAnalyses)
           localStorage.removeItem('ghostmeter_premium')
         }
       })
@@ -1977,6 +1977,7 @@ export default function Home() {
     setUserEmail(null)
     setIsPremium(false)
     setRemaining(settings.freeAnalysesPerDay)
+    setBonusAnalyses(0)
     setShowMenu(false)
   }
 
