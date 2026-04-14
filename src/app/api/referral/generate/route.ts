@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         code: existingCode,
-        shareLink: `https://ghostmeter.app/?ref=${existingCode}`
+        shareLink: `https://ghostmeter.vercel.app/?ref=${existingCode}`
       })
     }
 
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       code,
-      shareLink: `https://ghostmeter.app/?ref=${code}`
+      shareLink: `https://ghostmeter.vercel.app/?ref=${code}`
     })
   } catch (error) {
     console.error('[REFERRAL GENERATE] Error:', error)

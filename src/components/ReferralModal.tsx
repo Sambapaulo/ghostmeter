@@ -145,6 +145,9 @@ const ReferralModal: React.FC<ReferralModalProps> = ({ isOpen, onClose, language
   const [codeCopied, setCodeCopied] = useState(false)
   const [linkCopied, setLinkCopied] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
+  const [inputCode, setInputCode] = useState('')
+  const [isClaiming, setIsClaiming] = useState(false)
+  const [claimMessage, setClaimMessage] = useState<{ success: boolean; text: string } | null>(null)
 
   useEffect(() => {
     if (isOpen) {
@@ -152,15 +155,10 @@ const ReferralModal: React.FC<ReferralModalProps> = ({ isOpen, onClose, language
       if (userEmail) {
         fetchBonus()
       }
-      // Check localStorage for existing code
-      const savedCode = localStorage.getItem('ghostmeter_referral_code')
-      if (savedCode) {
-        setReferralCode(savedCode)
-      } else {
-        setReferralCode(null)
-      }
       setCodeCopied(false)
       setLinkCopied(false)
+      setInputCode('')
+      setClaimMessage(null)
     }
   }, [isOpen, userEmail])
 
@@ -218,6 +216,38 @@ const ReferralModal: React.FC<ReferralModalProps> = ({ isOpen, onClose, language
     }
   }
 
+  const claimCode = async () => {
+    if (!inputCode.trim() || !userEmail || isClaiming) return
+    setIsClaiming(true)
+    setClaimMessage(null)
+    try {
+      const res = await fetch('/api/referral/claim', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: inputCode.trim().toUpperCase(), email: userEmail })
+      })
+      const data = await res.json()
+      if (data.success) {
+        const rewardTextClaim = lang === 'fr'
+          ? (data.referredReward?.type === 'premium_days'
+            ? `${data.referredReward.amount} jour${data.referredReward.amount > 1 ? 's' : ''} Premium`
+            : `${data.referredReward.amount} analyse${data.referredReward.amount > 1 ? 's' : ''} gratuite${data.referredReward.amount > 1 ? 's' : ''}`)
+          : (data.referredReward?.type === 'premium_days'
+            ? `${data.referredReward.amount} Premium day${data.referredReward.amount > 1 ? 's' : ''}`
+            : `${data.referredReward.amount} free analys${data.referredReward.amount > 1 ? 'es' : 'is'}`)
+        setClaimMessage({ success: true, text: `+${rewardTextClaim} !` })
+        setInputCode('')
+        fetchBonus()
+      } else {
+        setClaimMessage({ success: false, text: data.error || (lang === 'fr' ? 'Code invalide' : 'Invalid code') })
+      }
+    } catch (e) {
+      setClaimMessage({ success: false, text: lang === 'fr' ? 'Erreur serveur' : 'Server error' })
+    } finally {
+      setIsClaiming(false)
+    }
+  }
+
   const copyCode = async () => {
     if (!referralCode) return
     try {
@@ -239,7 +269,7 @@ const ReferralModal: React.FC<ReferralModalProps> = ({ isOpen, onClose, language
 
   const shareLink = async () => {
     if (!referralCode) return
-    const shareUrl = `https://ghostmeter.app/?ref=${referralCode}`
+    const shareUrl = `https://ghostmeter.vercel.app/?ref=${referralCode}`
     const shareText = lang === 'fr' 
       ? `Decouvre GhostMeter - l'IA qui analyse tes conversations ! Utilise mon code ${referralCode} pour recevoir ${config ? rewardText(config.referredRewardType, config.referredRewardAmount, lang) : 'un bonus'} !`
       : lang === 'de'
@@ -405,6 +435,33 @@ const ReferralModal: React.FC<ReferralModalProps> = ({ isOpen, onClose, language
                 </div>
               </div>
             )}
+
+            {/* Enter referral code */}
+            <div className="px-6 mb-6">
+              <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">{lang === 'fr' ? 'Vous avez un code ?' : lang === 'de' ? 'Hast du einen Code?' : lang === 'es' ? 'Tienes un codigo?' : 'Have a code?'}</p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={inputCode}
+                  onChange={(e) => { setInputCode(e.target.value.toUpperCase()); setClaimMessage(null) }}
+                  placeholder="GHOST-XXXX"
+                  maxLength={10}
+                  className="flex-1 bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-center font-bold tracking-wider focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+                <button
+                  onClick={claimCode}
+                  disabled={isClaiming || !inputCode.trim()}
+                  className="px-5 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isClaiming ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
+                </button>
+              </div>
+              {claimMessage && (
+                <p className={`mt-2 text-sm text-center font-medium ${claimMessage.success ? 'text-green-400' : 'text-red-400'}`}>
+                  {claimMessage.success ? '\u2713 ' : '\u2717 '}{claimMessage.text}
+                </p>
+              )}
+            </div>
 
             {/* How it works */}
             <div className="px-6 pb-6">
