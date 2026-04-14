@@ -1883,7 +1883,36 @@ export default function Home() {
     // Just set the email - premium is activated only after payment
     localStorage.setItem('ghostmeter_email', email.toLowerCase())
     setUserEmail(email.toLowerCase())
-    
+
+    // Claim referral code if present (new user came via referral link)
+    const savedRefCode = localStorage.getItem('ghostmeter_referral_code_used')
+    if (savedRefCode) {
+      fetch('/api/referral/claim', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: savedRefCode, email: email.toLowerCase() })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            localStorage.removeItem('ghostmeter_referral_code_used')
+            // Apply referral bonus
+            if (data.referredReward?.type === 'free_analyses') {
+              const currentBonus = parseInt(localStorage.getItem('ghostmeter_bonus_analyses') || '0', 10)
+              localStorage.setItem('ghostmeter_bonus_analyses', String(currentBonus + data.referredReward.amount))
+              setBonusAnalyses(currentBonus + data.referredReward.amount)
+            } else if (data.referredReward?.type === 'premium_days') {
+              localStorage.setItem('ghostmeter_referral_premium_days', String(data.referredReward.amount))
+              // Activate premium
+              setIsPremium(true)
+              setRemaining(999)
+              localStorage.setItem('ghostmeter_premium', 'true')
+            }
+          }
+        })
+        .catch(() => {})
+    }
+
     // Check if user has premium from server (don't trust localStorage)
     const sessionId = localStorage.getItem('ghostmeter_session')
     fetch('/api/auth?email=' + encodeURIComponent(email) + '&sessionId=' + (sessionId || ''))
