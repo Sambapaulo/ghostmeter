@@ -2789,7 +2789,7 @@ export default function Home() {
         
         <div className="fixed top-0 left-0 right-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-100 dark:border-gray-700">
           <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
-            <button onClick={() => setShowMenu(true)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"><Menu className="w-5 h-5 text-gray-700 dark:text-gray-200" /></button>
+            <button onClick={() => { setAppState('home'); setAnalysis(null) }} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"><ChevronLeft className="w-5 h-5 text-gray-700 dark:text-gray-200" /></button>
             <span className="font-bold text-gray-800 dark:text-white">{t('results.title', language)}</span>
             <div className="flex items-center gap-2">
               <button 
