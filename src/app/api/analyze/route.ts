@@ -51,7 +51,9 @@ INTERET (interestScore) - GLOBAL, mais reflechir QUI est interesse:
 
 GHOSTING (ghostingScore):
 - Ghosting = ABSENCE DE REPONSE pendant longtemps, PAS des reponses courtes
-- "Je te redis" sans suite = soft ghosting = score eleve (40-60%)
+- "Je te redis" / "je te dis ça" sans donner de reponse claire = soft ghosting (40-60%)
+- "Je te dis ça" + silence de plusieurs heures avant de relancer = ghosting passif-agressif (50-65%)
+- Revenir apres un long silence pour relancer ne RESET PAS le score ghosting — le silence compte
 - Reponses systematiquement plus courtes et retardees = ghosting progressif (30-50%)
 
 MANIPULATION (manipulationScore) - TRES IMPORTANT:
@@ -82,10 +84,11 @@ IDENTIFIER QUI INITIE vs QUI BLOQUE - CRUCIAL:
 SCORE GLOBAL (overallScore):
 - C'est un indicateur de SANTE RELATIONNELLE et de RECIPROCITE
 - Desequilibre fort (un initie, l'autre bloque) = score 20-40
+- Dynamique ou l'un est evade/esquive puis revient plus tard = score 45-60 (pas 80+, c'est un signal mitigé)
 - 0-30 = dynamique toxique ou completement desequilibree
 - 30-60 = communication insuffisante ou a sens unique
 - 60-80 = dynamique saine avec des points d'amelioration
-- 80-100 = excellente dynamique, reciprocite et respect
+- 80-100 = excellente dynamique, reciprocite ET engagement IMMEDIAT (pas apres des heures de silence)
 
 CONSEILS ET HIGHLIGHTS:
 - Les "positif" et "negatif" doivent identifier QUI fait QUOI (ex: "Il pose des questions mais elle repond de facon fermee")
