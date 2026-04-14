@@ -8,6 +8,7 @@ interface ReferralModalProps {
   onClose: () => void
   language: string
   userEmail: string | null
+  onRewardClaimed?: (reward: { type: 'free_analyses' | 'premium_days'; amount: number }) => void
 }
 
 interface ReferralConfig {
@@ -134,7 +135,7 @@ const translations: Record<string, Record<string, string>> = {
   }
 }
 
-const ReferralModal: React.FC<ReferralModalProps> = ({ isOpen, onClose, language, userEmail }) => {
+const ReferralModal: React.FC<ReferralModalProps> = ({ isOpen, onClose, language, userEmail, onRewardClaimed }) => {
   const lang = (['fr', 'en', 'de', 'es'].includes(language) ? language : 'fr') as 'fr' | 'en' | 'de' | 'es'
   const t = translations[lang]
   
@@ -238,6 +239,9 @@ const ReferralModal: React.FC<ReferralModalProps> = ({ isOpen, onClose, language
         setClaimMessage({ success: true, text: `+${rewardTextClaim} !` })
         setInputCode('')
         fetchBonus()
+        if (onRewardClaimed && data.referredReward) {
+          onRewardClaimed({ type: data.referredReward.type, amount: data.referredReward.amount })
+        }
       } else {
         setClaimMessage({ success: false, text: data.error || (lang === 'fr' ? 'Code invalide' : 'Invalid code') })
       }

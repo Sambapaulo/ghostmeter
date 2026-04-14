@@ -1060,6 +1060,39 @@ export default function Home() {
   const [referralCode, setReferralCode] = useState<string | null>(null)
   const [bonusAnalyses, setBonusAnalyses] = useState(0)
 
+  // Fetch referral bonus on mount (for returning users)
+  useEffect(() => {
+    const email = localStorage.getItem('ghostmeter_email')
+    if (email) {
+      fetch('/api/referral/bonus?email=' + encodeURIComponent(email))
+        .then(res => res.json())
+        .then(data => {
+          if (data.bonusAnalyses && data.bonusAnalyses > 0) {
+            setBonusAnalyses(data.bonusAnalyses)
+            setRemaining(prev => prev + data.bonusAnalyses)
+          }
+          if (data.premiumDays && data.premiumDays > 0) {
+            setIsPremium(true)
+            setRemaining(999)
+            localStorage.setItem('ghostmeter_premium', 'true')
+          }
+        })
+        .catch(() => {})
+    }
+  }, [])
+
+  // Apply referral reward when claimed (from ReferralModal or auto-claim)
+  const handleReferralReward = useCallback((reward: { type: 'free_analyses' | 'premium_days'; amount: number }) => {
+    if (reward.type === 'free_analyses') {
+      setBonusAnalyses(prev => prev + reward.amount)
+      setRemaining(prev => prev + reward.amount)
+    } else if (reward.type === 'premium_days') {
+      setIsPremium(true)
+      setRemaining(999)
+      localStorage.setItem('ghostmeter_premium', 'true')
+    }
+  }, [])
+
   // Charger l'usage du coach depuis localStorage (côté client uniquement)
   useEffect(() => {
     const today = new Date().toDateString()
@@ -1896,17 +1929,8 @@ export default function Home() {
         .then(data => {
           if (data.success) {
             localStorage.removeItem('ghostmeter_referral_code_used')
-            // Apply referral bonus
-            if (data.referredReward?.type === 'free_analyses') {
-              const currentBonus = parseInt(localStorage.getItem('ghostmeter_bonus_analyses') || '0', 10)
-              localStorage.setItem('ghostmeter_bonus_analyses', String(currentBonus + data.referredReward.amount))
-              setBonusAnalyses(currentBonus + data.referredReward.amount)
-            } else if (data.referredReward?.type === 'premium_days') {
-              localStorage.setItem('ghostmeter_referral_premium_days', String(data.referredReward.amount))
-              // Activate premium
-              setIsPremium(true)
-              setRemaining(999)
-              localStorage.setItem('ghostmeter_premium', 'true')
+            if (data.referredReward) {
+              handleReferralReward(data.referredReward)
             }
           }
         })
@@ -2650,7 +2674,7 @@ export default function Home() {
         <PaymentModal isOpen={showPayment} onClose={() => setShowPayment(false)} language={language} settings={settings} onPayment={(planId, promoData) => { setSelectedPlan(planId); const promoParam = promoData?.result?.valid ? { code: promoData.code, discount: promoData.result.discount, discountType: promoData.result.discountType, valid: promoData.result.valid } : undefined; activatePremium(promoParam); }} isProcessing={isProcessingPayment} />
         <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} onPremiumActivated={handlePremiumFromServer} mode={authMode} />
         <ShareResultCard isOpen={showShareResult} onClose={() => setShowShareResult(false)} analysis={analysis} language={language} />
-        <ReferralModal isOpen={showReferral} onClose={() => setShowReferral(false)} language={language} userEmail={userEmail} />
+        <ReferralModal isOpen={showReferral} onClose={() => setShowReferral(false)} language={language} userEmail={userEmail} onRewardClaimed={handleReferralReward} />
         
         {showOCR && <OCRUploader onTextExtracted={(t) => { setConversation(t); setShowOCR(false) }} onClose={() => setShowOCR(false)} />}
         
@@ -3345,7 +3369,7 @@ export default function Home() {
         <PaywallModal isOpen={showPaywall} onClose={() => setShowPaywall(false)} onOpenPayment={() => { setShowPaywall(false); setShowPayment(true); }} language={language} showExhausted={paywallExhausted} />
         <PaymentModal isOpen={showPayment} onClose={() => setShowPayment(false)} language={language} settings={settings} onPayment={(planId, promoData) => { setSelectedPlan(planId); const promoParam = promoData?.result?.valid ? { code: promoData.code, discount: promoData.result.discount, discountType: promoData.result.discountType, valid: promoData.result.valid } : undefined; activatePremium(promoParam); }} isProcessing={isProcessingPayment} />
         <ShareResultCard isOpen={showShareResult} onClose={() => setShowShareResult(false)} analysis={analysis} language={language} />
-        <ReferralModal isOpen={showReferral} onClose={() => setShowReferral(false)} language={language} userEmail={userEmail} />
+        <ReferralModal isOpen={showReferral} onClose={() => setShowReferral(false)} language={language} userEmail={userEmail} onRewardClaimed={handleReferralReward} />
       </div>
     )
   }
