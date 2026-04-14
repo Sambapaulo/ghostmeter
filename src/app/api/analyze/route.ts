@@ -37,12 +37,14 @@ export async function POST(request: NextRequest) {
 
 === REGLES CRITIQUES ===
 
-INTERET (interestScore):
-- Expressions d'amour directes ("je t'aime", "love you") = TRES ELEVE (85-98%)
-- Reciprocite dans les messages = POSITIF
-- Propositions de rendez-vous, questions sur l'autre = INTERESSE (60-80%)
-- Reponses evasives ("on verra", "je te redis", "laisse tomber") = FAIBLE INTERET (10-30%)
-- Absence d'engagement ou de questions = DESINTERET
+INTERET (interestScore) - GLOBAL, mais reflechir QUI est interesse:
+- Compliments ("t'es sympa", "t'es belle") = signe d'interet de celui qui le dit
+- Questions ouvertes ("tu fais quoi ce week-end ?") = INTERESSE (60-80%) de la part de celui qui pose
+- Propositions de rendez-vous = FORTEMENT INTERESSE (70-85%)
+- Reponses uniques sans rebond ("merci", "ok", "rien de special", "ah ok") = FAIBLE INTERET ou DESINTERET (5-20%) de la part de celui qui repond
+- Reponses fermes qui ne relancent pas la conversation = signal de desinteret
+- Reciprocite dans les messages = les DEUX sont interesses
+- Si UN SEUL initie/complimente/pose des questions et l'autre repond de facon minimale, l'interet global est DESSEQUILIBRE (30-45%)
 
 GHOSTING (ghostingScore):
 - Ghosting = ABSENCE DE REPONSE pendant longtemps, PAS des reponses courtes
@@ -63,22 +65,25 @@ MANIPULATION (manipulationScore) - TRES IMPORTANT:
 - Esquiver une question legitime sur les limites ou la confiance (ex: "pourquoi t'as like sa photo ?") = 45-65%
 - Reponses normales, honnetes, respectueuses = 0-10%
 
-IDENTIFIER LE BON BOURREAUX / LA BONNE VICTIME - CRUCIAL:
-- Quand une personne pose une question legitime sur les limites, la confiance ou un comportement qui la blesse (ex: "pourquoi t'as like sa photo ?"), c'est une DEMANDE DE CLARTE, pas de la culpabilisation
-- Quand l'autre personne esquive la question, minimise ("tu abuses", "t'es serieuse ?") ou retourne la culpabilite, C'EST LUI/MOI qui est toxique, pas celui/celle qui pose la question
-- Le conseil doit TOUJOURS s'adresser a la personne qui a le comportement sain (celle qui pose des questions, qui exprime ses sentiments)
-- NE JAMAIS dire a quelqu'un qui exprime un sentiment ou pose une question legitime de "ne pas culpabiliser l'autre" — c'est l'inverse qui est vrai
+IDENTIFIER QUI INITIE vs QUI BLOQUE - CRUCIAL:
+- Celui/celle qui pose des questions, complimente ou propose = montre de l'interet = comportement ACTIF/POSITIF
+- Celui/celle qui repond par des mots seuls ("ok", "merci", "ah ok", "rien de special") = BLOQUE la conversation = comportement PASSIF/NEGATIF
+- Quand une personne pose une question legitime sur les limites, la confiance ou un comportement qui la blesse, c'est une DEMANDE DE CLARTE, pas de la culpabilisation
+- Le conseil doit identifier clairement QUI ne s'investit pas et s'adresser a la personne qui essaie
+- Ne JAMAIS donner un conseil genrique ("initiez des conversations plus engageantes") a quelqu'un qui initie DEJA
 
 SCORE GLOBAL (overallScore):
-- C'est un indicateur de SANTE RELATIONNELLE, pas de compatibilite
-- 0-30 = dynamique toxique ou desequilibree
-- 30-60 = communication insuffisante ou problématique
+- C'est un indicateur de SANTE RELATIONNELLE et de RECIPROCITE
+- Desequilibre fort (un initie, l'autre bloque) = score 20-40
+- 0-30 = dynamique toxique ou completement desequilibree
+- 30-60 = communication insuffisante ou a sens unique
 - 60-80 = dynamique saine avec des points d'amelioration
 - 80-100 = excellente dynamique, reciprocite et respect
 
 CONSEILS ET HIGHLIGHTS:
-- Les "positif" et "negatif" doivent identifier QUI fait QUOI (ex: "Il utilise le chantage emotionnel" et non "Sa part")
-- Le conseil doit s'adresser a la personne qui subit un comportement toxique ou qui essaie de communiquer sainement
+- Les "positif" et "negatif" doivent identifier QUI fait QUOI (ex: "Il pose des questions mais elle repond de facon fermee")
+- Le conseil doit etre PRECIS et cible: dire QUI ne s'investit pas et pourquoi
+- Si un seul s'investit, le conseil doit l'aider a voir que l'autre n'est peut-etre pas interesse
 - Le punchline doit capturer l'essentiel en une phrase percutante
 
 Reponds UNIQUEMENT avec un JSON valide (sans markdown, sans backticks):
