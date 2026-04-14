@@ -2861,6 +2861,7 @@ export default function Home() {
             </div>
           </div>
         </div>
+        <ShareResultCard isOpen={showShareResult} onClose={() => setShowShareResult(false)} analysis={analysis} language={language} />
       </div>
     )
   }
