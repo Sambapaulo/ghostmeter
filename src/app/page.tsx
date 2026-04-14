@@ -1452,8 +1452,8 @@ export default function Home() {
       }
     }
 
-    // Step 1: Charger les settings depuis le serveur, avec fallback sur le cache local
-    fetch('/api/admin/settings?t=' + Date.now())
+    // Step 1: Charger les settings depuis le serveur (endpoint public, pas protege par middleware)
+    fetch('/api/app/settings?t=' + Date.now())
       .then(res => res.json())
       .then(data => {
         if (data.success && data.settings) {
