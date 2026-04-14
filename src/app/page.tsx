@@ -2852,6 +2852,9 @@ export default function Home() {
                 )}
               </button>
               {isPremium && <Crown className="w-5 h-5 text-yellow-500" />}
+              {referralPremium && countdown && (
+                <span className="text-[10px] font-medium text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/50 px-1.5 py-0.5 rounded-full whitespace-nowrap">{countdown}</span>
+              )}
             </div>
           </div>
         </div>
@@ -3030,6 +3033,9 @@ export default function Home() {
                 )}
               </button>
               {isPremium && <Crown className="w-5 h-5 text-yellow-500" />}
+              {referralPremium && countdown && (
+                <span className="text-[10px] font-medium text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/50 px-1.5 py-0.5 rounded-full whitespace-nowrap">{countdown}</span>
+              )}
             </div>
           </div>
         </div>
@@ -3128,6 +3134,9 @@ export default function Home() {
                 )}
               </button>
               {isPremium && <Crown className="w-5 h-5 text-yellow-500" />}
+              {referralPremium && countdown && (
+                <span className="text-[10px] font-medium text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/50 px-1.5 py-0.5 rounded-full whitespace-nowrap">{countdown}</span>
+              )}
             </div>
           </div>
         </div>
@@ -3429,6 +3438,9 @@ export default function Home() {
                 )}
               </button>
               {isPremium && <Crown className="w-5 h-5 text-yellow-500" />}
+              {referralPremium && countdown && (
+                <span className="text-[10px] font-medium text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/50 px-1.5 py-0.5 rounded-full whitespace-nowrap">{countdown}</span>
+              )}
             </div>
           </div>
         </div>
