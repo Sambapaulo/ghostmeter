@@ -71,7 +71,7 @@ export default function AdminPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const [activeTab, setActiveTab] = useState<'stats' | 'pricing' | 'promos' | 'users' | 'messages' | 'newsletter' | 'maintenance' | 'security' | 'logs' | 'journal'>('stats')
+  const [activeTab, setActiveTab] = useState<'stats' | 'pricing' | 'promos' | 'users' | 'messages' | 'newsletter' | 'maintenance' | 'security' | 'logs' | 'journal' | 'referral'>('stats')
   
   const [settings, setSettings] = useState<AppSettings>({
     premiumPrice: 1.99,
@@ -120,6 +120,18 @@ export default function AdminPage() {
   // Journal Utilisateurs state
   const [journalStats, setJournalStats] = useState<any>(null)
   const [journalLoading, setJournalLoading] = useState(false)
+
+  // Referral config state
+  const [referralConfig, setReferralConfig] = useState({
+    enabled: true,
+    referrerRewardType: 'free_analyses' as 'free_analyses' | 'premium_days',
+    referrerRewardAmount: 2,
+    referredRewardType: 'free_analyses' as 'free_analyses' | 'premium_days',
+    referredRewardAmount: 1
+  })
+  const [referralStats, setReferralStats] = useState({ totalReferrals: 0, totalConverted: 0 })
+  const [referralSaving, setReferralSaving] = useState(false)
+  const [referralLoaded, setReferralLoaded] = useState(false)
 
   // Prepare chart data from users
   const getChartData = () => {
@@ -259,6 +271,49 @@ export default function AdminPage() {
       console.error('Failed to load journal stats')
     } finally {
       setJournalLoading(false)
+    }
+  }
+
+  const fetchReferralConfig = async () => {
+    if (referralLoaded) return
+    try {
+      const res = await fetch('/api/referral/config')
+      const data = await res.json()
+      if (data.enabled !== undefined) {
+        setReferralConfig({
+          enabled: data.enabled,
+          referrerRewardType: data.referrerRewardType || 'free_analyses',
+          referrerRewardAmount: data.referrerRewardAmount || 2,
+          referredRewardType: data.referredRewardType || 'free_analyses',
+          referredRewardAmount: data.referredRewardAmount || 1
+        })
+        setReferralStats({
+          totalReferrals: data.totalReferrals || 0,
+          totalConverted: data.totalConverted || 0
+        })
+        setReferralLoaded(true)
+      }
+    } catch (e) {
+      console.error('Failed to load referral config')
+    }
+  }
+
+  const saveReferralConfig = async () => {
+    setReferralSaving(true)
+    try {
+      const res = await fetch('/api/referral/config', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(referralConfig)
+      })
+      const data = await res.json()
+      if (data.success) {
+        alert('Configuration du parrainage sauvegardee !')
+      }
+    } catch (e) {
+      alert('Erreur lors de la sauvegarde')
+    } finally {
+      setReferralSaving(false)
     }
   }
 
@@ -791,6 +846,17 @@ export default function AdminPage() {
             >
               <Key className="w-4 h-4" />
               Sécurité
+            </button>
+            <button
+              onClick={() => { setActiveTab('referral'); fetchReferralConfig(); }}
+              className={`flex-1 py-3 px-4 text-sm font-medium flex items-center justify-center gap-2 ${
+                activeTab === 'referral' 
+                  ? 'text-purple-600 border-b-2 border-purple-600 bg-purple-50' 
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <Gift className="w-4 h-4" />
+              Parrainage
             </button>
           </div>
 
@@ -2192,6 +2258,134 @@ Nous avons une grande nouvelle à vous annoncer..."
           </div>
         </div>
       )}
+
+            {/* REFERRAL TAB */}
+            {activeTab === 'referral' && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-pink-100 rounded-xl flex items-center justify-center">
+                    <Gift className="w-5 h-5 text-pink-600" />
+                  </div>
+                  <div>
+                    <h2 className="font-semibold text-lg">Parrainage</h2>
+                    <p className="text-xs text-gray-400">Configurez le systeme de parrainage et les recompenses</p>
+                  </div>
+                </div>
+
+                {/* Stats */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-xl p-4 border border-pink-200">
+                    <p className="text-xs text-pink-600 font-medium">Total parrainages</p>
+                    <p className="text-3xl font-bold text-pink-700">{referralStats.totalReferrals}</p>
+                  </div>
+                  <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-4 border border-purple-200">
+                    <p className="text-xs text-purple-600 font-medium">Conversions</p>
+                    <p className="text-3xl font-bold text-purple-700">{referralStats.totalConverted}</p>
+                  </div>
+                </div>
+
+                {/* Enable/Disable */}
+                <div className="bg-white rounded-xl border border-gray-200 p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${referralConfig.enabled ? 'bg-green-100' : 'bg-gray-100'}`}>
+                        {referralConfig.enabled ? <Play className="w-5 h-5 text-green-600" /> : <Pause className="w-5 h-5 text-gray-400" />}
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-800">Systeme de parrainage</p>
+                        <p className="text-xs text-gray-400">{referralConfig.enabled ? 'Actif - les utilisateurs peuvent parrainer' : 'Desactive'}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setReferralConfig(prev => ({ ...prev, enabled: !prev.enabled }))}
+                      className={`px-4 py-2 rounded-xl font-medium text-sm ${referralConfig.enabled ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-600'}`}
+                    >
+                      {referralConfig.enabled ? 'Actif' : 'Inactif'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Referrer Reward */}
+                <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-4">
+                  <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                    <Gift className="w-4 h-4 text-purple-500" />
+                    Recompense du Parrain
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">Type de recompense</label>
+                      <select
+                        value={referralConfig.referrerRewardType}
+                        onChange={(e) => setReferralConfig(prev => ({ ...prev, referrerRewardType: e.target.value as 'free_analyses' | 'premium_days' }))}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      >
+                        <option value="free_analyses">Analyses gratuites</option>
+                        <option value="premium_days">Jours Premium</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">Quantite</label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="100"
+                        value={referralConfig.referrerRewardAmount}
+                        onChange={(e) => setReferralConfig(prev => ({ ...prev, referrerRewardAmount: parseInt(e.target.value) || 1 }))}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-2">
+                    Le parrain recevra : <strong>{referralConfig.referrerRewardAmount} {referralConfig.referrerRewardType === 'free_analyses' ? 'analyse(s) gratuite(s)' : 'jour(s) Premium'}</strong> pour chaque ami qui utilise son code
+                  </p>
+                </div>
+
+                {/* Referred Reward */}
+                <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-4">
+                  <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                    <Gift className="w-4 h-4 text-pink-500" />
+                    Recompense du Filleul
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">Type de recompense</label>
+                      <select
+                        value={referralConfig.referredRewardType}
+                        onChange={(e) => setReferralConfig(prev => ({ ...prev, referredRewardType: e.target.value as 'free_analyses' | 'premium_days' }))}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      >
+                        <option value="free_analyses">Analyses gratuites</option>
+                        <option value="premium_days">Jours Premium</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">Quantite</label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="100"
+                        value={referralConfig.referredRewardAmount}
+                        onChange={(e) => setReferralConfig(prev => ({ ...prev, referredRewardAmount: parseInt(e.target.value) || 1 }))}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-2">
+                    Le filleul recevra : <strong>{referralConfig.referredRewardAmount} {referralConfig.referredRewardType === 'free_analyses' ? 'analyse(s) gratuite(s)' : 'jour(s) Premium'}</strong> en utilisant le code de parrainage
+                  </p>
+                </div>
+
+                {/* Save Button */}
+                <button
+                  onClick={saveReferralConfig}
+                  disabled={referralSaving}
+                  className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-xl hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2 transition-all"
+                >
+                  {referralSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+                  Sauvegarder la configuration
+                </button>
+              </div>
+            )}
     </div>
   )
 }

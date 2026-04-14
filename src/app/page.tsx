@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import {
-  Sparkles, Crown, RefreshCw, Share2, Menu, X, History,
+  Sparkles, Crown, RefreshCw, Share2, Menu, X, History, Gift,
   Trash2, ChevronRight, ChevronLeft, Check, Ghost, Tag, Camera, ClipboardPaste, LogOut, Mail, Info, FileText, CreditCard, Loader2, MessageCircle, Send, MessageSquare, Copy, Heart, Sun, Moon, Plus, Bell, BellOff, AlertCircle, Globe
 , Eye, EyeOff } from 'lucide-react'
 import dynamic from 'next/dynamic'
@@ -12,6 +12,8 @@ import GoogleSignIn from '@/components/GoogleSignIn'
 import Walkthrough from '@/components/Walkthrough'
 import PaywallModal from '@/components/PaywallModal'
 import PaymentModal from '@/components/PaymentModal'
+import ShareResultCard from '@/components/ShareResultCard'
+import ReferralModal from '@/components/ReferralModal'
 
 const OCRUploader = dynamic(() => import('@/components/OCRUploader'), { ssr: false })
 
@@ -811,6 +813,21 @@ export default function Home() {
     if (!hasSeenWalkthrough) {
       setShowWalkthrough(true)
     }
+
+    // Check for referral code in URL
+    const refCodeFromUrl = urlParams.get('ref')
+    if (refCodeFromUrl) {
+      localStorage.setItem('ghostmeter_referral_code_used', refCodeFromUrl)
+    }
+
+    // Load bonus analyses from referral
+    const savedBonus = localStorage.getItem('ghostmeter_bonus_analyses')
+    if (savedBonus) {
+      const bonus = parseInt(savedBonus, 10)
+      if (!isNaN(bonus) && bonus > 0) {
+        setBonusAnalyses(bonus)
+      }
+    }
     
     // Maintenance mode disabled - not needed for this app
     // const checkMaintenance = async () => {
@@ -1038,6 +1055,10 @@ export default function Home() {
   const [savedCoachConversations, setSavedCoachConversations] = useState<SavedCoachConversation[]>([])
   const [currentCoachConversationId, setCurrentCoachConversationId] = useState<string | null>(null)
   const [showCoachHistory, setShowCoachHistory] = useState(false)
+  const [showShareResult, setShowShareResult] = useState(false)
+  const [showReferral, setShowReferral] = useState(false)
+  const [referralCode, setReferralCode] = useState<string | null>(null)
+  const [bonusAnalyses, setBonusAnalyses] = useState(0)
 
   // Charger l'usage du coach depuis localStorage (côté client uniquement)
   useEffect(() => {
@@ -1537,6 +1558,11 @@ export default function Home() {
     alert(t('copied', language))
   }
 
+  const handleShareVisual = () => {
+    if (!analysis) return
+    setShowShareResult(true)
+  }
+
   const handlePaste = async () => {
     try {
       const text = await navigator.clipboard.readText()
@@ -1992,6 +2018,18 @@ export default function Home() {
               <ChevronRight className="w-4 h-4 text-gray-300" />
             </button>
           )}
+
+          <button 
+            onClick={() => { setShowReferral(true); setShowMenu(false) }}
+            className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors mt-1"
+          >
+            <Gift className="w-5 h-5 text-pink-500" />
+            <div className="flex-1 text-left">
+              <p className="font-medium text-gray-800 dark:text-white">{t('menu.referral', language)}</p>
+              <p className="text-xs text-gray-400">{t('menu.referral_subtitle', language)}</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-gray-300" />
+          </button>
           
           <div className="border-t border-gray-100 mt-4 pt-4">
             <button 
@@ -2582,6 +2620,8 @@ export default function Home() {
         <PaywallModal isOpen={showPaywall} onClose={() => setShowPaywall(false)} onOpenPayment={() => { setShowPaywall(false); setShowPayment(true); }} language={language} showExhausted={paywallExhausted} />
         <PaymentModal isOpen={showPayment} onClose={() => setShowPayment(false)} language={language} settings={settings} onPayment={(planId, promoData) => { setSelectedPlan(planId); const promoParam = promoData?.result?.valid ? { code: promoData.code, discount: promoData.result.discount, discountType: promoData.result.discountType, valid: promoData.result.valid } : undefined; activatePremium(promoParam); }} isProcessing={isProcessingPayment} />
         <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} onPremiumActivated={handlePremiumFromServer} mode={authMode} />
+        <ShareResultCard isOpen={showShareResult} onClose={() => setShowShareResult(false)} analysis={analysis} language={language} />
+        <ReferralModal isOpen={showReferral} onClose={() => setShowReferral(false)} language={language} userEmail={userEmail} />
         
         {showOCR && <OCRUploader onTextExtracted={(t) => { setConversation(t); setShowOCR(false) }} onClose={() => setShowOCR(false)} />}
         
@@ -2812,7 +2852,7 @@ export default function Home() {
 
             <div className="grid grid-cols-3 gap-2">
               <button onClick={() => { setAnalysis(null); setAppState('home') }} className="py-3 bg-gray-100 dark:bg-gray-700 dark:text-white rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"><RefreshCw className="w-4 h-4 mx-auto mb-1" />{t('results.new', language)}</button>
-              <button onClick={handleShare} className="py-3 bg-gray-100 dark:bg-gray-700 dark:text-white rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"><Share2 className="w-4 h-4 mx-auto mb-1" />{t('results.share', language)}</button>
+              <button onClick={handleShareVisual} className="py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium hover:opacity-90"><Share2 className="w-4 h-4 mx-auto mb-1" />{t('results.share_image', language)}</button>
               {!isPremium ? (
                 <button onClick={() => { setPaywallExhausted(false); setShowPaywall(true) }} className="py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium hover:opacity-90"><Crown className="w-4 h-4 mx-auto mb-1" />{t('menu.premium', language)}</button>
               ) : (
@@ -3274,6 +3314,8 @@ export default function Home() {
         {/* Modals - Paywall & Payment accessible depuis le coach */}
         <PaywallModal isOpen={showPaywall} onClose={() => setShowPaywall(false)} onOpenPayment={() => { setShowPaywall(false); setShowPayment(true); }} language={language} showExhausted={paywallExhausted} />
         <PaymentModal isOpen={showPayment} onClose={() => setShowPayment(false)} language={language} settings={settings} onPayment={(planId, promoData) => { setSelectedPlan(planId); const promoParam = promoData?.result?.valid ? { code: promoData.code, discount: promoData.result.discount, discountType: promoData.result.discountType, valid: promoData.result.valid } : undefined; activatePremium(promoParam); }} isProcessing={isProcessingPayment} />
+        <ShareResultCard isOpen={showShareResult} onClose={() => setShowShareResult(false)} analysis={analysis} language={language} />
+        <ReferralModal isOpen={showReferral} onClose={() => setShowReferral(false)} language={language} userEmail={userEmail} />
       </div>
     )
   }

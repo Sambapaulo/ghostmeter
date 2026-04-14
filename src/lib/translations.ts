@@ -32,6 +32,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'menu.notifications_daily': 'Message motivant chaque matin à 9h',
     'menu.notifications_test': '🔔 Tester une notification',
     'menu.logout': 'Déconnexion',
+    'menu.referral': 'Parrainage',
+    'menu.referral_subtitle': 'Gagnez des analyses gratuites',
     'menu.save_account': 'Sauvegarder mon compte',
     'menu.save_account_subtitle': 'Lier un email',
     'menu.login': 'Connexion',
@@ -118,6 +120,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'results.save': 'Sauvegarder',
     'results.saved': 'Sauvegardé !',
     'results.share': 'Partager',
+    'results.share_image': 'Partager en image',
 
     // Reply Generator
     'reply.title': 'Générateur de réponse',
@@ -396,6 +399,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'menu.notifications_daily': 'Motivational message every morning at 9am',
     'menu.notifications_test': '🔔 Test notification',
     'menu.logout': 'Log out',
+    'menu.referral': 'Referral',
+    'menu.referral_subtitle': 'Earn free analyses',
     'menu.save_account': 'Save my account',
     'menu.save_account_subtitle': 'Link an email',
     'menu.login': 'Log in',
@@ -482,6 +487,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'results.save': 'Save',
     'results.saved': 'Saved!',
     'results.share': 'Share',
+    'results.share_image': 'Share as image',
 
     // Reply Generator
     'reply.title': 'Reply Generator',
@@ -760,6 +766,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'menu.notifications_daily': 'Motivierende Nachricht jeden Morgen um 9 Uhr',
     'menu.notifications_test': '🔔 Test-Benachrichtigung',
     'menu.logout': 'Abmelden',
+    'menu.referral': 'Empfehlung',
+    'menu.referral_subtitle': 'Kostenlose Analysen verdienen',
     'menu.save_account': 'Konto speichern',
     'menu.save_account_subtitle': 'E-Mail verknüpfen',
     'menu.login': 'Anmelden',
@@ -846,6 +854,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'results.save': 'Speichern',
     'results.saved': 'Gespeichert!',
     'results.share': 'Teilen',
+    'results.share_image': 'Als Bild teilen',
 
     // Reply Generator
     'reply.title': 'Antwort-Generator',
@@ -1124,6 +1133,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'menu.notifications_daily': 'Mensaje motivador cada mañana a las 9h',
     'menu.notifications_test': '🔔 Probar notificación',
     'menu.logout': 'Cerrar sesión',
+    'menu.referral': 'Referidos',
+    'menu.referral_subtitle': 'Gana analisis gratuitas',
     'menu.save_account': 'Guardar mi cuenta',
     'menu.save_account_subtitle': 'Vincular un email',
     'menu.login': 'Iniciar sesión',
@@ -1210,6 +1221,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'results.save': 'Guardar',
     'results.saved': '¡Guardado!',
     'results.share': 'Compartir',
+    'results.share_image': 'Compartir como imagen',
 
     // Reply Generator
     'reply.title': 'Generador de respuestas',
