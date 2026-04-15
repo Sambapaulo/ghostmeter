@@ -51,6 +51,7 @@ INTERET (interestScore) - GLOBAL, mais reflechir QUI est interesse:
 - Si quelqu'un revient plus tard (ex: "2h plus tard") pour relancer = il EST interesse malgre un debut evasif
 - Reciprocite dans les messages = les DEUX sont interesses
 - Si UN SEUL initie/complimente/pose des questions et l'autre repond de facon minimale, l'interet global est DESSEQUILIBRE (30-45%)
+- IMPORTANT: si le score de manipulation est de 40% ou plus, l'interet global ne doit PAS depasser 30-40%. Une personne qui manipule ou evade systematiquement ne montre pas un reel interet — elle maintient l'autre dans le flou. PLAFOND INTERET = 40% quand manipulation >= 40%
 
 === 1. SIGNES DE GHOSTING (ghostingScore) ===
 Ghosting = disparition progressive, PAS seulement absence de reponse.
