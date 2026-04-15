@@ -63,7 +63,9 @@ MANIPULATION (manipulationScore) - TRES IMPORTANT:
 - Menaces emotionnelles ("je vais me sentir mal", "tu vas le regretter") = 75-90%
 - Silent treatment puni (ne plus parler pour punir l'autre) = 50-70%
 - Minimisation des sentiments de l'autre ("tu exageres", "c'est rien", "tu es trop sensible", "tu abuses", "t'es serieuse la ?") = 55-75%
+- Gaslighting et inversion de la realite ("tu te fais des idees", "c'est toi qui voit des problemes", "c'est tout dans ta tete") = 60-80%
 - Invalidation emotionnelle (repondre "t'es serieuse ?" a une question legitime au lieu d'y repondre) = 50-65%
+- Reponses vagues et dramatiques pour clore le sujet ("c'est complique", "les choses changent", "je sais pas") sans explication = 35-50%
 - Love bombing excessif (trop de declarations rapides) = 40-60%
 - Comparaisons degradeantes ("mon ex faisait mieux", "tu n'es pas comme...") = 65-80%
 - "Laisse tomber" apres avoir culpabilise = evitement toxique = 40-55% de manipulation
