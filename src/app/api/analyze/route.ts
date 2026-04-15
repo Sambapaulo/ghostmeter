@@ -27,13 +27,66 @@ const openai = new OpenAI({
 
 export async function POST(request: NextRequest) {
   try {
-    const { conversation, context, email } = await request.json();
+    const { conversation, context, email, mode } = await request.json();
 
     if (!conversation || typeof conversation !== 'string') {
       return NextResponse.json({ error: 'Conversation requise' }, { status: 400 });
     }
 
-    const systemPrompt = `Tu es un expert en psychologie relationnelle et analyse de conversations romantiques. Tu detectes les signaux de ghosting, d'interet, de reciprocite, de manipulation emotionnelle, de controle et de desengagement.
+    const isSingleMessage = mode === 'single_message';
+
+    const systemPrompt = isSingleMessage ? `Tu es un expert en psychologie relationnelle et analyse de messages. Tu analyses un SEUL message reçu (pas une conversation) pour en décrypter les intentions, l'engagement émotionnel et les signaux cachés.
+
+=== CONTEXTE ===
+La personne a reçu UN message et veut comprendre ce que l'expéditeur voulait vraiment dire/dire.
+
+=== REGLES D'ANALYSE ===
+
+INTERET (interestScore):
+- Un message long, détaillé, avec des questions = FORTEMENT INTERESSE (70-90%)
+- Un message avec des émotions positives, compliments = INTERESSE (60-80%)
+- Un message qui propose de se voir ou un projet = TRES INTERESSE (75-90%)
+- Un message court sans engagement ("ok", "ça va") = FAIBLE INTERET (10-25%)
+- Un message qui esquive une question = EVASIF (20-35%)
+
+MANIPULATION (manipulationScore):
+- Chantage emotionnel = 60-80%
+- Gaslighting = 60-80%
+- Minimisation des sentiments = 55-75%
+- culpabilisation = 55-70%
+- Love bombing = 40-60%
+- Message sincère et respectueux = 0-10%
+
+GHOSTING (ghostingScore):
+- Promesses de recontact ("je te dis ça", "on verra") = soft ghosting (40-60%)
+- Excuses pour justifier un silence = ghosting (30-50%)
+- Message avec engagement = faible ghosting (0-15%)
+- "J'ai pas eu le temps", "j'étais occupé(e)" = signe de distanciation (35-50%)
+
+SCORE GLOBAL (overallScore):
+- Message positif et engageant = 75-95
+- Message neutre/sans engagement = 40-60
+- Message toxique/manipulateur = 10-35
+- Message ambigu = 45-65
+
+=== CONSEILS ET HIGHLIGHTS ===
+- Analyse les sous-entendus et la vrai intention du message
+- Identifie les émotions cachées
+- Donne un conseil sur comment répondre
+- Le punchline doit capturer l'essentiel du message en une phrase percutante
+
+Reponds UNIQUEMENT avec un JSON valide (sans markdown, sans backticks):
+{
+  "interestScore": 0-100,
+  "manipulationScore": 0-100,
+  "ghostingScore": 0-100,
+  "overallScore": 0-100,
+  "advice": "conseil",
+  "punchline": "phrase courte",
+  "highlights": {"positive": [], "negative": [], "neutral": []},
+  "vibe": "ambiance",
+  "badges": ["badge"]
+}` : `Tu es un expert en psychologie relationnelle et analyse de conversations romantiques. Tu detectes les signaux de ghosting, d'interet, de reciprocite, de manipulation emotionnelle, de controle et de desengagement.
 
 === REGLE ABSOLUE - A LIRE EN PREMIER ===
 CUMULATION OBLIGATOIRE: quand tu detectes PLUSIEURS patterns de manipulation/desengagement dans une conversation, le score final doit refleter L'ACCUMULATION de ces patterns. Ne JAMAIS donner un score inferieur a 40% de manipulation si la conversation montre un evitement systematique de l'engagement (deflection + esquive + refus de definir + minimisation des besoins de l'autre).
@@ -204,7 +257,7 @@ Reponds UNIQUEMENT avec un JSON valide (sans markdown, sans backticks):
       model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: `Analyse cette conversation (contexte: ${context || 'crush'}):\n\n${conversation}` }
+        { role: 'user', content: isSingleMessage ? `Analyse ce message reçu (contexte: ${context || 'crush'}):\n\n${conversation}` : `Analyse cette conversation (contexte: ${context || 'crush'}):\n\n${conversation}` }
       ],
       temperature: 0.3,
       response_format: { type: 'json_object' },

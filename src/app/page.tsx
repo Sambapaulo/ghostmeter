@@ -708,6 +708,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false)
   const [conversation, setConversation] = useState('')
   const [selectedContext, setSelectedContext] = useState('crush')
+  const [analysisMode, setAnalysisMode] = useState<'conversation' | 'single_message'>('conversation')
   const [remaining, setRemaining] = useState(3)
   const [showPaywall, setShowPaywall] = useState(false)
   const [paywallExhausted, setPaywallExhausted] = useState(false)
@@ -1658,7 +1659,7 @@ export default function Home() {
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ conversation, context: selectedContext })
+        body: JSON.stringify({ conversation, context: selectedContext, mode: analysisMode })
       })
       const data = await response.json()
 
@@ -2942,6 +2943,28 @@ export default function Home() {
 
             <h2 className="text-lg font-semibold text-center mb-4 flex items-center justify-center gap-2 text-gray-800 dark:text-white"><Sparkles className="w-5 h-5 text-purple-500" />{t('home.paste_conversation', language)}</h2>
 
+            {/* Mode toggle: Conversation / Message seul */}
+            <div className="mb-4 flex gap-2">
+              <button
+                onClick={() => setAnalysisMode('conversation')}
+                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${analysisMode === 'conversation' ? 'bg-purple-500 text-white' : 'bg-gray-100 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
+              >
+                💬 {t('home.mode_conversation', language)}
+              </button>
+              <button
+                onClick={() => setAnalysisMode('single_message')}
+                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${analysisMode === 'single_message' ? 'bg-purple-500 text-white' : 'bg-gray-100 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
+              >
+                📝 {t('home.mode_single_message', language)}
+              </button>
+            </div>
+
+            {analysisMode === 'single_message' && (
+              <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                <p className="text-xs text-blue-600 dark:text-blue-400">{t('home.single_message_desc', language)}</p>
+              </div>
+            )}
+
             <div className="mb-4">
               <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">{t('home.relationship_type', language)}</p>
               <div className="flex gap-2 overflow-x-auto pb-2">{contexts.map(c => (
@@ -2950,13 +2973,14 @@ export default function Home() {
             </div>
 
             <div className="relative">
-              <textarea value={conversation} onChange={(e) => setConversation(e.target.value)} placeholder={t('home.paste_here', language)} className="w-full h-48 p-3 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white rounded-xl resize-none text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 mb-2" />
+              <textarea value={conversation} onChange={(e) => setConversation(e.target.value)} placeholder={analysisMode === 'single_message' ? t('home.paste_message', language) : t('home.paste_here', language)} className="w-full h-48 p-3 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white rounded-xl resize-none text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 mb-2" />
               <div className="absolute bottom-2 right-2 flex gap-2">
                 <button onClick={handlePaste} className={`p-2 rounded-lg transition-colors flex items-center gap-1 text-xs font-medium ${pasteSuccess ? 'bg-green-500 text-white' : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-500'}`} title="Coller"><ClipboardPaste className="w-4 h-4" /><span className="hidden sm:inline">{pasteSuccess ? t('home.pasted', language) : t('home.paste', language)}</span></button>
                 <button onClick={() => setShowOCR(true)} className="p-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors flex items-center gap-1 text-xs font-medium" title={t('home.scan_screenshot', language)}><Camera className="w-4 h-4" /><span className="hidden sm:inline">{t('home.screenshot', language)}</span></button>
               </div>
             </div>
             
+            {analysisMode === 'conversation' && (
             <div className="flex gap-2 mb-3">
               <button 
                 onClick={() => setConversation(prev => prev + (prev && !prev.endsWith('\n') ? '\n' : '') + 'Toi: ')} 
@@ -2971,6 +2995,7 @@ export default function Home() {
                 {t('home.add_them', language)}
               </button>
             </div>
+            )}
             
             <p className="text-xs text-gray-400 dark:text-gray-500 mb-4 text-center">{t('home.use_paste', language)}</p>
 
