@@ -74,12 +74,20 @@ MANIPULATION (manipulationScore) - CUMULATIF:
 - MINIMUM 50% si le message contient 3+ formes de manipulation/gaslighting
 - AGRESSIVITE: "tu abuses", "tu devrais te calmer", "tu dramatises" = TON AGRESSIF = manipulation +10-15% par occurrence
 
-GHOSTING (ghostingScore):
+GHOSTING (ghostingScore) - COMPREND AUSSI L'EVITEMENT:
 - "on en reparlera quand ça ira mieux", "on verra" = soft ghosting (45-60%)
 - "j'ai besoin de temps pour moi", "j'ai besoin d'espace" = mise a distance (40-55%)
-- "J'ai pas eu le temps", "j'étais occupé(e)", "je suis juste occupé(e)" = pretextes (35-50%)
+- "J'ai pas eu le temps", "j'étais occupé(e)", "je suis juste occupé(e)", "beaucoup de boulot", "fatigué(e)" = pretextes (35-50%)
 - Promesses de recontact sans date = ghosting passif (40-55%)
 - Message avec engagement concret = faible ghosting (0-15%)
+
+EVITEMENT (integre au ghostingScore) - Phrases floues et non-engagement:
+- "on verra", "on vera", "plus tard", "je sais pas", "c'est compliqué", "je ne sais pas encore" = evasion forte (40-55%)
+- "comme tu veux", "t'inquiète", "pas maintenant", "c'est pas le moment" = evasion douce (30-45%)
+- "je te réponds après", "on se capte plus tard" = report (35-50%)
+- Absence totale de question en retour = desinteret (ghosting +10-15%)
+- Réponse courte sans relance ("ok", "oui", "non", "tkt", "ça va") = ghosting latent (+15-20%)
+- CUMUL EVITEMENT: 2+ signaux d'évitement = ghostingScore minimum 45%
 
 SCORE GLOBAL (overallScore):
 - Message positif et engageant = 75-95
