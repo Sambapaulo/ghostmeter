@@ -3058,7 +3058,7 @@ export default function Home() {
           </div>
         </div>
         
-        <div className="pt-20 pb-8 p-4">
+        <div className="pt-20 pb-16 p-4">
           <div className="max-w-lg mx-auto">
             <div className="text-center mb-6">
               <div className="inline-block bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-full text-lg font-bold shadow-lg">"{analysis.punchline}"</div>
@@ -3171,7 +3171,7 @@ export default function Home() {
           </div>
         </div>
         
-        <div className="pt-20 pb-8 p-4">
+        <div className="pt-20 pb-16 p-4">
           <div className="max-w-lg mx-auto">
             {/* Header */}
             <div className="text-center mb-6">
