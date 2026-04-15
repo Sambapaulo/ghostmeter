@@ -3112,6 +3112,18 @@ export default function Home() {
           </div>
         </div>
         <ShareResultCard isOpen={showShareResult} onClose={() => setShowShareResult(false)} analysis={analysis} language={language} />
+
+        {/* Compteur d'analyses restantes */}
+        {!isPremium && (
+          <div className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-t border-gray-100 dark:border-gray-700 py-2">
+            <p className="text-center text-xs text-gray-400 dark:text-gray-500">
+              {remaining > 0
+                ? t('home.analyses_remaining', language, { remaining: String(remaining), total: String(settings.freeAnalysesPerDay + bonusAnalyses) })
+                : <span className="text-pink-500">{t('coach.premium_required', language)}</span>
+              }
+            </p>
+          </div>
+        )}
       </div>
     )
   }
@@ -3355,6 +3367,18 @@ export default function Home() {
             </div>
           </div>
         </div>
+
+        {/* Compteur d'analyses restantes */}
+        {!isPremium && (
+          <div className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-t border-gray-100 dark:border-gray-700 py-2">
+            <p className="text-center text-xs text-gray-400 dark:text-gray-500">
+              {remaining > 0
+                ? t('home.analyses_remaining', language, { remaining: String(remaining), total: String(settings.freeAnalysesPerDay + bonusAnalyses) })
+                : <span className="text-pink-500">{t('coach.premium_required', language)}</span>
+              }
+            </p>
+          </div>
+        )}
       </div>
     )
   }
