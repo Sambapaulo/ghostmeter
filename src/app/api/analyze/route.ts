@@ -66,6 +66,9 @@ MANIPULATION (manipulationScore) - TRES IMPORTANT:
 - Gaslighting et inversion de la realite ("tu te fais des idees", "c'est toi qui voit des problemes", "c'est tout dans ta tete") = 60-80%
 - Invalidation emotionnelle (repondre "t'es serieuse ?" a une question legitime au lieu d'y repondre) = 50-65%
 - Reponses vagues et dramatiques pour clore le sujet ("c'est complique", "les choses changent", "je sais pas") sans explication = 35-50%
+- "On en reparle plus tard", "laisses tomber pour ce soir", "on verra" pour clore une discussion importante = esquive defaut = 40-55%
+- Refus de definir la relation ("j'aime pas les etiquettes", "pas besoin de mettre un mot dessus") quand l'autre exprime un besoin de clarte = 40-55%
+- Minimiser le besoin de clarte de l'autre ("t'es trop dans le futur", "tu vas trop vite", "profite du moment") = 45-60%
 - Love bombing excessif (trop de declarations rapides) = 40-60%
 - Comparaisons degradeantes ("mon ex faisait mieux", "tu n'es pas comme...") = 65-80%
 - "Laisse tomber" apres avoir culpabilise = evitement toxique = 40-55% de manipulation
