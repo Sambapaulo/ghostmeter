@@ -1475,6 +1475,22 @@ export default function Home() {
       })
   }, [])
 
+  // Helper: restore persisted remaining for the current day, or give fresh quota for a new day
+  const getCorrectRemaining = (dailyFree: number, bonus: number): number => {
+    const today = new Date().toDateString()
+    const savedDate = localStorage.getItem('ghostmeter_analysis_date')
+    if (savedDate === today) {
+      // Meme jour - restaurer la valeur persistee
+      const saved = localStorage.getItem('ghostmeter_remaining_today')
+      if (saved !== null) return parseInt(saved, 10)
+    } else {
+      // Nouveau jour - donner le quota complet
+      localStorage.setItem('ghostmeter_analysis_date', today)
+      localStorage.removeItem('ghostmeter_remaining_today')
+    }
+    return dailyFree + bonus
+  }
+
   // Check premium status from server if email exists
   useEffect(() => {
     if (userEmail) {
@@ -1494,7 +1510,7 @@ export default function Home() {
             setIsPremium(false)
             setReferralPremium(false)
             setPremiumExpiresAt(null)
-            setRemaining(settings.freeAnalysesPerDay + bonusAnalyses)
+            setRemaining(getCorrectRemaining(settings.freeAnalysesPerDay, bonusAnalyses))
             alert(t('session.logged_elsewhere', language))
             return
           }
@@ -1515,7 +1531,7 @@ export default function Home() {
             setIsPremium(false)
             setReferralPremium(false)
             setPremiumExpiresAt(null)
-            setRemaining(settings.freeAnalysesPerDay + bonusAnalyses)
+            setRemaining(getCorrectRemaining(settings.freeAnalysesPerDay, bonusAnalyses))
             localStorage.removeItem('ghostmeter_premium')
             localStorage.removeItem('ghostmeter_referral_premium')
             localStorage.removeItem('ghostmeter_premium_expires')
@@ -1546,7 +1562,7 @@ export default function Home() {
             setIsPremium(false)
             setReferralPremium(false)
             setPremiumExpiresAt(null)
-            setRemaining(settings.freeAnalysesPerDay + bonusAnalyses)
+            setRemaining(getCorrectRemaining(settings.freeAnalysesPerDay, bonusAnalyses))
             alert(t('session.logged_elsewhere', language))
           }
         })
@@ -2047,7 +2063,7 @@ export default function Home() {
           setIsPremium(false)
           setReferralPremium(false)
           setPremiumExpiresAt(null)
-          setRemaining(settings.freeAnalysesPerDay + bonusAnalyses)
+          setRemaining(getCorrectRemaining(settings.freeAnalysesPerDay, bonusAnalyses))
           return
         }
         
@@ -2067,7 +2083,7 @@ export default function Home() {
           setIsPremium(false)
           setReferralPremium(false)
           setPremiumExpiresAt(null)
-          setRemaining(settings.freeAnalysesPerDay + bonusAnalyses)
+          setRemaining(getCorrectRemaining(settings.freeAnalysesPerDay, bonusAnalyses))
           localStorage.removeItem('ghostmeter_premium')
           localStorage.removeItem('ghostmeter_referral_premium')
           localStorage.removeItem('ghostmeter_premium_expires')
@@ -2087,7 +2103,7 @@ export default function Home() {
     setIsPremium(false)
     setReferralPremium(false)
     setPremiumExpiresAt(null)
-    setRemaining(settings.freeAnalysesPerDay)
+    setRemaining(getCorrectRemaining(settings.freeAnalysesPerDay, 0))
     setBonusAnalyses(0)
     setShowMenu(false)
   }
@@ -2107,7 +2123,7 @@ export default function Home() {
       setIsPremium(false)
       setReferralPremium(false)
       setPremiumExpiresAt(null)
-      setRemaining(settings.freeAnalysesPerDay + bonusAnalyses)
+      setRemaining(getCorrectRemaining(settings.freeAnalysesPerDay, bonusAnalyses))
       localStorage.removeItem('ghostmeter_premium')
       localStorage.removeItem('ghostmeter_referral_premium')
       localStorage.removeItem('ghostmeter_premium_expires')
