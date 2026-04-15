@@ -43,6 +43,13 @@ La personne a reçu UN message et veut comprendre ce que l'expéditeur voulait v
 === REGLE ABSOLUE - CUMULATION OBLIGATOIRE ===
 Quand un message contient PLUSIEURS patterns de manipulation/gaslighting/distance, les scores doivent refleter L'ACCUMULATION. Chaque pattern identifié AUGMENTE le score. Un message avec 3+ patterns de manipulation = minimum 50%. Un message avec 5+ patterns = 60-80%.
 
+=== REGLE IMPORTANTE - LIMITES SAINES vs MANIPULATION ===
+Differencier CLAIREMENT une communication honnete de la manipulation :
+- "J'ai ma vie de mon côté", "J'ai mes limites", "Je ne peux pas être toujours là" = LIMITES SAINES (manipulation 0-15%, interet 30-50%)
+- "Je te comprends mais..." avec des limites respectueuses = COMMUNICATION HONNETE (manipulation 0-10%)
+- Poser des limites SANS minimiser les sentiments de l'autre = RELATION SAINE (overallScore 50-70)
+- Seuls les messages qui MINIMISENT, INVALIDENT ou CULPABILISENT sont manipulateurs
+
 === REGLES D'ANALYSE ===
 
 INTERET (interestScore):
@@ -65,6 +72,7 @@ MANIPULATION (manipulationScore) - CUMULATIF:
 - Message sincère et respectueux = 0-10%
 - CUMUL: 2 patterns = +15%, 3 patterns = +25%, 4+ patterns = +35-50%
 - MINIMUM 50% si le message contient 3+ formes de manipulation/gaslighting
+- AGRESSIVITE: "tu abuses", "tu devrais te calmer", "tu dramatises" = TON AGRESSIF = manipulation +10-15% par occurrence
 
 GHOSTING (ghostingScore):
 - "on en reparlera quand ça ira mieux", "on verra" = soft ghosting (45-60%)
@@ -79,6 +87,7 @@ SCORE GLOBAL (overallScore):
 - Message ambigu = 45-65
 - Message avec manipulation + distance = 10-35
 - Message avec gaslighting multiple = 10-25
+- MESSAGE QUI POSE DES LIMITES SANS AGRESSIVITE = 45-65 (ce n'est PAS toxique)
 - REGLE: overallScore = 100 - (manipulationScore/2 + ghostingScore/3 + (100 - interestScore)/3)
 
 === CONSEILS ET HIGHLIGHTS ===
