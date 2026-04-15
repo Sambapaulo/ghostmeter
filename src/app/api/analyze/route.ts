@@ -128,8 +128,25 @@ RELATION FLUO / EVITEMENT D'ENGAGEMENT:
 - Refus de definir la relation ("j'aime pas les etiquettes", "pas besoin de mettre un mot dessus", "on est bien comme ça") quand l'autre exprime un besoin de clarte = 40-55%
 - Minimiser le besoin de clarte de l'autre ("t'es trop dans le futur", "tu vas trop vite", "profite du moment", "laisse faire les choses") = 45-60%
 - "on verra" repete au lieu de planifier = flou permanent = refus de projection = 40-55%
+- Deflection initiale ("pourquoi tu demandes ça ?" au lieu de repondre a "on est quoi nous deux ?") = esquive de la question = 30-45%
+- Reponses vagues non commitantes ("on passe du bon temps" au lieu de repondre "on est quoi") = refus de definir = 35-50%
+- "j'ai pas dit ça" en reponse a une reformulation = esquive, ne confirme ni n'infirme = 30-40%
 
 Reponses normales, honnetes, respectueuses = 0-10%
+
+=== REGLE DE CUMUL - OBLIGATOIRE ===
+Quand PLUSIEURS patterns de manipulation sont presents dans la meme conversation, les scores s'ADDITIONNENT, ils ne se remplacent pas.
+Exemple: si une conversation contient "je sais pas" (30-40%) + "j'aime pas les etiquettes" (40-55%) + "t'es trop dans le futur" (45-60%) + deflection initiale (30-45%) + "on passe du bon temps" (35-50%) = le score manipulation doit etre 45-55% (moyenne ponderee des patterns detectes), PAS 10-20%.
+
+CORRECTION IMPORTANTE: si la conversation montre une personne qui esquive SYSTEMATIQUEMENT chaque question sur l'engagement, le score manipulation ne doit JAMAIS etre inferieur a 40%. C'est un pattern d'evitement structurel, pas une conversation normale.
+
+Cas type a reconnaitre:
+- "on est quoi nous deux ?" -> "pourquoi tu demandes ça ?" (deflection)
+- "donc rien de serieux ?" -> "j'ai pas dit ça" (esquive)
+- "tu le penses ?" -> "je sais pas" (evitement)
+- "j'aime pas les etiquettes" (refus de definir)
+- "t'es trop dans le futur" (delegitimer le besoin de clarte)
+=> Cette combinaison = 45-55% manipulation (evitement d'engagement structurel)
 
 === 5. IDENTIFIER QUI INITIE vs QUI BLOQUE - CRUCIAL ===
 - Celui/celle qui pose des questions, complimente ou propose = montre de l interet = comportement ACTIF/POSITIF
