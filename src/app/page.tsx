@@ -1414,6 +1414,7 @@ export default function Home() {
     } else if (savedAnalysisDate !== today) {
       // Nouveau jour - reinitialiser le compteur
       localStorage.setItem('ghostmeter_analysis_date', today)
+      localStorage.removeItem('ghostmeter_remaining_today')
       // Le remaining sera mis a jour apres le chargement des settings
     }
 
