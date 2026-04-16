@@ -25,12 +25,15 @@ let Capacitor: any = null
 // Load Capacitor modules only on client side
 if (typeof window !== 'undefined') {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     App = require('@capacitor/app').App
   } catch (e) {}
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     LocalNotifications = require('@capacitor/local-notifications').LocalNotifications
   } catch (e) {}
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     Capacitor = require('@capacitor/core').Capacitor
   } catch (e) {}
 }

@@ -236,7 +236,7 @@ export const purchasePremium = async (
   return await purchaseWithPayPal(packId, email);
 };
 
-export default {
+const PaymentManager = {
   isNativeApp,
   canUsePlayBilling,
   getPlayStoreProducts,
@@ -247,3 +247,5 @@ export default {
   PLAY_STORE_PRODUCTS,
   PAYPAL_PRODUCTS
 };
+
+export default PaymentManager;
