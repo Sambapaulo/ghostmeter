@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 declare global {
   interface Window {
@@ -23,17 +23,13 @@ interface GoogleSignInProps {
 
 export default function GoogleSignIn({ onSuccess, onError, language }: GoogleSignInProps) {
   const [isLoading, setIsLoading] = useState(false)
-  const [isAPK, setIsAPK] = useState(false)
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.search)
-      const isApkMode = urlParams.get('from') === 'apk' || 
-                        localStorage.getItem('ghostmeter_apk_mode') === 'true' ||
-                        (window as any).__GHOSTMETER_APK__ === true
-      setIsAPK(isApkMode)
-    }
-  }, [])
+  const [isAPK] = useState(() => {
+    if (typeof window === 'undefined') return false
+    const urlParams = new URLSearchParams(window.location.search)
+    return urlParams.get('from') === 'apk' ||
+           localStorage.getItem('ghostmeter_apk_mode') === 'true' ||
+           (window as any).__GHOSTMETER_APK__ === true
+  })
 
   const handleGoogleSignIn = async () => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
