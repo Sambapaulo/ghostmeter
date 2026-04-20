@@ -1943,7 +1943,65 @@ export default function Home() {
       return
     }
 
-    // User is logged in, proceed with PayPal checkout
+    // If price is 0 (100% promo code), activate premium directly without payment
+    const effectivePromo = promoDataParam;
+    if (effectivePromo?.valid && effectivePromo.discountType === 'percent' && effectivePromo.discount >= 100 && effectivePromo.code) {
+      setIsProcessingPayment(true)
+      try {
+        const freeRes = await fetch('/api/premium/activate-free', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: userEmail,
+            promoCode: effectivePromo.code
+          })
+        })
+        const freeData = await freeRes.json()
+
+        if (freeData.success) {
+          setIsPremium(true)
+          setRemaining(999)
+          localStorage.setItem('ghostmeter_premium', 'true')
+          setPromoCode('')
+          setPromoResult(null)
+          setShowPayment(false)
+          alert('🎉 Premium activé gratuitement !')
+        } else {
+          alert(freeData.error || 'Erreur lors de l\'activation')
+        }
+      } catch (e) {
+        alert(t('error.payment_service', language))
+      }
+      setIsProcessingPayment(false)
+      return
+    }
+
+    // === PLAY BILLING (Android APK) ===
+    if (typeof window !== 'undefined' && (window as any).__GHOSTMETER_APK__) {
+      setIsProcessingPayment(true)
+      try {
+        const { purchaseWithPlayBilling } = await import('@/lib/payment')
+        const packId = selectedPlan as '1month' | '3months' | '12months'
+        const result = await purchaseWithPlayBilling(packId, userEmail)
+
+        if (result.success) {
+          setIsPremium(true)
+          setRemaining(999)
+          localStorage.setItem('ghostmeter_premium', 'true')
+          setShowPayment(false)
+          alert('🎉 Premium activé !')
+        } else {
+          alert(result.error || t('error.payment', language))
+        }
+      } catch (e: any) {
+        console.error('[PlayBilling] Error:', e)
+        alert(t('error.payment_service', language))
+      }
+      setIsProcessingPayment(false)
+      return
+    }
+
+    // === PAYPAL (Web / fallback) ===
     setIsProcessingPayment(true)
     
     try {
@@ -1964,9 +2022,7 @@ export default function Home() {
       }
 
       // Determine the price to charge (promo price or pack price)
-      // Calculate discounted price dynamically based on current pack
       let priceToCharge: number
-      const effectivePromo = promoDataParam;
       if (effectivePromo?.valid) {
         if (effectivePromo.discountType === 'percent') {
           priceToCharge = basePrice * (1 - effectivePromo.discount / 100)
@@ -1975,33 +2031,6 @@ export default function Home() {
         }
       } else {
         priceToCharge = basePrice
-      }
-
-      // If price is 0 (100% promo code), activate premium directly without PayPal
-      if (priceToCharge === 0 && effectivePromo?.valid && effectivePromo.code) {
-        const freeRes = await fetch('/api/premium/activate-free', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: userEmail,
-            promoCode: effectivePromo.code
-          })
-        })
-        const freeData = await freeRes.json()
-
-        if (freeData.success) {
-          setIsPremium(true)
-          setRemaining(999)
-          localStorage.setItem('ghostmeter_premium', 'true')
-          // removed
-          setPromoCode('')
-          setPromoResult(null)
-          alert('🎉 Premium activé gratuitement !')
-        } else {
-          alert(freeData.error || 'Erreur lors de l\'activation')
-        }
-        setIsProcessingPayment(false)
-        return
       }
       
       const res = await fetch('/api/paypal/create-order', {

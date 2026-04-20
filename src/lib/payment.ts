@@ -1,6 +1,20 @@
 // Unified Payment Service - PayPal for Web, Google Play Billing for APK
-import { InAppPurchase } from 'capacitor-plugin-purchase';
-import { Capacitor } from '@capacitor/core';
+// Dynamic imports for Capacitor plugins - only loaded on client side in APK
+let InAppPurchase: any = null;
+let CapacitorInstance: any = null;
+
+if (typeof window !== 'undefined') {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    InAppPurchase = require('capacitor-plugin-purchase').InAppPurchase;
+  } catch (e) {
+    console.log('[Payment] capacitor-plugin-purchase not available (web mode)');
+  }
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    CapacitorInstance = require('@capacitor/core').Capacitor;
+  } catch (e) {}
+}
 
 // Product IDs for Google Play Store (must match Play Console)
 export const PLAY_STORE_PRODUCTS = {
@@ -33,12 +47,12 @@ export interface ProductInfo {
 
 // Check if running in native APK
 export const isNativeApp = (): boolean => {
-  return Capacitor.isNativePlatform();
+  return CapacitorInstance ? CapacitorInstance.isNativePlatform() : false;
 };
 
 // Check if Google Play Billing is available
 export const canUsePlayBilling = async (): Promise<boolean> => {
-  if (!isNativeApp()) return false;
+  if (!isNativeApp() || !InAppPurchase) return false;
 
   try {
     const { allowed } = await InAppPurchase.canMakePurchases();
