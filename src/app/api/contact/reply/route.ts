@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     const envPassword = getAdminPassword();
     const storedPassword = envPassword !== 'ghostmeter2024' ? envPassword : null;
     const validPassword = currentSettings.adminPassword || storedPassword || 'ghostmeter2024';
-    
+
     if (adminPassword !== validPassword) {
       return NextResponse.json({ error: 'Mot de passe admin incorrect' }, { status: 401 });
     }
@@ -45,8 +45,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Préparer l'email
-    const subjectLabel = msg.subject === 'bug' ? 'Bug' : 
-                         msg.subject === 'feature' ? 'Suggestion' : 
+    const subjectLabel = msg.subject === 'bug' ? 'Bug' :
+                         msg.subject === 'feature' ? 'Suggestion' :
                          msg.subject === 'premium' ? 'Premium' : 'Autre';
 
     const emailHtml = `
@@ -73,19 +73,19 @@ export async function POST(request: NextRequest) {
         <div class="content">
           <p>Bonjour,</p>
           <p>Merci d'avoir contacté l'équipe GhostMeter. Voici notre réponse à votre message :</p>
-          
+
           <div class="reply">
             <strong>Notre réponse :</strong><br><br>
             ${replyMessage.replace(/\n/g, '<br>')}
           </div>
-          
+
           <p>───</p>
-          
+
           <div class="original">
             <strong>Votre message original (${subjectLabel}) :</strong><br><br>
             ${msg.message.replace(/\n/g, '<br>')}
           </div>
-          
+
           <p>Si vous avez d'autres questions, n'hésitez pas à nous recontacter.</p>
           <p>Cordialement,<br>L'équipe GhostMeter 👻</p>
         </div>
@@ -97,29 +97,27 @@ export async function POST(request: NextRequest) {
       </html>
     `;
 
-    // Envoyer l'email avec Resend (si configuré) ou simulation
-    const RESEND_API_KEY = process.env.RESEND_API_KEY;
-    const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+    // Envoyer l'email avec Brevo
+    const BREVO_API_KEY = process.env.BREVO_API_KEY;
 
-    if (RESEND_API_KEY) {
-      // Utiliser Resend pour envoyer l'email
-      const response = await fetch('https://api.resend.com/emails', {
+    if (BREVO_API_KEY) {
+      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${RESEND_API_KEY}`,
-          'Content-Type': 'application/json',
+          'content-type': 'application/json',
+          'api-key': BREVO_API_KEY,
         },
         body: JSON.stringify({
-          from: RESEND_FROM_EMAIL,
-          to: msg.email,
-          subject: `Re: Votre message - GhostMeter`,
+          sender: { name: 'GhostMeter', email: 'topetchic@gmail.com' },
+          to: [msg.email],
+          subject: 'Re: Votre message - GhostMeter',
           html: emailHtml,
         }),
       });
 
       if (!response.ok) {
         const error = await response.text();
-        console.error('Resend error:', error);
+        console.error('Brevo error:', error);
         return NextResponse.json({ error: 'Erreur lors de l\'envoi de l\'email' }, { status: 500 });
       }
     }
@@ -130,11 +128,11 @@ export async function POST(request: NextRequest) {
     msg.replyMessage = replyMessage;
     await kv.set(messageId, msg);
 
-    return NextResponse.json({ 
-      success: true, 
-      message: RESEND_API_KEY 
-        ? 'Email envoyé avec succès !' 
-        : 'Réponse enregistrée (configurez RESEND_API_KEY pour l\'envoi réel d\'emails)'
+    return NextResponse.json({
+      success: true,
+      message: BREVO_API_KEY
+        ? 'Email envoyé avec succès !'
+        : 'Réponse enregistrée (configurez BREVO_API_KEY pour l\'envoi réel d\'emails)'
     });
 
   } catch (error) {
