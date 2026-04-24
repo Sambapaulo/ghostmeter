@@ -1050,8 +1050,8 @@ export default function AdminPage() {
                   <div>
                     <p className="text-sm font-medium text-yellow-800">Configuration requise</p>
                     <p className="text-xs text-yellow-700 mt-1">
-                      Pour envoyer des emails, vous devez avoir un domaine vérifié dans Resend. 
-                      Avec <code>onboarding@resend.dev</code>, les emails ne fonctionneront qu&apos;en test.
+                      Pour envoyer des emails, vous devez configurer BREVO_API_KEY dans Vercel. 
+                      L'API Brevo est utilisée pour l'envoi d'emails.
                     </p>
                   </div>
                 </div>
@@ -2252,7 +2252,7 @@ Nous avons une grande nouvelle à vous annoncer..."
               </div>
 
               <p className="text-xs text-gray-400 text-center mt-3">
-                💡 Configurez RESEND_API_KEY dans Vercel pour activer l'envoi d'emails
+                💡 Configurez BREVO_API_KEY dans Vercel pour activer l'envoi d'emails
               </p>
             </div>
           </div>
