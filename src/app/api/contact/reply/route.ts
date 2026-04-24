@@ -109,9 +109,9 @@ export async function POST(request: NextRequest) {
         },
         body: JSON.stringify({
           sender: { name: 'GhostMeter', email: 'topetchic@gmail.com' },
-          to: [msg.email],
+          to: [{ email: msg.email }],
           subject: 'Re: Votre message - GhostMeter',
-          html: emailHtml,
+          htmlContent: emailHtml,
         }),
       });
 
