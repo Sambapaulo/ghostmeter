@@ -64,6 +64,17 @@ const checkIsAPKSync = (): boolean => {
     }
   } catch(e) {}
   
+  // Check native Android bridge
+  try {
+    const androidApp = (window as any).AndroidApp
+    if (androidApp && typeof androidApp.isAPK === 'function' && androidApp.isAPK()) {
+      console.log('APK detected via AndroidApp.isAPK()')
+      _isAPK = true
+      try { localStorage.setItem('ghostmeter_apk_mode', 'true') } catch(e) {}
+      return true
+    }
+  } catch(e) {}
+
   // Check window marker
   if ((window as any).__GHOSTMETER_APK__ === true) {
     console.log('✅ APK detected via window marker')
@@ -1977,7 +1988,7 @@ export default function Home() {
     }
 
     // === PLAY BILLING (Android APK) ===
-    if (typeof window !== 'undefined' && (window as any).__GHOSTMETER_APK__) {
+    if (typeof window !== 'undefined' && (window as any).AndroidApp?.isAPK?.()) {
       setIsProcessingPayment(true)
       try {
         const { purchaseWithPlayBilling } = await import('@/lib/payment')

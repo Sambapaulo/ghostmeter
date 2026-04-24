@@ -1,20 +1,6 @@
 // Unified Payment Service - PayPal for Web, Google Play Billing for APK
-// Dynamic imports for Capacitor plugins - only loaded on client side in APK
-let InAppPurchase: any = null;
-let CapacitorInstance: any = null;
-
-if (typeof window !== 'undefined') {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    InAppPurchase = require('capacitor-plugin-purchase').InAppPurchase;
-  } catch (e) {
-    console.log('[Payment] capacitor-plugin-purchase not available (web mode)');
-  }
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    CapacitorInstance = require('@capacitor/core').Capacitor;
-  } catch (e) {}
-}
+// In APK mode: uses native bridge (window.AndroidApp) for Play Billing
+// In web mode: uses PayPal
 
 // Product IDs for Google Play Store (must match Play Console)
 export const PLAY_STORE_PRODUCTS = {
@@ -23,7 +9,7 @@ export const PLAY_STORE_PRODUCTS = {
   '12months': 'ghostmeter_premium_12months',
 };
 
-// Product IDs for PayPal (existing)
+// Product info for PayPal (web)
 export const PAYPAL_PRODUCTS = {
   '1month': { price: 1.99, name: '1 mois Premium' },
   '3months': { price: 4.99, name: '3 mois Premium' },
@@ -36,94 +22,65 @@ export interface PaymentResult {
   error?: string;
 }
 
-export interface ProductInfo {
-  id: string;
-  title: string;
-  description: string;
-  price: string;
-  priceValue: number;
-  currency: string;
-}
-
 // Check if running in native APK
 export const isNativeApp = (): boolean => {
-  return CapacitorInstance ? CapacitorInstance.isNativePlatform() : false;
+  return !!(typeof window !== 'undefined' && (window as any).__GHOSTMETER_APK__);
 };
 
-// Check if Google Play Billing is available
+// Check if Google Play Billing is available via native bridge
 export const canUsePlayBilling = async (): Promise<boolean> => {
-  if (!isNativeApp() || !InAppPurchase) return false;
-
-  try {
-    const { allowed } = await InAppPurchase.canMakePurchases();
-    return allowed;
-  } catch (e) {
-    console.error('[Payment] Error checking Play Billing:', e);
-    return false;
-  }
+  const androidApp = (window as any).AndroidApp;
+  return !!(androidApp && typeof androidApp.purchaseProduct === 'function');
 };
 
-// Get products from Google Play Store
-export const getPlayStoreProducts = async (): Promise<ProductInfo[]> => {
-  try {
-    const result = await InAppPurchase.getProducts({
-      productIds: Object.values(PLAY_STORE_PRODUCTS),
-      productType: 'non-consumable'
-    });
-
-    return result.products.map((p: any) => ({
-      id: p.productId,
-      title: p.title,
-      description: p.description,
-      price: p.price,
-      priceValue: parseFloat(p.priceAmountMicros) / 1000000,
-      currency: p.priceCurrencyCode || 'EUR'
-    }));
-  } catch (e) {
-    console.error('[Payment] Error getting Play Store products:', e);
-    return [];
-  }
-};
-
-// Purchase via Google Play Billing
+// Purchase via Google Play Billing (native bridge)
 export const purchaseWithPlayBilling = async (
   packId: '1month' | '3months' | '12months',
   userId?: string
 ): Promise<PaymentResult> => {
-  try {
-    const productId = PLAY_STORE_PRODUCTS[packId];
+  return new Promise((resolve) => {
+    const androidApp = (window as any).AndroidApp;
 
+    if (!androidApp || typeof androidApp.purchaseProduct !== 'function') {
+      resolve({ success: false, error: 'Play Billing non disponible' });
+      return;
+    }
+
+    const productId = PLAY_STORE_PRODUCTS[packId];
     console.log('[Payment] Starting Play Billing purchase:', productId);
 
-    const result = await InAppPurchase.purchaseProduct({
-      productId,
-      productType: 'non-consumable',
-      userId
-    });
+    // Clear previous result
+    (window as any).__purchaseResult__ = null;
 
-    if (result.transactionId) {
-      console.log('[Payment] Purchase successful:', result.transactionId);
+    // Poll for result from native
+    const checkInterval = setInterval(() => {
+      const result = (window as any).__purchaseResult__;
+      if (result) {
+        clearInterval(checkInterval);
+        (window as any).__purchaseResult__ = null;
+        if (result.success) {
+          console.log('[Payment] Purchase successful:', result.transactionId);
+          activatePremiumAfterPurchase(packId, result.transactionId, 'playstore');
+          resolve({ success: true, transactionId: result.transactionId });
+        } else if (result.error === 'cancelled') {
+          resolve({ success: false, error: 'Achat annule' });
+        } else {
+          console.error('[Payment] Purchase error:', result.error);
+          resolve({ success: false, error: "Erreur lors de l'achat" });
+        }
+      }
+    }, 300);
 
-      // Notify backend to activate premium
-      await activatePremiumAfterPurchase(packId, result.transactionId, 'playstore');
+    // Timeout after 5 minutes
+    setTimeout(() => {
+      clearInterval(checkInterval);
+      (window as any).__purchaseResult__ = null;
+      resolve({ success: false, error: 'Delai depasse' });
+    }, 300000);
 
-      return {
-        success: true,
-        transactionId: result.transactionId
-      };
-    }
-
-    return { success: false, error: 'Pas de transaction retournée' };
-  } catch (e: any) {
-    console.error('[Payment] Play Billing error:', e);
-
-    // User cancelled
-    if (e.code === 'PURCHASE_CANCELLED') {
-      return { success: false, error: 'Achat annulé' };
-    }
-
-    return { success: false, error: e.message || 'Erreur lors de l\'achat' };
-  }
+    // Start native purchase
+    androidApp.purchaseProduct(productId);
+  });
 };
 
 // Purchase via PayPal (web)
@@ -133,25 +90,18 @@ export const purchaseWithPayPal = async (
 ): Promise<{ success: boolean; approvalUrl?: string; error?: string }> => {
   try {
     const packInfo = PAYPAL_PRODUCTS[packId];
-
     console.log('[Payment] Starting PayPal purchase:', packId, packInfo.price);
 
     const response = await fetch('/api/paypal/create-order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email,
-        price: packInfo.price
-      })
+      body: JSON.stringify({ email, price: packInfo.price })
     });
 
     const data = await response.json();
 
     if (data.approvalUrl) {
-      return {
-        success: true,
-        approvalUrl: data.approvalUrl
-      };
+      return { success: true, approvalUrl: data.approvalUrl };
     }
 
     return { success: false, error: data.error || 'Erreur PayPal' };
@@ -163,42 +113,52 @@ export const purchaseWithPayPal = async (
 
 // Restore purchases from Google Play
 export const restorePlayStorePurchases = async (userId?: string): Promise<PaymentResult> => {
-  try {
-    const result = await InAppPurchase.restorePurchases({ userId });
+  return new Promise((resolve) => {
+    const androidApp = (window as any).AndroidApp;
 
-    if (result.purchases && result.purchases.length > 0) {
-      console.log('[Payment] Restored purchases:', result.purchases);
-
-      // Activate premium for restored purchases
-      for (const purchase of result.purchases) {
-        await activatePremiumAfterPurchase(
-          getPackIdFromProductId(purchase.productId),
-          purchase.transactionId,
-          'playstore'
-        );
-      }
-
-      return { success: true, transactionId: result.purchases[0].transactionId };
+    if (!androidApp || typeof androidApp.restorePurchases !== 'function') {
+      resolve({ success: false, error: 'Restauration non disponible' });
+      return;
     }
 
-    return { success: false, error: 'Aucun achat trouvé' };
-  } catch (e: any) {
-    console.error('[Payment] Restore error:', e);
-    return { success: false, error: e.message || 'Erreur lors de la restauration' };
-  }
+    console.log('[Payment] Restoring purchases...');
+
+    (window as any).__restoreResult__ = null;
+
+    const checkInterval = setInterval(() => {
+      const result = (window as any).__restoreResult__;
+      if (result) {
+        clearInterval(checkInterval);
+        (window as any).__restoreResult__ = null;
+        if (result.success) {
+          const packId = getPackIdFromProductId(result.productId);
+          activatePremiumAfterPurchase(packId, result.transactionId, 'playstore');
+          resolve({ success: true, transactionId: result.transactionId });
+        } else {
+          resolve({ success: false, error: 'Aucun achat trouve' });
+        }
+      }
+    }, 300);
+
+    setTimeout(() => {
+      clearInterval(checkInterval);
+      (window as any).__restoreResult__ = null;
+      resolve({ success: false, error: 'Delai depasse' });
+    }, 30000);
+
+    androidApp.restorePurchases();
+  });
 };
 
-// Helper: Get pack ID from Play Store product ID
+// Helper: Get pack ID from product ID
 const getPackIdFromProductId = (productId: string): '1month' | '3months' | '12months' => {
   for (const [packId, pId] of Object.entries(PLAY_STORE_PRODUCTS)) {
-    if (pId === productId) {
-      return packId as '1month' | '3months' | '12months';
-    }
+    if (pId === productId) return packId as any;
   }
-  return '1month'; // Default
+  return '1month';
 };
 
-// Notify backend to activate premium after successful purchase
+// Notify backend to activate premium
 const activatePremiumAfterPurchase = async (
   packId: string,
   transactionId: string,
@@ -206,54 +166,40 @@ const activatePremiumAfterPurchase = async (
 ): Promise<void> => {
   try {
     const email = localStorage.getItem('ghostmeter_email');
-
     await fetch('/api/payment/activate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email,
-        packId,
-        transactionId,
-        provider
-      })
+      body: JSON.stringify({ email, packId, transactionId, provider })
     });
   } catch (e) {
     console.error('[Payment] Error activating premium:', e);
   }
 };
 
-// Main purchase function - auto-detects platform
+// Main purchase function
 export const purchasePremium = async (
   packId: '1month' | '3months' | '12months',
   email: string
 ): Promise<{ success: boolean; approvalUrl?: string; transactionId?: string; error?: string; useWeb?: boolean }> => {
-  const isNative = isNativeApp();
+  const native = isNativeApp();
+  console.log('[Payment] purchasePremium, isNative:', native, 'packId:', packId);
 
-  console.log('[Payment] purchasePremium called, isNative:', isNative, 'packId:', packId);
-
-  if (isNative) {
-    // Try Play Billing first
-    const canUseBilling = await canUsePlayBilling();
-
-    if (canUseBilling) {
-      const result = await purchaseWithPlayBilling(packId, email);
-      return result;
+  if (native) {
+    const canUse = await canUsePlayBilling();
+    if (canUse) {
+      return await purchaseWithPlayBilling(packId, email);
     }
-
-    // Fallback: redirect to web PayPal
-    console.log('[Payment] Play Billing not available, redirecting to PayPal web');
+    console.log('[Payment] Play Billing not available, fallback to PayPal web');
     const result = await purchaseWithPayPal(packId, email);
     return { ...result, useWeb: true };
   }
 
-  // Web: use PayPal
   return await purchaseWithPayPal(packId, email);
 };
 
 const PaymentManager = {
   isNativeApp,
   canUsePlayBilling,
-  getPlayStoreProducts,
   purchaseWithPlayBilling,
   purchaseWithPayPal,
   restorePlayStorePurchases,

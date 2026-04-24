@@ -195,7 +195,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
           </button>
         </div>
 
-        <p className="text-center text-xs text-gray-500 pb-4">{language === 'fr' ? 'Paiement sécurisé via PayPal' : 'Secure payment via PayPal'}</p>
+        <p className="text-center text-xs text-gray-500 pb-4">{language === 'fr' ? 'Paiement sécurisé via Google Play' : 'Secure payment via Google Play'}</p>
       </div>
     </div>
   )

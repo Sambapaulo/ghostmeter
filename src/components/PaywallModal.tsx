@@ -106,8 +106,8 @@ const PaywallModal: React.FC<PaywallModalProps> = ({
         <div className="px-6 pb-6 text-center">
           <p className="text-xs text-gray-500 mb-2">
             {language === 'fr' 
-              ? 'Paiement sécurisé via PayPal • Annulation a tout moment'
-              : 'Secure payment via PayPal • Cancel anytime'}
+              ? 'Paiement sécurisé via Google Play • Annulation a tout moment'
+              : 'Secure payment via Google Play • Cancel anytime'}
           </p>
           <button onClick={onClose} className="text-gray-400 hover:text-white text-sm underline transition-colors">
             {language === 'fr' ? 'Continuer avec les limitations' : 'Continue with limitations'}
