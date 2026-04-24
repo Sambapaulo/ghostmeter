@@ -84,9 +84,9 @@ export async function POST(request: NextRequest) {
       premiumExpiry: expiryDate.toISOString(),
       premiumExpiresAt: expiryDate.toISOString(),
       transactionId,
-      transactionId,
       paymentProvider: provider || 'unknown',
       premiumPlan: packId,
+    };
 
     await kv.set('user:' + email.toLowerCase(), updatedUser);
 
