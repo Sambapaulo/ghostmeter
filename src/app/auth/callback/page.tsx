@@ -1,11 +1,8 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 
 export default function AuthCallback() {
-  const router = useRouter()
-
   useEffect(() => {
     const hash = window.location.hash
     const params = new URLSearchParams(hash.substring(1))
@@ -17,9 +14,7 @@ export default function AuthCallback() {
       })
         .then(res => res.json())
         .then(userInfo => {
-          localStorage.setItem('ghostmeter_email', userInfo.email)
-          localStorage.setItem('ghostmeter_user_name', userInfo.name || '')
-
+          // Save session server-side (works from any browser)
           fetch('/api/auth', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -29,22 +24,19 @@ export default function AuthCallback() {
               name: userInfo.name,
               accessToken: accessToken,
             }),
+          }).then(() => {
+            // Redirect to APK via custom scheme
+            window.location.href = 'ghostmeter://callback?email=' + encodeURIComponent(userInfo.email) + '&name=' + encodeURIComponent(userInfo.name || '')
           })
-
-          // Try closing Chrome Custom Tab, fallback to redirect
-          try { window.close() } catch(e) {}
-          window.location.href = '/?from=apk'
         })
         .catch(err => {
           console.error('Auth error:', err)
-          try { window.close() } catch(e) {}
-          window.location.href = '/?auth=error'
+          window.location.href = 'ghostmeter://callback?error=1'
         })
     } else {
-      try { window.close() } catch(e) {}
-      window.location.href = '/?auth=error'
+      window.location.href = 'ghostmeter://callback?error=1'
     }
-  }, [router])
+  }, [])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#1a0a2e]">
