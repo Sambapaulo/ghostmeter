@@ -13,9 +13,9 @@ interface User {
   lastActive: string;
   transactionId?: string;
   paymentProvider?: string;
+  premiumExpiresAt?: string;
+  premiumPlan?: string;
 }
-
-// Pack durations in days
 const PACK_DURATIONS: Record<string, number> = {
   '1month': 30,
   '3months': 90,
