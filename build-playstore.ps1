@@ -4,8 +4,8 @@
 
 $KEYSTORE_NAME="ghostmeter-release.jks"
 $KEY_ALIAS="ghostmeter-key"
-$KEYSTORE_PASSWORD="VOTRE_MOT_DE_PASSE_ICI"  # ⚠️ CHANGEZ CECI
-$KEY_PASSWORD="VOTRE_MOT_DE_PASSE_ICI"        # ⚠️ CHANGEZ CECI
+$KEYSTORE_PASSWORD="Promise2026!!"  # ⚠️ CHANGEZ CECI
+$KEY_PASSWORD="Promise2026!!"        # ⚠️ CHANGEZ CECI
 
 $JAVA_HOME="C:\Program Files\Android\Android Studio\jbr"
 $PROJECT_PATH="C:\Users\topet\Desktop\Ghostmeter"
