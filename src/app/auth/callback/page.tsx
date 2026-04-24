@@ -12,7 +12,6 @@ export default function AuthCallback() {
     const accessToken = params.get('access_token')
 
     if (accessToken) {
-      // Fetch user info
       fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
         headers: { Authorization: 'Bearer ' + accessToken }
       })
@@ -20,8 +19,7 @@ export default function AuthCallback() {
         .then(userInfo => {
           localStorage.setItem('ghostmeter_email', userInfo.email)
           localStorage.setItem('ghostmeter_user_name', userInfo.name || '')
-          
-          // Send to backend
+
           fetch('/api/auth', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -32,15 +30,18 @@ export default function AuthCallback() {
               accessToken: accessToken,
             }),
           })
-          
-          // Redirect back to app
+
+          // Try closing Chrome Custom Tab, fallback to redirect
+          try { window.close() } catch(e) {}
           window.location.href = '/?from=apk'
         })
         .catch(err => {
           console.error('Auth error:', err)
+          try { window.close() } catch(e) {}
           window.location.href = '/?auth=error'
         })
     } else {
+      try { window.close() } catch(e) {}
       window.location.href = '/?auth=error'
     }
   }, [router])

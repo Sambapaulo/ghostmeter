@@ -40,15 +40,24 @@ export default function GoogleSignIn({ onSuccess, onError, language }: GoogleSig
 
     setIsLoading(true)
 
-    // APK Mode: redirect WebView to Google OAuth (callback page handles the rest)
+    // APK Mode: use Chrome Custom Tabs via native bridge
     if (isAPK) {
       try {
         const redirectUri = window.location.origin + '/auth/callback'
         const scope = 'email profile'
         const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scope)}&prompt=consent`
 
-        // Navigate WebView directly (not open external browser)
-        window.location.href = authUrl
+        // Set pending flag so page.tsx can detect auth completion
+        localStorage.setItem('ghostmeter_auth_pending', Date.now().toString())
+
+        // Open in Chrome Custom Tabs via native bridge
+        const androidApp = (window as any).AndroidApp
+        if (androidApp && typeof androidApp.openUrl === 'function') {
+          androidApp.openUrl(authUrl)
+        } else {
+          window.open(authUrl, '_blank')
+        }
+        // Don't reset loading - page.tsx will detect auth completion via visibilitychange
         return
       } catch (error) {
         onError(language === 'fr' ? 'Erreur de connexion' : 'Connection error')
@@ -59,7 +68,7 @@ export default function GoogleSignIn({ onSuccess, onError, language }: GoogleSig
 
     // Web Mode: Use Google Identity Services (popup)
     if (!window.google?.accounts?.oauth2) {
-      onError(language === 'fr' ? 'Google Sign-in non disponible. Vérifiez votre connexion.' : 'Google Sign-in unavailable.')
+      onError(language === 'fr' ? 'Google Sign-in non disponible. Verifiez votre connexion.' : 'Google Sign-in unavailable.')
       setIsLoading(false)
       return
     }
@@ -91,13 +100,13 @@ export default function GoogleSignIn({ onSuccess, onError, language }: GoogleSig
                   }),
                 })
               } else {
-                onError(language === 'fr' ? 'Erreur lors de la récupération des infos' : 'Error fetching user info')
+                onError(language === 'fr' ? 'Erreur lors de la recuperation des infos' : 'Error fetching user info')
               }
             } catch (error) {
               onError(language === 'fr' ? 'Erreur de connexion' : 'Connection error')
             }
           } else {
-            onError(language === 'fr' ? 'Connexion annulée' : 'Sign-in cancelled')
+            onError(language === 'fr' ? 'Connexion annulee' : 'Sign-in cancelled')
           }
           setIsLoading(false)
         },
