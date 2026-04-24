@@ -44,7 +44,7 @@ export async function GET() {
           if (userData.adminGranted) {
             premiumSource = 'admin'
           } else if (userData.paypalOrderId) {
-            premiumSource = userData.paymentProvider === 'playstore' ? 'playstore' : userData.paymentProvider === 'paypal' ? 'paypal' : 'unknown'
+            premiumSource = userData.paymentProvider === 'playstore' ? 'playstore' : userData.paymentProvider === 'paypal' ? 'paypal' : null
           }
         }
 
