@@ -22,6 +22,13 @@ interface GoogleSignInProps {
 
 export default function GoogleSignIn({ onSuccess, onError, language }: GoogleSignInProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const [isAPK] = useState(() => {
+    if (typeof window === 'undefined') return false
+    const urlParams = new URLSearchParams(window.location.search)
+    return urlParams.get('from') === 'apk' ||
+           localStorage.getItem('ghostmeter_apk_mode') === 'true' ||
+           (window as any).__GHOSTMETER_APK__ === true
+  })
 
   const handleGoogleSignIn = async () => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
@@ -31,12 +38,31 @@ export default function GoogleSignIn({ onSuccess, onError, language }: GoogleSig
       return
     }
 
-    if (!window.google?.accounts?.oauth2) {
-      onError(language === 'fr' ? 'Google Sign-in non disponible. Vérifiez votre connexion.' : 'Google Sign-in unavailable.')
-      return
+    setIsLoading(true)
+
+    // APK Mode: redirect WebView to Google OAuth (callback page handles the rest)
+    if (isAPK) {
+      try {
+        const redirectUri = window.location.origin + '/auth/callback'
+        const scope = 'email profile'
+        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scope)}&prompt=consent`
+
+        // Navigate WebView directly (not open external browser)
+        window.location.href = authUrl
+        return
+      } catch (error) {
+        onError(language === 'fr' ? 'Erreur de connexion' : 'Connection error')
+        setIsLoading(false)
+        return
+      }
     }
 
-    setIsLoading(true)
+    // Web Mode: Use Google Identity Services (popup)
+    if (!window.google?.accounts?.oauth2) {
+      onError(language === 'fr' ? 'Google Sign-in non disponible. Vérifiez votre connexion.' : 'Google Sign-in unavailable.')
+      setIsLoading(false)
+      return
+    }
 
     try {
       const tokenClient = window.google.accounts.oauth2.initTokenClient({
