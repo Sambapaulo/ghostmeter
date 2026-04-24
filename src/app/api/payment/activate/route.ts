@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
       ...user,
       isPremium: true,
       premiumSince: user.premiumSince || now.toISOString(),
-      premiumExpiry: expiryDate,
+      premiumExpiry: expiryDate.toISOString(),
       premiumExpiresAt: expiryDate.toISOString(),
       transactionId,
       transactionId,
