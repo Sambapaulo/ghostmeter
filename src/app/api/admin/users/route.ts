@@ -9,7 +9,7 @@ interface UserData {
   premiumSince: string | null
   premiumPlan: string | null
   premiumExpiresAt: string | null
-  premiumSource: 'paypal' | 'admin' | null
+  premiumSource: 'paypal' | 'admin' | 'playstore' | null
   analysesCount: number
   createdAt: string
   lastActive: string
