@@ -11,7 +11,6 @@ declare global {
         }
       }
     }
-    Capacitor?: any
   }
 }
 
@@ -23,48 +22,21 @@ interface GoogleSignInProps {
 
 export default function GoogleSignIn({ onSuccess, onError, language }: GoogleSignInProps) {
   const [isLoading, setIsLoading] = useState(false)
-  const [isAPK] = useState(() => {
-    if (typeof window === 'undefined') return false
-    const urlParams = new URLSearchParams(window.location.search)
-    return urlParams.get('from') === 'apk' ||
-           localStorage.getItem('ghostmeter_apk_mode') === 'true' ||
-           (window as any).__GHOSTMETER_APK__ === true
-  })
 
   const handleGoogleSignIn = async () => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
-    
+
     if (!clientId) {
       onError(language === 'fr' ? 'Configuration Google manquante' : 'Google configuration missing')
       return
     }
 
-    setIsLoading(true)
-
-    // APK Mode: Open in system browser
-    if (isAPK) {
-      try {
-        const redirectUri = encodeURIComponent(window.location.origin + '/auth/callback')
-        const scope = encodeURIComponent('email profile')
-        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=${scope}&prompt=consent`
-        
-        // Open in system browser for APK
-        window.open(authUrl, '_system')
-        setIsLoading(false)
-        return
-      } catch (error) {
-        onError(language === 'fr' ? 'Erreur d\'ouverture du navigateur' : 'Browser open error')
-        setIsLoading(false)
-        return
-      }
-    }
-
-    // Web Mode: Use Google Identity Services
     if (!window.google?.accounts?.oauth2) {
       onError(language === 'fr' ? 'Google Sign-in non disponible. Vérifiez votre connexion.' : 'Google Sign-in unavailable.')
-      setIsLoading(false)
       return
     }
+
+    setIsLoading(true)
 
     try {
       const tokenClient = window.google.accounts.oauth2.initTokenClient({
@@ -81,7 +53,7 @@ export default function GoogleSignIn({ onSuccess, onError, language }: GoogleSig
               if (userInfoResponse.ok) {
                 const userInfo = await userInfoResponse.json()
                 onSuccess(userInfo.email, userInfo.name)
-                
+
                 await fetch('/api/auth', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
