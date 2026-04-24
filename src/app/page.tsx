@@ -1988,7 +1988,7 @@ export default function Home() {
     }
 
     // === PLAY BILLING (Android APK) ===
-    if (typeof window !== 'undefined' && (window as any).AndroidApp?.isAPK?.()) {
+    if (isAPKMode) {
       setIsProcessingPayment(true)
       try {
         const { purchaseWithPlayBilling } = await import('@/lib/payment')
