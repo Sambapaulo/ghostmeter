@@ -39,12 +39,12 @@ export async function GET() {
     for (const key of keys) {
       const userData = await kv.get(key) as any
       if (userData) {
-        let premiumSource: 'paypal' | 'admin' | null = null
+        let premiumSource: 'paypal' | 'admin' | 'playstore' | null = null
         if (userData.isPremium) {
           if (userData.adminGranted) {
             premiumSource = 'admin'
           } else if (userData.paypalOrderId) {
-            premiumSource = 'paypal'
+            premiumSource = userData.paymentProvider === 'playstore' ? 'playstore' : userData.paymentProvider === 'paypal' ? 'paypal' : 'unknown'
           }
         }
 

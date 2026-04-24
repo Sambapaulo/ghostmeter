@@ -81,11 +81,12 @@ export async function POST(request: NextRequest) {
       ...user,
       isPremium: true,
       premiumSince: user.premiumSince || now.toISOString(),
-      premiumExpiry: expiryDate.toISOString(),
+      premiumExpiry: expiryDate,
+      premiumExpiresAt: expiryDate.toISOString(),
+      transactionId,
       transactionId,
       paymentProvider: provider || 'unknown',
-      lastActive: now.toISOString()
-    };
+      premiumPlan: packId,
 
     await kv.set('user:' + email.toLowerCase(), updatedUser);
 

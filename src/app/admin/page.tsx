@@ -30,7 +30,7 @@ interface PremiumUser {
   premiumSince: string | null
   premiumPlan: string | null
   premiumExpiresAt: string | null
-  premiumSource: 'paypal' | 'admin' | null
+  premiumSource: 'paypal' | 'admin' | 'playstore' | null
   analysesCount: number
   createdAt: string
   lastActive: string
@@ -1596,7 +1596,7 @@ Nous avons une grande nouvelle à vous annoncer..."
                                   Premium
                                 </span>
                                 <p className="text-xs text-gray-400 mt-1">
-                                  {user.premiumSource === 'paypal' ? '💳 PayPal' : user.premiumSource === 'admin' ? '👤 Admin' : '❓ Inconnu'}
+                                  {user.premiumSource === 'paypal' ? '💳 PayPal' : user.premiumSource === 'playstore' ? '🤖 Google Play' : user.premiumSource === 'admin' ? '👤 Admin' : '❓ Inconnu'}
                                   {user.premiumPlan && (
                                     <p className="text-xs text-purple-600 mt-0.5">
                                       📦 {user.premiumPlan === '1month' ? '1 mois' : user.premiumPlan === '3months' ? '3 mois' : '12 mois'}
