@@ -2978,7 +2978,7 @@ export default function Home() {
           {/* Animated Ghost Logo that slides across the screen */}
           {/* GhostMeter Logo floating in background */}
           <div className="fixed inset-0 pointer-events-none z-0 flex items-center justify-center">
-            <img src="/logo.png" alt="" className="w-48 h-48 object-contain opacity-15 ghost-float" />
+            <img src="/logo.png" alt="" className="w-48 h-48 object-contain opacity-15 ghost-float rounded-full border border-purple-500/20" />
           </div>
           <div className="text-center mb-6 flex flex-col items-center mt-16">
             <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-500 via-pink-500 to-violet-500 bg-clip-text text-transparent">GhostMeter</h1>
