@@ -3194,7 +3194,7 @@ export default function Home() {
                 <p className="text-sm text-gray-400">{t('results.global_score', language)}</p>
                 <span className="text-4xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">{Math.round(analysis.manipulationScore * 0.4 + analysis.ghostingScore * 0.35 + (100 - analysis.interestScore) * 0.25)}</span>
                 <span className="text-xl text-gray-400">/100</span>
-                <p className="text-sm text-center mt-3 text-gray-400">🧪 Plus toxique que <span className="font-bold text-orange-500">{Math.round(analysis.manipulationScore * 0.55 + analysis.ghostingScore * 0.45)}%</span> des messages analyses</p>
+                <p className="text-sm text-center mt-3 text-gray-400">🧪 Plus toxique que <span className="font-bold text-orange-500">{Math.round(analysis.manipulationScore * 0.55 + analysis.ghostingScore * 0.45)}%</span> des messages analysés</p>
               </div>
             </div>
 
