@@ -10,6 +10,9 @@ interface CoachRequest {
     relationshipType?: string;
     currentSituation?: string;
     analysisScore?: number;
+    analysisPunchline?: string;
+    analysisScores?: { interest: number; manipulation: number; ghosting: number; toxicity: number };
+    isReceivedMessage?: boolean;
   };
   language?: string; // fr, en, de, es
 }
