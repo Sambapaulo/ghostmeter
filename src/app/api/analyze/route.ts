@@ -327,10 +327,10 @@ Reponds UNIQUEMENT avec un JSON valide (sans markdown, sans backticks):
     let analysis: AnalysisResult = JSON.parse(responseContent);
 
     // Validation et sanitisation
-    analysis.interestScore = Math.max(0, Math.min(100, Number(analysis.interestScore) || 50));
+    analysis.interestScore = Math.max(0, Math.min(100, Number(analysis.interestScore) ?? 50));
     analysis.manipulationScore = Math.max(0, Math.min(100, Number(analysis.manipulationScore) || 0));
     analysis.ghostingScore = Math.max(0, Math.min(100, Number(analysis.ghostingScore) || 0));
-    analysis.overallScore = Math.max(0, Math.min(100, Number(analysis.overallScore) || 50));
+    analysis.overallScore = Math.max(0, Math.min(100, Number(analysis.overallScore) ?? 50));
 
     if (!analysis.advice) analysis.advice = 'Continue à observer les signaux.';
     if (!analysis.punchline) analysis.punchline = 'Analyse en cours...';
