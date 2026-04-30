@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
 
     const userPrompt = `${contextInfo}
 
-${language === 'fr' ? "Message de l'utilisateur" : language === 'en' ? "User's message" : language === 'de' ? "Nachricht des Benutzers" : "Mensaje del usuario"}: "${message}"`;
+${language === 'fr' ? "CONTEXTE GHOSTMETER: L'utilisateur a recu ce message et l'a fait analyser. Aide-le a comprendre et reagir. Message recu et analyse:" : language === 'en' ? "User's message" : language === 'de' ? "Nachricht des Benutzers" : "Mensaje del usuario"}: "${message}"`;
 
     // Construire l'historique de conversation
     const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
@@ -278,6 +278,20 @@ function buildContextInfo(context?: CoachRequest['context'], language: string = 
     info += `\n${l.currentSit} ${context.currentSituation}`;
   }
   
+  if (context.analysisScores) {
+    const s = context.analysisScores;
+    info += "\n- Analyse GhostMeter:";
+    info += "\n  Interet: " + Math.round(s.interest) + "%";
+    info += "\n  Manipulation: " + Math.round(s.manipulation) + "%";
+    info += "\n  Ghosting: " + Math.round(s.ghosting) + "%";
+    info += "\n  Niveau de toxicite: " + Math.round(s.toxicity) + "%";
+  }
+  if (context.analysisPunchline) {
+    info += "\n- Diagnostic GhostMeter: " + context.analysisPunchline;
+  }
+  if (context.isReceivedMessage) {
+    info += "\n- IMPORTANT: C est un message que l utilisateur a RECUS, pas envoyes. Aide-le a reagir.";
+  }
   if (context.analysisScore !== undefined) {
     info += `\n${l.recentScore} ${context.analysisScore}/100`;
     if (context.analysisScore >= 70) {

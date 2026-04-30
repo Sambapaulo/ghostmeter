@@ -1099,6 +1099,7 @@ export default function Home() {
   // Coach states
   const [coachMessages, setCoachMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([])
   const [coachInput, setCoachInput] = useState('')
+  const [coachAnalysisContext, setCoachAnalysisContext] = useState<any>(null)
   const [isCoachLoading, setIsCoachLoading] = useState(false)
   const [coachQuestionsRemaining, setCoachQuestionsRemaining] = useState(3)
   const [savedCoachConversations, setSavedCoachConversations] = useState<SavedCoachConversation[]>([])
@@ -1863,15 +1864,18 @@ export default function Home() {
       const res = await fetch('/api/coach', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: userMessage,
-          conversationHistory: coachMessages,
-          context: {
-            relationshipType: selectedContext,
-            analysisScore: analysis?.overallScore
-          },
-          language: language
-        })
+          body: JSON.stringify({
+            message: userMessage,
+            conversationHistory: coachMessages,
+            context: {
+              relationshipType: selectedContext,
+              analysisScore: coachAnalysisContext ? Math.round(coachAnalysisContext.manipulationScore * 0.4 + coachAnalysisContext.ghostingScore * 0.35 + (100 - coachAnalysisContext.interestScore) * 0.25) : undefined,
+              analysisPunchline: coachAnalysisContext?.punchline,
+              analysisScores: coachAnalysisContext ? { interest: coachAnalysisContext.interestScore, manipulation: coachAnalysisContext.manipulationScore, ghosting: coachAnalysisContext.ghostingScore, toxicity: Math.round(coachAnalysisContext.manipulationScore * 0.55 + coachAnalysisContext.ghostingScore * 0.45) } : undefined,
+              isReceivedMessage: !!coachAnalysisContext
+            },
+            language: language
+          })
       })
       const data = await res.json()
 
@@ -1889,6 +1893,7 @@ export default function Home() {
 
   const clearCoachChat = () => {
     setCoachMessages([])
+    setCoachAnalysisContext(null)
   }
 
   const pasteReceivedMessage = async () => {
@@ -3226,7 +3231,7 @@ export default function Home() {
               <div className="grid grid-cols-3 gap-2">
                 <button onClick={() => { setAnalysis(null); setAppState("home") }} className="py-3 bg-gray-50 dark:bg-gray-700 rounded-xl text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex flex-col items-center gap-1"><span className="text-xl">🚫</span><span className="text-gray-600 dark:text-gray-300">Ignorer</span></button>
                 <button onClick={() => { setReceivedMessage(conversation); setAppState("reply") }} className="py-3 bg-purple-50 dark:bg-purple-900/30 rounded-xl text-sm font-medium hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors flex flex-col items-center gap-1"><span className="text-xl">💬</span><span className="text-purple-600 dark:text-purple-300">Répondre</span></button>
-                <button onClick={() => { setCoachInput(conversation); setAppState("coach"); setTimeout(sendCoachMessage, 100) }} className="py-3 bg-orange-50 dark:bg-orange-900/30 rounded-xl text-sm font-medium hover:bg-orange-100 dark:hover:bg-orange-900/50 transition-colors flex flex-col items-center gap-1"><span className="text-xl">⚡</span><span className="text-orange-600 dark:text-orange-300">Confronter</span></button>
+                <button onClick={() => { setCoachInput(conversation); setCoachAnalysisContext(analysis); setAppState("coach"); setTimeout(sendCoachMessage, 100) }} className="py-3 bg-orange-50 dark:bg-orange-900/30 rounded-xl text-sm font-medium hover:bg-orange-100 dark:hover:bg-orange-900/50 transition-colors flex flex-col items-center gap-1"><span className="text-xl">⚡</span><span className="text-orange-600 dark:text-orange-300">Confronter</span></button>
               </div>
             </div>
 
