@@ -3225,8 +3225,8 @@ export default function Home() {
               <h4 className="text-sm font-semibold text-gray-800 dark:text-white mb-3 text-center">Que faire maintenant ?</h4>
               <div className="grid grid-cols-3 gap-2">
                 <button onClick={() => { setAnalysis(null); setAppState("home") }} className="py-3 bg-gray-50 dark:bg-gray-700 rounded-xl text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex flex-col items-center gap-1"><span className="text-xl">🚫</span><span className="text-gray-600 dark:text-gray-300">Ignorer</span></button>
-                <button onClick={() => setAppState("reply")} className="py-3 bg-purple-50 dark:bg-purple-900/30 rounded-xl text-sm font-medium hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors flex flex-col items-center gap-1"><span className="text-xl">💬</span><span className="text-purple-600 dark:text-purple-300">Répondre</span></button>
-                <button onClick={() => setAppState("coach")} className="py-3 bg-orange-50 dark:bg-orange-900/30 rounded-xl text-sm font-medium hover:bg-orange-100 dark:hover:bg-orange-900/50 transition-colors flex flex-col items-center gap-1"><span className="text-xl">⚡</span><span className="text-orange-600 dark:text-orange-300">Confronter</span></button>
+                <button onClick={() => { setReceivedMessage(conversation); setAppState("reply") }} className="py-3 bg-purple-50 dark:bg-purple-900/30 rounded-xl text-sm font-medium hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors flex flex-col items-center gap-1"><span className="text-xl">💬</span><span className="text-purple-600 dark:text-purple-300">Répondre</span></button>
+                <button onClick={() => { setCoachInput(conversation); setAppState("coach"); setTimeout(sendCoachMessage, 100) }} className="py-3 bg-orange-50 dark:bg-orange-900/30 rounded-xl text-sm font-medium hover:bg-orange-100 dark:hover:bg-orange-900/50 transition-colors flex flex-col items-center gap-1"><span className="text-xl">⚡</span><span className="text-orange-600 dark:text-orange-300">Confronter</span></button>
               </div>
             </div>
 
