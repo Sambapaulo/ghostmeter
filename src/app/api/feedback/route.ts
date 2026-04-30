@@ -25,7 +25,7 @@ export async function GET() {
     const redis = getRedis()
     if (!redis) return NextResponse.json({ success: true, stats: { totalUp: 0, totalDown: 0, total: 0, satisfaction: 0 }, recent: [] })
     const feedbacks = await redis.lrange(KV_FEEDBACK_KEY, 0, 99)
-    const parsed = feedbacks.map((f: string) => JSON.parse(f))
+    const parsed = feedbacks.map((f: any) => typeof f === 'string' ? JSON.parse(f) : f)
     const totalUp = parsed.filter((f: any) => f.type === 'up').length
     const totalDown = parsed.filter((f: any) => f.type === 'down').length
     const total = parsed.length
