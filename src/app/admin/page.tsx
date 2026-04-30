@@ -131,6 +131,8 @@ export default function AdminPage() {
   })
   const [referralStats, setReferralStats] = useState({ totalReferrals: 0, totalConverted: 0 })
   const [referralSaving, setReferralSaving] = useState(false)
+  const [feedbackStats, setFeedbackStats] = useState<{ totalUp: number; totalDown: number; total: number; satisfaction: number } | null>(null)
+  const [feedbackRecent, setFeedbackRecent] = useState<any[]>([])
   const [referralLoaded, setReferralLoaded] = useState(false)
 
   // Prepare chart data from users
