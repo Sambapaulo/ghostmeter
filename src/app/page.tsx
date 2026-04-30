@@ -310,21 +310,36 @@ function GhostLogo({ size = 80, animate = false }: { size?: number; animate?: bo
   )
 }
 
-// Score Circle
-function ScoreCircle({ score, label, icon, color }: { score: number; label: string; icon: string; color: string }) {
+// Score Circle with animation
+function ScoreCircle({ score, label, icon, color, isDominant }: { score: number; label: string; icon: string; color: string; isDominant?: boolean }) {
+  const [animatedScore, setAnimatedScore] = useState(0)
   const circumference = 2 * Math.PI * 45
-  const strokeDashoffset = circumference - (score / 100) * circumference
+  const strokeDashoffset = circumference - (animatedScore / 100) * circumference
+
+  useEffect(() => {
+    const duration = 1500
+    const startTime = Date.now()
+    const animate = () => {
+      const elapsed = Date.now() - startTime
+      const progress = Math.min(elapsed / duration, 1)
+      const eased = 1 - Math.pow(1 - progress, 3)
+      setAnimatedScore(Math.round(score * eased))
+      if (progress < 1) requestAnimationFrame(animate)
+    }
+    requestAnimationFrame(animate)
+  }, [score])
 
   return (
-    <div className="flex flex-col items-center">
-      <div className="relative w-24 h-24">
+    <div className="flex flex-col items-center" style={isDominant ? { filter: `drop-shadow(0 0 12px ${color})` } : {}}>
+      <div className="relative w-24 h-24" style={isDominant ? { animation: "pulse-glow 2s ease-in-out infinite" } : {}}>
         <svg className="w-full h-full transform -rotate-90">
           <circle cx="48" cy="48" r="45" fill="none" stroke="#e5e5e5" strokeWidth="8" />
           <circle cx="48" cy="48" r="45" fill="none" stroke={color} strokeWidth="8" strokeLinecap="round"
-            strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} />
+            strokeDasharray={circumference} strokeDashoffset={strokeDashoffset}
+            style={{ transition: "stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1)" }} />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-xl font-bold">{Math.round(score)}%</span>
+          <span className="text-xl font-bold">{animatedScore}%</span>
           <span className="text-base">{icon}</span>
         </div>
       </div>
