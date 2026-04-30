@@ -867,8 +867,9 @@ export default function AdminPage() {
               Parrainage
             </button>
             <button
+            <button
               onClick={() => { setActiveTab('feedback'); fetchFeedbackStats(); }}
-              className={`flex-1 py-3 px-4 text-sm font-medium flex items-center justify-center gap-2 ${
+              className="flex-1 py-3 px-4 text-sm font-medium flex items-center justify-center gap-2 text-purple-600 border-b-2 border-purple-600 bg-purple-50"
             >
               👍 Feedback
             </button>
