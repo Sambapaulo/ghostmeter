@@ -859,17 +859,18 @@ export default function AdminPage() {
               className={`flex-1 py-3 px-4 text-sm font-medium flex items-center justify-center gap-2 ${
                 activeTab === 'referral' 
               <button
-                onClick={() => { setActiveTab('feedback'); fetchFeedbackStats(); }}
-                className={px-3 py-2 rounded-lg text-sm font-medium transition-colors }
-              >
-                👍 Feedback
-              </button>
                   ? 'text-purple-600 border-b-2 border-purple-600 bg-purple-50' 
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
               <Gift className="w-4 h-4" />
               Parrainage
+            </button>
+            <button
+              onClick={() => { setActiveTab('feedback'); fetchFeedbackStats(); }}
+              className={lex-1 py-3 px-4 text-sm font-medium flex items-center justify-center gap-2 }
+            >
+              👍 Feedback
             </button>
           </div>
 
