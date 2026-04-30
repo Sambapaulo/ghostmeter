@@ -172,7 +172,7 @@ ${language === 'fr' ? "CONTEXTE GHOSTMETER: L'utilisateur a recu ce message et l
         model: 'llama-3.3-70b-versatile',
         messages: messages,
         temperature: 0.85,
-        max_tokens: 400
+        max_tokens: 800
       })
     });
 
