@@ -288,6 +288,11 @@ export default function AdminPage() {
           referredRewardAmount: data.referredRewardAmount || 1
         })
         setReferralStats({
+          totalReferrals: data.totalReferrals || 0,
+          totalConverted: data.totalConverted || 0
+        })
+        setReferralLoaded(true)
+      }
   const fetchFeedbackStats = async () => {
     try {
       const res = await fetch('/api/feedback')
@@ -295,11 +300,6 @@ export default function AdminPage() {
       if (data.success) { setFeedbackStats(data.stats); setFeedbackRecent(data.recent) }
     } catch(e) {}
   }
-          totalReferrals: data.totalReferrals || 0,
-          totalConverted: data.totalConverted || 0
-        })
-        setReferralLoaded(true)
-      }
     } catch (e) {
       console.error('Failed to load referral config')
     }
