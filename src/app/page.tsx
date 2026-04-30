@@ -3204,8 +3204,8 @@ export default function Home() {
             </div>
             <div className="flex items-center justify-center gap-4 mb-4">
               <span className="text-sm text-gray-400">Cette analyse est-elle juste ?</span>
-              <button onClick={() => { setFeedbackGiven("up"); try { localStorage.setItem("gm_fb", "up") } catch(e) {} }} className={"p-2 rounded-full transition-all " + (feedbackGiven === "up" ? "bg-green-100 scale-110" : "bg-gray-100 hover:bg-gray-200")}>👍</button>
-              <button onClick={() => { setFeedbackGiven("down"); try { localStorage.setItem("gm_fb", "down") } catch(e) {} }} className={"p-2 rounded-full transition-all " + (feedbackGiven === "down" ? "bg-red-100 scale-110" : "bg-gray-100 hover:bg-gray-200")}>👎</button>
+              <button onClick={() => { setFeedbackGiven("up"); try { localStorage.setItem("gm_fb", "up") } catch(e) {} fetch("/api/feedback", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ type: "up", scores: { interest: analysis.interestScore, manipulation: analysis.manipulationScore, ghosting: analysis.ghostingScore, overall: analysis.overallScore } }) }).catch(()=>{}) }} className={"p-2 rounded-full transition-all " + (feedbackGiven === "up" ? "bg-green-100 scale-110" : "bg-gray-100 hover:bg-gray-200")}>👍</button>
+              <button onClick={() => { setFeedbackGiven("down"); try { localStorage.setItem("gm_fb", "down") } catch(e) {} fetch("/api/feedback", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ type: "down", scores: { interest: analysis.interestScore, manipulation: analysis.manipulationScore, ghosting: analysis.ghostingScore, overall: analysis.overallScore } }) }).catch(()=>{}) }} className={"p-2 rounded-full transition-all " + (feedbackGiven === "down" ? "bg-red-100 scale-110" : "bg-gray-100 hover:bg-gray-200")}>👎</button>
               {feedbackGiven && <span className="text-sm text-purple-500">Merci !</span>}
             </div>
 

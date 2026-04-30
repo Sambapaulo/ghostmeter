@@ -71,7 +71,7 @@ export default function AdminPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const [activeTab, setActiveTab] = useState<'stats' | 'pricing' | 'promos' | 'users' | 'messages' | 'newsletter' | 'maintenance' | 'security' | 'logs' | 'journal' | 'referral'>('stats')
+  const [activeTab, setActiveTab] = useState<'stats' | 'pricing' | 'promos' | 'users' | 'messages' | 'newsletter' | 'maintenance' | 'security' | 'logs' | 'journal' | 'referral' | 'feedback'>('stats')
   
   const [settings, setSettings] = useState<AppSettings>({
     premiumPrice: 1.99,
@@ -288,6 +288,13 @@ export default function AdminPage() {
           referredRewardAmount: data.referredRewardAmount || 1
         })
         setReferralStats({
+  const fetchFeedbackStats = async () => {
+    try {
+      const res = await fetch('/api/feedback')
+      const data = await res.json()
+      if (data.success) { setFeedbackStats(data.stats); setFeedbackRecent(data.recent) }
+    } catch(e) {}
+  }
           totalReferrals: data.totalReferrals || 0,
           totalConverted: data.totalConverted || 0
         })
@@ -851,6 +858,12 @@ export default function AdminPage() {
               onClick={() => { setActiveTab('referral'); fetchReferralConfig(); }}
               className={`flex-1 py-3 px-4 text-sm font-medium flex items-center justify-center gap-2 ${
                 activeTab === 'referral' 
+              <button
+                onClick={() => { setActiveTab('feedback'); fetchFeedbackStats(); }}
+                className={px-3 py-2 rounded-lg text-sm font-medium transition-colors }
+              >
+                👍 Feedback
+              </button>
                   ? 'text-purple-600 border-b-2 border-purple-600 bg-purple-50' 
                   : 'text-gray-500 hover:text-gray-700'
               }`}
@@ -2384,6 +2397,58 @@ Nous avons une grande nouvelle à vous annoncer..."
                   {referralSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
                   Sauvegarder la configuration
                 </button>
+              </div>
+            )}
+
+            {/* FEEDBACK TAB */}
+            {activeTab === 'feedback' && (
+              <div>
+                <h2 className='font-semibold text-lg'>Feedback Analyses 👍👎</h2>
+                {feedbackStats ? (
+                  <div className='space-y-4'>
+                    <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
+                      <div className='bg-green-50 rounded-xl p-4'>
+                        <p className='text-2xl font-bold text-green-600'>{feedbackStats.totalUp}</p>
+                        <p className='text-sm text-gray-500'>👍 Satisfaits</p>
+                      </div>
+                      <div className='bg-red-50 rounded-xl p-4'>
+                        <p className='text-2xl font-bold text-red-600'>{feedbackStats.totalDown}</p>
+                        <p className='text-sm text-gray-500'>👎 Insatisfaits</p>
+                      </div>
+                      <div className='bg-purple-50 rounded-xl p-4'>
+                        <p className='text-2xl font-bold text-purple-600'>{feedbackStats.total}</p>
+                        <p className='text-sm text-gray-500'>Total</p>
+                      </div>
+                      <div className='bg-blue-50 rounded-xl p-4'>
+                        <p className='text-2xl font-bold text-blue-600'>{feedbackStats.satisfaction}%</p>
+                        <p className='text-sm text-gray-500'>Satisfaction</p>
+                      </div>
+                    </div>
+                    <div className='w-full bg-gray-200 rounded-full h-4'>
+                      <div className='bg-green-500 h-4 rounded-full transition-all' style={{ width: feedbackStats.satisfaction + '%' }}></div>
+                    </div>
+                    <h3 className='font-medium text-gray-700'>Derniers feedbacks</h3>
+                    <div className='space-y-2 max-h-96 overflow-y-auto'>
+                      {feedbackRecent.map((fb, i) => (
+                        <div key={i} className='flex items-center justify-between bg-white rounded-lg p-3 border'>
+                          <div className='flex items-center gap-2'>
+                            <span className='text-lg'>{fb.type === 'up' ? '👍' : '👎'}</span>
+                            <span className='text-sm text-gray-500'>{new Date(fb.timestamp).toLocaleDateString('fr-FR')} {new Date(fb.timestamp).toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'})}</span>
+                          </div>
+                          {fb.scores && Object.keys(fb.scores).length > 0 && (
+                            <div className='flex gap-3 text-xs text-gray-400'>
+                              {fb.scores.interest !== undefined && <span>❤️{Math.round(fb.scores.interest)}%</span>}
+                              {fb.scores.manipulation !== undefined && <span>⚠️{Math.round(fb.scores.manipulation)}%</span>}
+                              {fb.scores.ghosting !== undefined && <span>👻{Math.round(fb.scores.ghosting)}%</span>}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <p className='text-gray-400'>Chargement...</p>
+                )}
               </div>
             )}
     </div>
