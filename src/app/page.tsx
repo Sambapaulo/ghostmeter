@@ -3191,7 +3191,7 @@ export default function Home() {
                 <ScoreCircle score={analysis.ghostingScore} label={t('results.ghosting', language)} icon="👻" color='#ef4444' isDominant={analysis.ghostingScore > analysis.interestScore && analysis.ghostingScore > analysis.manipulationScore} />
               </div>
               <div className="text-center mt-6">
-                <p className="text-sm text-gray-400">{t('results.global_score', language)}</p>
+                <p className="text-sm text-gray-400">Score Global = Niveau de Toxicité 🔥</p>
                 <span className="text-4xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">{Math.round(analysis.manipulationScore * 0.4 + analysis.ghostingScore * 0.35 + (100 - analysis.interestScore) * 0.25)}</span>
                 <span className="text-xl text-gray-400">/100</span>
                 <p className="text-sm text-center mt-3 text-gray-400">🧪 Plus toxique que <span className="font-bold text-orange-500">{Math.round(analysis.manipulationScore * 0.55 + analysis.ghostingScore * 0.45)}%</span> des messages analysés</p>
