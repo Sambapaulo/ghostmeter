@@ -333,6 +333,33 @@ function ScoreCircle({ score, label, icon, color }: { score: number; label: stri
   )
 }
 
+function Confetti() {
+  const colors = ['#a855f7', '#ec4899', '#22c55e', '#f97316', '#3b82f6', '#eab308']
+  const pieces = Array.from({ length: 40 }, (_, i) => ({
+    left: Math.random() * 100,
+    delay: Math.random() * 0.8,
+    color: colors[i % colors.length],
+    size: Math.random() * 8 + 4,
+    duration: Math.random() * 2 + 1.5,
+  }))
+  return (
+    <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+      <style>{`@keyframes confetti-fall { 0% { transform: translateY(-10px) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }`}</style>
+      {pieces.map((p, i) => (
+        <div key={i} className="absolute" style={{
+          left: p.left + '%',
+          top: '-10px',
+          width: p.size,
+          height: p.size,
+          backgroundColor: p.color,
+          borderRadius: i % 2 === 0 ? '50%' : '0',
+          animation: 'confetti-fall ' + p.duration + 's ease-out ' + p.delay + 's forwards',
+        }} />
+      ))}
+    </div>
+  )
+}
+
 // Auth Modal
 function AuthModal({ isOpen, onClose, onPremiumActivated, mode }: { 
   isOpen: boolean; 
@@ -542,7 +569,7 @@ function AuthModal({ isOpen, onClose, onPremiumActivated, mode }: {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden">
         <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-4 text-white flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Mail className="w-5 h-5" />
@@ -1660,7 +1687,7 @@ export default function Home() {
   }
 
   const handleAnalyze = async () => {
-    if (conversation.trim().length < 20) return
+    if (conversation.trim().length < 10) return
     if (!isPremium && remaining <= 0) {
       setPaywallExhausted(true)
       setShowPaywall(true)
@@ -2460,7 +2487,7 @@ export default function Home() {
             <div className="border-t border-gray-100 dark:border-gray-700 mt-2 pt-4">
               <div className='p-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl'>
                 <p className='text-xs text-purple-600 dark:text-purple-400'>
-                  📱 {t('menu.app_version', language, { version: '1.24.0' })}
+                  📱 {t('menu.app_version', language, { version: '1.25.0' })}
                 </p>
                 <button
                   onClick={() => {
@@ -2483,7 +2510,7 @@ export default function Home() {
           )}
         </div>
         
-        <div className="absolute bottom-4 left-4 text-xs text-gray-400 dark:text-gray-500">{t('menu.version', language)} 1.24.0</div>
+        <div className="absolute bottom-4 left-4 text-xs text-gray-400 dark:text-gray-500">{t('menu.version', language)} 1.25.0</div>
       </div>
     </div>
   )
@@ -2533,7 +2560,7 @@ export default function Home() {
           <button onClick={() => setShowAbout(false)} className="absolute top-3 right-3 p-1 hover:bg-white/20 rounded-full"><X className="w-5 h-5" /></button>
           <GhostLogo size={60} />
           <h2 className="text-xl font-bold mt-3">GhostMeter</h2>
-          <p className="text-white/80 text-sm">Version 1.24.0</p>
+          <p className="text-white/80 text-sm">Version 1.25.0</p>
         </div>
         
         <div className="p-6">
@@ -2899,7 +2926,7 @@ export default function Home() {
         {showOCR && <OCRUploader onTextExtracted={(t) => { setConversation(t); setShowOCR(false) }} onClose={() => setShowOCR(false)} />}
         
         <div className="fixed top-0 left-0 right-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-100 dark:border-gray-700">
-          <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
             <button onClick={() => setShowMenu(true)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"><Menu className="w-5 h-5 text-gray-700 dark:text-gray-200" /></button>
             <div className="flex items-center gap-2"><GhostLogo size={32} /><span className="font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">GhostMeter</span></div>
             <div className="flex items-center gap-2">
@@ -2943,7 +2970,7 @@ export default function Home() {
             <p className="text-gray-500 dark:text-gray-400 mt-1">{t('home.subtitle_short', language)}</p>
           </div>
 
-          <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 border-2 border-purple-200 dark:border-purple-800">
+          <div className="w-full max-w-xl bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 border-2 border-purple-200 dark:border-purple-800">
             {/* Quick access buttons at the top */}
             <div className="mb-4 space-y-3">
               {/* Quick access to Coach */}
@@ -3043,7 +3070,7 @@ export default function Home() {
             
             <p className="text-xs text-gray-400 dark:text-gray-500 mb-4 text-center">{t('home.use_paste', language)}</p>
 
-            <button onClick={handleAnalyze} disabled={conversation.trim().length < 20 || isLoading} className="w-full py-3 text-white font-semibold rounded-xl bg-gradient-to-r from-purple-500 via-pink-500 to-violet-500 hover:opacity-90 disabled:opacity-50 transition-all">{isLoading ? t('home.analyzing', language) : t('home.analyze', language)}</button>
+            <button onClick={handleAnalyze} disabled={conversation.trim().length < 10 || isLoading} className="w-full py-3 text-white font-semibold rounded-xl bg-gradient-to-r from-purple-500 via-pink-500 to-violet-500 hover:opacity-90 disabled:opacity-50 transition-all">{isLoading ? t('home.analyzing', language) : t('home.analyze', language)}</button>
 
             <p className="text-center text-sm text-gray-400 dark:text-gray-500 mt-3">
               {isPremium ? (
@@ -3104,7 +3131,7 @@ export default function Home() {
         <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} onPremiumActivated={handlePremiumFromServer} mode={authMode} />
         
         <div className="fixed top-0 left-0 right-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-100 dark:border-gray-700">
-          <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
             <button onClick={() => { setAppState('home'); setAnalysis(null) }} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"><ChevronLeft className="w-5 h-5 text-gray-700 dark:text-gray-200" /></button>
             <span className="font-bold text-gray-800 dark:text-white">{t('results.title', language)}</span>
             <div className="flex items-center gap-2">
@@ -3128,7 +3155,7 @@ export default function Home() {
         </div>
         
         <div className="pt-20 pb-16 p-4">
-          <div className="max-w-lg mx-auto">
+          <div className="max-w-2xl mx-auto">{analysis.ghostingScore < 30 && analysis.manipulationScore < 30 && <Confetti />}
             <div className="text-center mb-6">
               <div className="inline-block bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-full text-lg font-bold shadow-lg">"{analysis.punchline}"</div>
             </div>
@@ -3140,9 +3167,9 @@ export default function Home() {
 
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 mb-4">
               <div className="grid grid-cols-3 gap-4 justify-items-center">
-                <ScoreCircle score={analysis.interestScore} label={t('results.interest', language)} icon="❤️" color={getScoreColor(analysis.interestScore, 'good')} />
-                <ScoreCircle score={analysis.manipulationScore} label={t('results.manipulation', language)} icon="⚠️" color={getScoreColor(analysis.manipulationScore, 'bad')} />
-                <ScoreCircle score={analysis.ghostingScore} label={t('results.ghosting', language)} icon="👻" color={getScoreColor(analysis.ghostingScore, 'bad')} />
+                <ScoreCircle score={analysis.interestScore} label={t('results.interest', language)} icon="❤️" color='#22c55e' isDominant={analysis.interestScore >= analysis.manipulationScore && analysis.interestScore >= analysis.ghostingScore} />
+                <ScoreCircle score={analysis.manipulationScore} label={t('results.manipulation', language)} icon="⚠️" color='#f97316' isDominant={analysis.manipulationScore > analysis.interestScore && analysis.manipulationScore >= analysis.ghostingScore} />
+                <ScoreCircle score={analysis.ghostingScore} label={t('results.ghosting', language)} icon="👻" color='#ef4444' isDominant={analysis.ghostingScore > analysis.interestScore && analysis.ghostingScore > analysis.manipulationScore} />
               </div>
               <div className="text-center mt-6">
                 <p className="text-sm text-gray-400">{t('results.global_score', language)}</p>
@@ -3215,7 +3242,7 @@ export default function Home() {
         )}
         
         <div className="fixed top-0 left-0 right-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-100 dark:border-gray-700">
-          <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
             <button onClick={() => { setAppState('home'); setReceivedMessage(''); setSuggestedReplies([]) }} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
               <X className="w-5 h-5 text-gray-700 dark:text-gray-200" />
             </button>
@@ -3241,7 +3268,7 @@ export default function Home() {
         </div>
         
         <div className="pt-20 pb-16 p-4">
-          <div className="max-w-lg mx-auto">
+          <div className="max-w-2xl mx-auto">
             {/* Header */}
             <div className="text-center mb-6">
               <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
@@ -3460,7 +3487,7 @@ export default function Home() {
         {/* Coach History Modal */}
         {showCoachHistory && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-xl max-h-[80vh] overflow-hidden flex flex-col">
               <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
                 <h3 className="font-bold text-lg flex items-center gap-2 text-gray-800 dark:text-white">
                   <History className="w-5 h-5 text-purple-500" />
@@ -3505,7 +3532,7 @@ export default function Home() {
         
         {/* Header */}
         <div className="fixed top-0 left-0 right-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-100 dark:border-gray-700">
-          <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
             <button onClick={() => { setAppState('home'); clearCoachChat() }} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
               <X className="w-5 h-5 text-gray-700 dark:text-gray-200" />
             </button>
@@ -3557,7 +3584,7 @@ export default function Home() {
         </div>
 
         {/* Chat Container */}
-        <div className="pt-16 pb-24 px-4 max-w-lg mx-auto">
+        <div className="pt-16 pb-24 px-4 max-w-2xl mx-auto">
           {/* Welcome Message */}
           {coachMessages.length === 0 && (
             <div className="mt-8 text-center">
@@ -3633,7 +3660,7 @@ export default function Home() {
 
         {/* Input Area */}
         <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 p-4">
-          <div className="max-w-lg mx-auto flex gap-2">
+          <div className="max-w-2xl mx-auto flex gap-2">
             <input
               type="text"
               value={coachInput}
