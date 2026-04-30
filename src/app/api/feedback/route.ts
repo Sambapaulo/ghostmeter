@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     await redis.ltrim(KV_FEEDBACK_KEY, 0, 999)
     return NextResponse.json({ success: true })
   } catch (error) {
-    return NextResponse.json({ success: false, error: 'Failed' }, { status: 500 })
+    return NextResponse.json({ success: false, error: String(error) }, { status: 500 })
   }
 }
 
@@ -32,6 +32,6 @@ export async function GET() {
     const satisfaction = total > 0 ? Math.round((totalUp / total) * 100) : 0
     return NextResponse.json({ success: true, stats: { totalUp, totalDown, total, satisfaction }, recent: parsed.slice(0, 20) })
   } catch (error) {
-    return NextResponse.json({ success: false, error: 'Failed' }, { status: 500 })
+    return NextResponse.json({ success: false, error: String(error) }, { status: 500 })
   }
 }
