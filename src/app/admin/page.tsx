@@ -868,7 +868,7 @@ export default function AdminPage() {
             </button>
             <button
               onClick={() => { setActiveTab('feedback'); fetchFeedbackStats(); }}
-              className={lex-1 py-3 px-4 text-sm font-medium flex items-center justify-center gap-2 }
+              className={`flex-1 py-3 px-4 text-sm font-medium flex items-center justify-center gap-2 ${
             >
               👍 Feedback
             </button>
