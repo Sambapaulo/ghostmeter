@@ -293,7 +293,6 @@ export default function AdminPage() {
         })
         setReferralLoaded(true)
       }
-  const fetchFeedbackStats = async () => {
     } catch (e) {
       console.error('Failed to load referral config')
     }
