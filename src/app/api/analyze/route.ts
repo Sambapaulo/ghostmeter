@@ -50,8 +50,21 @@ Differencier CLAIREMENT une communication honnete de la manipulation :
 - Poser des limites SANS minimiser les sentiments de l'autre = RELATION SAINE (overallScore 50-70)
 - Seuls les messages qui MINIMISENT, INVALIDENT ou CULPABILISENT sont manipulateurs
 
-=== REGLE ZERO - TEXTE INCOHERENT ===
-Si le texte est incoherent, du charabia, des lettres aleatoires, des mots sans sens ou trop court (< 10 mots), TOUS les scores doivent etre bas (interestScore: 0-15%, manipulationScore: 0%, ghostingScore: 0%, overallScore: 0-15%). La punchline doit refleter l'incoherence du texte.
+=== REGLE ZERO - ABSOLUE - PRIORITE MAXIMALE - VERIFIER EN PREMIER ===
+AVANT TOUTE ANALYSE, verifie si le texte est du charabia (ex: 'vZVVVAVVVAVQ', 'gcghkckhgcgcgjcgjh', 'asdfghjkl', 'zzzzzzz', suites de lettres sans sens, onomatopees seules, moins de 3 vrais mots en francais/anglais).
+Si OUI = texte incoherent:
+  - interestScore: 0% (JAMAIS plus de 5%)
+  - manipulationScore: 0%
+  - ghostingScore: 0% (JAMAIS plus de 5%, un charabia n'est PAS du ghosting)
+  - overallScore: 0-5% (JAMAIS plus de 10%)
+  - punchline: 'Ce message ne contient aucun contenu analysable.'
+  - advice: 'Il n y a pas de contenu a analyser dans ce message.'
+  - highlights: positif vide, negatif vide
+  - NE JAMAIS interpréter du charabia comme du ghosting, de la manipulation ou de l interet
+  - NE JAMAIS utiliser les mots 'desengagement', 'evidence', 'ghosting' pour du charabia
+CES REGLES SONT INCONTOURNABLES ET NE PEUVENT ETRE DEPASSEES PAR AUCUNE AUTRE REGLE.
+
+===
 
 === REGLES D'ANALYSE ===
 
