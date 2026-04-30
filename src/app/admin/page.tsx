@@ -294,15 +294,17 @@ export default function AdminPage() {
         setReferralLoaded(true)
       }
   const fetchFeedbackStats = async () => {
+    } catch (e) {
+      console.error('Failed to load referral config')
+    }
+  }
+
+  const fetchFeedbackStats = async () => {
     try {
       const res = await fetch('/api/feedback')
       const data = await res.json()
       if (data.success) { setFeedbackStats(data.stats); setFeedbackRecent(data.recent) }
     } catch(e) {}
-  }
-    } catch (e) {
-      console.error('Failed to load referral config')
-    }
   }
 
   const saveReferralConfig = async () => {
