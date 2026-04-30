@@ -42,7 +42,7 @@ const defaultSettings: Settings = {
   maintenanceMessage: 'Maintenance en cours. Veuillez réessayer dans quelques minutes.'
 }
 
-function getRedis(): Redis | null {
+export function getRedis(): Redis | null {
   // Vercel/Upstash uses these variable names
   const url = process.env.KV_REST_API_URL
   const token = process.env.KV_REST_API_TOKEN
