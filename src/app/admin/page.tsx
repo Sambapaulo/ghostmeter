@@ -861,7 +861,6 @@ export default function AdminPage() {
               onClick={() => { setActiveTab('referral'); fetchReferralConfig(); }}
               className={`flex-1 py-3 px-4 text-sm font-medium flex items-center justify-center gap-2 ${
                 activeTab === 'referral' 
-              <button
                   ? 'text-purple-600 border-b-2 border-purple-600 bg-purple-50' 
                   : 'text-gray-500 hover:text-gray-700'
               }`}
