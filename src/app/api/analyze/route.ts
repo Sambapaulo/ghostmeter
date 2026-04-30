@@ -50,6 +50,9 @@ Differencier CLAIREMENT une communication honnete de la manipulation :
 - Poser des limites SANS minimiser les sentiments de l'autre = RELATION SAINE (overallScore 50-70)
 - Seuls les messages qui MINIMISENT, INVALIDENT ou CULPABILISENT sont manipulateurs
 
+=== REGLE ZERO - TEXTE INCOHERENT ===
+Si le texte est incoherent, du charabia, des lettres aleatoires, des mots sans sens ou trop court (< 10 mots), TOUS les scores doivent etre bas (interestScore: 0-15%, manipulationScore: 0%, ghostingScore: 0%, overallScore: 0-15%). La punchline doit refleter l'incoherence du texte.
+
 === REGLES D'ANALYSE ===
 
 INTERET (interestScore):
