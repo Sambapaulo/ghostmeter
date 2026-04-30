@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Redis } from '@upstash/redis'
-
-const redis = new Redis({
-  url: process.env.KV_REST_API_URL!,
-  token: process.env.KV_REST_API_TOKEN!,
-})
+import { getRedis } from '@/lib/kv'
 
 const KV_FEEDBACK_KEY = 'ghostmeter:feedback'
 
 export async function POST(request: NextRequest) {
   try {
+    const redis = getRedis()
+    if (!redis) return NextResponse.json({ success: false, error: 'No database' }, { status: 500 })
     const { type, scores } = await request.json()
     if (type !== 'up' && type !== 'down') {
       return NextResponse.json({ success: false, error: 'Invalid type' }, { status: 400 })
@@ -25,6 +22,8 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
+    const redis = getRedis()
+    if (!redis) return NextResponse.json({ success: true, stats: { totalUp: 0, totalDown: 0, total: 0, satisfaction: 0 }, recent: [] })
     const feedbacks = await redis.lrange(KV_FEEDBACK_KEY, 0, 99)
     const parsed = feedbacks.map((f: string) => JSON.parse(f))
     const totalUp = parsed.filter((f: any) => f.type === 'up').length
