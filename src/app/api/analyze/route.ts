@@ -213,6 +213,14 @@ CONTROLE ET DOMINATION:
 - "je decide", "c'est comme ça" = autoritarisme emotionnel = 60-75%
 - "si tu m'aimais tu comprendrais" = chantage emotionnel = 60-80%
 
+AGRESSIVITE VERBALE ET DEVALORISATION (integre au manipulationScore):
+- Insultes directs ou deguisees ("tu comprends jamais rien", "t'es nul", "t'es incapable") = 60-80%
+- Critiques repetees et attaques personnelles = 55-75%
+- Mepris et condescendance ("je dois tout t'expliquer comme a un gamin") = 65-80%
+- Comparaisons degradantes ("tout le monde ferait mieux que toi") = 60-75%
+- REGLE IMPORTANTE: Si agressivite verbale detectee, ghostingScore DOIT rester bas (0-15%) car la personne est ENGAGEE (meme si c'est negativement). Un message agressif = du sur-engagement emotionnel, PAS du ghosting.
+- CUMUL: message long ET agressif avec 3+ attaques differentes = minimum 70% manipulation
+
 RELATION FLUO / EVITEMENT D'ENGAGEMENT:
 - Refus de definir la relation ("j'aime pas les etiquettes", "pas besoin de mettre un mot dessus", "on est bien comme ça") quand l'autre exprime un besoin de clarte = 40-55%
 - Minimiser le besoin de clarte de l'autre ("t'es trop dans le futur", "tu vas trop vite", "profite du moment", "laisse faire les choses") = 45-60%
@@ -266,6 +274,11 @@ AUTRE CAS TYPE (SCORE MANIPULATION = 50-65%):
 - 80-100 = excellente dynamique, reciprocite ET engagement IMMEDIAT (pas apres des heures de silence)
 
 === 7. CONSEILS ET HIGHLIGHTS ===
+- Si manipulation >= 60%: le conseil doit utiliser des mots forts comme "toxique", "nocif", "dangereux", "poser des limites"
+- Si manipulation >= 70%: mentionner explicitement "protege-toi" ou "prends de la distance"
+- Si ghosting >= 60%: le conseil doit parler de "desengagement clair" et encourager a "ne pas s'accrocher"
+- JAMAIS utiliser le mot "desengagement" quand le message est agressif ou attaquant (c'est l'inverse du desengagement)
+- Le punchline doit refleter la SEVERITE: plus c'est grave, plus le punchline doit etre direct et percutant
 - Les "positif" et "negatif" doivent identifier QUI fait QUOI (ex: "Il pose des questions mais elle repond de facon fermee")
 - Le conseil doit etre PRECIS et cible: dire QUI ne s'investit pas et pourquoi
 - Si un seul s'investit, le conseil doit l'aider a voir que l'autre n'est peut-etre pas interesse

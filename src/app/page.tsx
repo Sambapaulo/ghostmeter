@@ -762,6 +762,7 @@ export default function Home() {
   const [appState, setAppState] = useState<AppState>('home')
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [feedbackGiven, setFeedbackGiven] = useState<string | null>(null)
   const [conversation, setConversation] = useState('')
   const [selectedContext, setSelectedContext] = useState('crush')
   const [analysisMode, setAnalysisMode] = useState<'conversation' | 'single_message'>('conversation')
@@ -3115,6 +3116,7 @@ export default function Home() {
 
   // ANALYZING PAGE
   if (appState === 'analyzing') {
+    return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex flex-col items-center justify-center p-8">
         <img src="/logo.png" alt="GhostMeter" className="w-28 h-28 object-contain ghost-float" />
         <p className="text-xl mt-6 text-white/70 font-medium">Analyse en cours
@@ -3123,6 +3125,7 @@ export default function Home() {
           <span className="inline-block w-1.5 h-1.5 bg-purple-400 rounded-full mx-0.5 animate-bounce" style={{ animationDelay: "0.4s" }}></span>
         </p>
       </div>
+    )
   }
 
   // RESULTS PAGE
@@ -3191,12 +3194,19 @@ export default function Home() {
                 <p className="text-sm text-gray-400">{t('results.global_score', language)}</p>
                 <span className="text-4xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">{analysis.overallScore}</span>
                 <span className="text-xl text-gray-400">/100</span>
+                <p className="text-sm text-center mt-3 text-gray-400">🧪 Plus toxique que <span className="font-bold text-orange-500">{Math.round(analysis.manipulationScore * 0.65 + (100 - analysis.overallScore) * 0.35)}%</span> des messages analyses</p>
               </div>
             </div>
 
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 mb-4">
               <h3 className="font-semibold mb-2 text-gray-800 dark:text-white">{t('results.advice', language)}</h3>
               <p className="text-gray-600 dark:text-gray-300">{analysis.advice}</p>
+            </div>
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <span className="text-sm text-gray-400">Cette analyse est-elle juste ?</span>
+              <button onClick={() => { setFeedbackGiven("up"); try { localStorage.setItem("gm_fb", "up") } catch(e) {} }} className={"p-2 rounded-full transition-all " + (feedbackGiven === "up" ? "bg-green-100 scale-110" : "bg-gray-100 hover:bg-gray-200")}>👍</button>
+              <button onClick={() => { setFeedbackGiven("down"); try { localStorage.setItem("gm_fb", "down") } catch(e) {} }} className={"p-2 rounded-full transition-all " + (feedbackGiven === "down" ? "bg-red-100 scale-110" : "bg-gray-100 hover:bg-gray-200")}>👎</button>
+              {feedbackGiven && <span className="text-sm text-purple-500">Merci !</span>}
             </div>
 
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 mb-4">
@@ -3209,6 +3219,14 @@ export default function Home() {
                   <h4 className="font-medium text-red-600 mb-2">{t('results.negative', language)}</h4>
                   <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">{analysis.highlights.negative.map((p, i) => <li key={i}>• {p}</li>)}{analysis.highlights.negative.length === 0 && <li>{t('results.none', language)}</li>}</ul>
                 </div>
+              </div>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-4 mb-4">
+              <h4 className="text-sm font-semibold text-gray-800 dark:text-white mb-3 text-center">Que faire maintenant ?</h4>
+              <div className="grid grid-cols-3 gap-2">
+                <button onClick={() => { setAnalysis(null); setAppState("home") }} className="py-3 bg-gray-50 dark:bg-gray-700 rounded-xl text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex flex-col items-center gap-1"><span className="text-xl">🚫</span><span className="text-gray-600 dark:text-gray-300">Ignorer</span></button>
+                <button onClick={() => setAppState("reply")} className="py-3 bg-purple-50 dark:bg-purple-900/30 rounded-xl text-sm font-medium hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors flex flex-col items-center gap-1"><span className="text-xl">💬</span><span className="text-purple-600 dark:text-purple-300">Répondre</span></button>
+                <button onClick={() => setAppState("coach")} className="py-3 bg-orange-50 dark:bg-orange-900/30 rounded-xl text-sm font-medium hover:bg-orange-100 dark:hover:bg-orange-900/50 transition-colors flex flex-col items-center gap-1"><span className="text-xl">⚡</span><span className="text-orange-600 dark:text-orange-300">Confronter</span></button>
               </div>
             </div>
 
