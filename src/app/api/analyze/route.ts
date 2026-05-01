@@ -311,11 +311,14 @@ Reponds UNIQUEMENT avec un JSON valide (sans markdown, sans backticks):
   "badges": ["badge"]
 }`;
 
-    const isCashTone = tone === 'cash';
     let finalConversation = conversation;
+    if (whatsappMode && userName && otherName) {
+      finalConversation = '[CONTEXTE WHATSAPP - Utilisateur: ' + userName + ', Autre: ' + otherName + '. Analyse la dynamique COMPLETE.]\n\n' + conversation;
+    }
+
+    const isCashTone = tone === 'cash';
     if (isCashTone) {
       finalConversation = '[MODE CASH - Sois BRUTAL et DIRECT. Pas de langue de bois. Dis les choses telles quelles sont meme si c est dur a entendre.]\n\n' + conversation;
-    }
     }
 
     const completion = await openai.chat.completions.create({
@@ -330,11 +333,7 @@ Reponds UNIQUEMENT avec un JSON valide (sans markdown, sans backticks):
     });
 
     const responseContent = completion.choices[0]?.message?.content;
-    if (!responseContent) throw new Error('Pas de réponse');
-
-    let analysis: AnalysisResult = JSON.parse(responseContent);
-
-    // Validation et sanitisation
+    if (!responseContent) throw new Error('Pas de reponse');
     analysis.interestScore = Math.max(0, Math.min(100, Number(analysis.interestScore) ?? 50));
     analysis.manipulationScore = Math.max(0, Math.min(100, Number(analysis.manipulationScore) || 0));
     analysis.ghostingScore = Math.max(0, Math.min(100, Number(analysis.ghostingScore) || 0));
