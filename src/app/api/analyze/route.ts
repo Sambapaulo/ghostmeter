@@ -318,10 +318,6 @@ Reponds UNIQUEMENT avec un JSON valide (sans markdown, sans backticks):
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
-    let finalConversation = conversation;
-    if (whatsappMode && userName && otherName) {
-      finalConversation = '[CONTEXTE WHATSAPP - Utilisateur: ' + userName + ', Autre: ' + otherName + '. Analyse la dynamique COMPLETE.]\n\n' + conversation;
-    }
 
       messages: [
         { role: 'system', content: systemPrompt },
