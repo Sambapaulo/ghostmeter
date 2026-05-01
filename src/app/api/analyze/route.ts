@@ -313,9 +313,14 @@ Reponds UNIQUEMENT avec un JSON valide (sans markdown, sans backticks):
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
+    let finalConversation = conversation;
+    if (whatsappMode && userName && otherName) {
+      finalConversation = '[CONTEXTE WHATSAPP - Utilisateur: ' + userName + ', Autre: ' + otherName + '. Analyse la dynamique COMPLETE.]\n\n' + conversation;
+    }
+
       messages: [
         { role: 'system', content: systemPrompt },
-      : whatsappMode ? 'Analyse cette conversation WhatsApp (l utilisateur est ' + userName + ', l autre personne est ' + otherName + ', contexte: ' + (context || 'crush') + '):\n\n' + conversation : 'Analyse cette conversation (contexte: ' + (context || 'crush') + '):\n\n' + conversation }
+        { role: 'user', content: isSingleMessage ? 'Analyse ce message recu (contexte: ' + (context || 'crush') + '):' + String.fromCharCode(10) + String.fromCharCode(10) + finalConversation : 'Analyse cette conversation (contexte: ' + (context || 'crush') + '):' + String.fromCharCode(10) + String.fromCharCode(10) + finalConversation }
       ],
       temperature: 0.3,
       response_format: { type: 'json_object' },
