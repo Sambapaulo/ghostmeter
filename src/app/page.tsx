@@ -1837,6 +1837,7 @@ export default function Home() {
   }
 
   const handleShare = async () => {
+    if (!analysis) return;
     const text = `GhostMeter:\n"${analysis.punchline}"\n❤️ ${Math.round(analysis.interestScore)}% | ⚠️ ${Math.round(analysis.manipulationScore)}% | 👻 ${Math.round(analysis.ghostingScore)}%`
     await navigator.clipboard.writeText(text)
     alert(t('copied', language))
