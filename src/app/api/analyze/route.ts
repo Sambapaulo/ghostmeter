@@ -27,7 +27,7 @@ const openai = new OpenAI({
 
 export async function POST(request: NextRequest) {
   try {
-    const { conversation, context, email, mode } = await request.json();
+    const { conversation, context, email, mode, whatsappMode, userName, otherName } = await request.json();
 
     if (!conversation || typeof conversation !== 'string') {
       return NextResponse.json({ error: 'Conversation requise' }, { status: 400 });
@@ -315,7 +315,7 @@ Reponds UNIQUEMENT avec un JSON valide (sans markdown, sans backticks):
       model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: isSingleMessage ? `Analyse ce message reçu (contexte: ${context || 'crush'}):\n\n${conversation}` : `Analyse cette conversation (contexte: ${context || 'crush'}):\n\n${conversation}` }
+      : whatsappMode ? 'Analyse cette conversation WhatsApp (l utilisateur est ' + userName + ', l autre personne est ' + otherName + ', contexte: ' + (context || 'crush') + '):\n\n' + conversation : 'Analyse cette conversation (contexte: ' + (context || 'crush') + '):\n\n' + conversation }
       ],
       temperature: 0.3,
       response_format: { type: 'json_object' },

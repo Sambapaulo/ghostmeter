@@ -1100,6 +1100,9 @@ export default function Home() {
   const [coachMessages, setCoachMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([])
   const [coachInput, setCoachInput] = useState('')
   const [coachAnalysisContext, setCoachAnalysisContext] = useState<any>(null)
+  const [isWhatsAppMode, setIsWhatsAppMode] = useState(false)
+  const [whatsappNames, setWhatsappNames] = useState([])
+  const [selectedWhatsAppUser, setSelectedWhatsAppUser] = useState('')
   const [isCoachLoading, setIsCoachLoading] = useState(false)
   const [coachQuestionsRemaining, setCoachQuestionsRemaining] = useState(3)
   const [savedCoachConversations, setSavedCoachConversations] = useState<SavedCoachConversation[]>([])
@@ -1703,8 +1706,27 @@ export default function Home() {
     setAppState('results')
   }
 
+
+  const detectWhatsApp = (text: string): string[] | null => {
+    const pattern = /\[\d{1,2}:\d{2},\s*\d{1,2}\/\d{1,2}\/\d{4}\]\s*([^:]+):/
+    const matches = text.match(new RegExp(pattern.source, 'g'))
+    if (!matches || matches.length < 2) return null
+    const names = [...new Set(matches.map(m => {
+      const match = m.match(pattern)
+      return match ? match[1].trim() : null
+    }).filter(Boolean))]
+    return names.length >= 2 ? names : null
+  }
+
   const handleAnalyze = async () => {
     if (conversation.trim().length < 10) return
+    const waNames = detectWhatsApp(conversation)
+    if (waNames) {
+      setIsWhatsAppMode(true)
+      setWhatsappNames(waNames)
+      setIsLoading(false)
+      return
+    }
     if (!isPremium && remaining <= 0) {
       setPaywallExhausted(true)
       setShowPaywall(true)
@@ -1751,6 +1773,51 @@ export default function Home() {
       setAppState('home')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+
+  const handleAnalyzeWithWhatsApp = async () => {
+    setIsWhatsAppMode(false)
+    setIsLoading(true)
+    setAppState('analyzing')
+    const otherName = whatsappNames.find((n: string) => n !== selectedWhatsAppUser) || ''
+    try {
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ conversation, context: selectedContext, mode: analysisMode, whatsappMode: true, userName: selectedWhatsAppUser, otherName, fullConversation: conversation })
+      })
+      const data = await response.json()
+      if (data.success && data.analysis) {
+        setAnalysis(data.analysis)
+        saveToHistory(conversation, selectedContext, data.analysis)
+        if (!isPremium) {
+          setRemaining(prev => {
+            const newVal = Math.max(0, prev - 1)
+            localStorage.setItem('ghostmeter_remaining_today', String(newVal))
+            if (bonusAnalyses > 0) {
+              setBonusAnalyses(prevBonus => {
+                const newBonus = Math.max(0, prevBonus - 1)
+                localStorage.setItem('ghostmeter_bonus_remaining', String(newBonus))
+                return newBonus
+              })
+            }
+            return newVal
+          })
+        }
+        setAppState('results')
+      } else {
+        alert(t('error.generic', language) + ': ' + (data.error || t('error.unknown', language)))
+        setAppState('home')
+      }
+    } catch (error) {
+      alert(t('error.network', language))
+      setAppState('home')
+    } finally {
+      setIsLoading(false)
+      setSelectedWhatsAppUser('')
+      setWhatsappNames([])
     }
   }
 
@@ -2938,6 +3005,28 @@ export default function Home() {
         <AboutModal />
         <CGUModal />
         <ContactModal />
+      {isWhatsAppMode && whatsappNames.length > 0 && !selectedWhatsAppUser && (
+        <div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70'>
+          <div className='bg-gray-900 border border-purple-500/30 rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl'>
+            <div className='text-3xl mb-3'>💬</div>
+            <p className='text-white text-lg font-semibold mb-2'>Qui es-tu dans cette conversation ?</p>
+            <p className='text-purple-400 text-sm mb-6'>GhostMeter a detecte une conversation WhatsApp</p>
+            <div className='flex gap-3 mb-4'>
+              {whatsappNames.map((name: string) => (
+                <button key={name} onClick={() => { setSelectedWhatsAppUser(name); handleAnalyzeWithWhatsApp(); }}
+                  className='flex-1 py-3 px-4 rounded-xl border border-purple-500 text-purple-400 font-bold text-base hover:bg-purple-500/20 transition-all cursor-pointer'>
+                  {name}
+                </button>
+              ))}
+            </div>
+            <button onClick={() => { setIsWhatsAppMode(false); setWhatsappNames([]); }}
+              className='text-gray-500 text-sm hover:text-gray-300 transition-colors cursor-pointer bg-transparent border-none'>
+              Annuler
+            </button>
+          </div>
+        </div>
+      )}
+
         <PaywallModal isOpen={showPaywall} onClose={() => setShowPaywall(false)} onOpenPayment={() => { setShowPaywall(false); setShowPayment(true); }} language={language} showExhausted={paywallExhausted} />
         <PaymentModal isOpen={showPayment} onClose={() => setShowPayment(false)} language={language} settings={settings} onPayment={(planId, promoData) => { setSelectedPlan(planId); const promoParam = promoData?.result?.valid ? { code: promoData.code, discount: promoData.result.discount, discountType: promoData.result.discountType, valid: promoData.result.valid } : undefined; activatePremium(promoParam); }} isProcessing={isProcessingPayment} />
         <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} onPremiumActivated={handlePremiumFromServer} mode={authMode} />
