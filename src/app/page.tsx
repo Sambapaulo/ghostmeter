@@ -258,15 +258,11 @@ type AppState = 'home' | 'analyzing' | 'results' | 'reply' | 'coach'
 
 // Context options
 const contexts = [
-  { id: 'crush', name: 'Crush secret', icon: '😍' },
+  { id: 'crush', name: 'Crush', icon: '😍' },
   { id: 'ex', name: 'Ex', icon: '💔' },
-  { id: 'new', name: 'Début de relation', icon: '✨' },
-  { id: 'talking', name: 'Talking stage', icon: '💬' },
-  { id: 'situationship', name: 'Situationship', icon: '🤷' },
+  { id: 'couple', name: 'En couple', icon: '💕' },
   { id: 'friend', name: 'Ami(e)', icon: '👫' },
-  { id: 'other', name: 'Autre', icon: '👤' },
 ]
-
 // Reply type options
 const replyTypes = [
   { id: 'interested_warm', name: 'Intéressé(e) & chaleureux', icon: '😊', description: 'Enthousiaste et accueillant(e)' },
@@ -2320,11 +2316,8 @@ export default function Home() {
   const contextLabels: Record<string, string> = {
     'crush': 'Crush',
     'ex': 'Ex',
-    'new': 'Nouvelle relation',
-    'talking': 'Talking stage',
-    'situationship': 'Situationship',
+    'couple': 'En couple',
     'friend': 'Ami(e)',
-    'other': 'Autre'
   }
 
   // MENU DRAWER
