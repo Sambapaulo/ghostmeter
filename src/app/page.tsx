@@ -3084,8 +3084,8 @@ export default function Home() {
           {/* Animated Ghost Logo that slides across the screen */}
           {/* GhostMeter Logo floating in background */}
           <div className="fixed inset-0 pointer-events-none z-0 flex items-center justify-center">
-            <div className="flex items-center justify-center rounded-full bg-purple-500/10 ghost-float" style={{boxShadow: "0 0 30px rgba(91,33,182,0.15)", width: "9rem", height: "9rem"}}>
-              <span className="text-7xl" style={{filter: "drop-shadow(0 0 10px rgba(139,92,246,0.6))"}}>👻</span>
+            <div className="flex items-center justify-center rounded-full ghost-float opacity-15" style={{background: "linear-gradient(135deg, rgba(167,139,250,0.5), rgba(124,58,237,0.5))", boxShadow: "0 4px 20px rgba(124,58,237,0.2)", width: "12rem", height: "7rem"}}>
+              <span className="text-5xl" style={{filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.15))"}}>👻</span>
             </div>
           </div>
           <div className="text-center mb-6 flex flex-col items-center mt-16">
