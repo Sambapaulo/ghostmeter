@@ -27,7 +27,7 @@ const openai = new OpenAI({
 
 export async function POST(request: NextRequest) {
   try {
-    const { conversation, context, email, mode, whatsappMode, userName, otherName } = await request.json();
+    const { conversation, context, email, mode, whatsappMode, userName, otherName, tone } = await request.json();
 
     if (!conversation || typeof conversation !== 'string') {
       return NextResponse.json({ error: 'Conversation requise' }, { status: 400 });
@@ -311,9 +311,11 @@ Reponds UNIQUEMENT avec un JSON valide (sans markdown, sans backticks):
   "badges": ["badge"]
 }`;
 
+    const isCashTone = tone === 'cash';
     let finalConversation = conversation;
-    if (whatsappMode && userName && otherName) {
-      finalConversation = '[CONTEXTE WHATSAPP - Utilisateur: ' + userName + ', Autre: ' + otherName + '. Analyse la dynamique COMPLETE.]\n\n' + conversation;
+    if (isCashTone) {
+      finalConversation = '[MODE CASH - Sois BRUTAL et DIRECT. Pas de langue de bois. Dis les choses telles quelles sont meme si c est dur a entendre.]\n\n' + conversation;
+    }
     }
 
     const completion = await openai.chat.completions.create({

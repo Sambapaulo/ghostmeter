@@ -1097,7 +1097,7 @@ export default function Home() {
   const [coachInput, setCoachInput] = useState('')
   const [coachAnalysisContext, setCoachAnalysisContext] = useState<any>(null)
   const [isWhatsAppMode, setIsWhatsAppMode] = useState(false)
-  const [whatsappNames, setWhatsappNames] = useState<string[]>([])
+  const [analysisTone, setAnalysisTone] = useState<string>('soft')
   const [selectedWhatsAppUser, setSelectedWhatsAppUser] = useState<string>('')
   const [isCoachLoading, setIsCoachLoading] = useState(false)
   const [coachQuestionsRemaining, setCoachQuestionsRemaining] = useState(3)
@@ -1817,8 +1817,25 @@ export default function Home() {
     }
   }
 
+  const handleReanalyze = async (tone: string) => {
+    if (!conversation || analysisTone === tone) return
+    setAnalysisTone(tone)
+    setIsLoading(true)
+    try {
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ conversation, context: selectedContext, mode: analysisMode, tone })
+      })
+      const data = await response.json()
+      if (data.success && data.analysis) {
+        setAnalysis(data.analysis)
+      }
+    } catch (error) {}
+    finally { setIsLoading(false) }
+  }
+
   const handleShare = async () => {
-    if (!analysis) return
     const text = `GhostMeter:\n"${analysis.punchline}"\n❤️ ${Math.round(analysis.interestScore)}% | ⚠️ ${Math.round(analysis.manipulationScore)}% | 👻 ${Math.round(analysis.ghostingScore)}%`
     await navigator.clipboard.writeText(text)
     alert(t('copied', language))
@@ -3065,7 +3082,7 @@ export default function Home() {
           {/* Animated Ghost Logo that slides across the screen */}
           {/* GhostMeter Logo floating in background */}
           <div className="fixed inset-0 pointer-events-none z-0 flex items-center justify-center">
-            <img src="/logo.png" alt="" className="w-48 h-48 object-contain opacity-15 ghost-float rounded-full border border-purple-500/20" />
+    <img src="/logo.png" alt="" className="w-36 h-48 object-contain opacity-15 ghost-float rounded-full border border-purple-500/20" />
           </div>
           <div className="text-center mb-6 flex flex-col items-center mt-16">
             <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-500 via-pink-500 to-violet-500 bg-clip-text text-transparent">GhostMeter</h1>
@@ -3309,6 +3326,12 @@ export default function Home() {
               </div>
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-4 mb-4">
+
+        <div className="flex justify-center gap-2 mb-4">
+          <button onClick={() => handleReanalyze("soft")} disabled={analysisTone === "soft"} className="px-4 py-2 rounded-full text-sm font-medium transition-all cursor-pointer bg-pink-500/20 text-pink-400 ring-2 ring-pink-500 border-none">💖 Version douce</button>
+          <button onClick={() => handleReanalyze("cash")} disabled={analysisTone === "cash"} className="px-4 py-2 rounded-full text-sm font-medium transition-all cursor-pointer bg-orange-500/20 text-orange-400 ring-2 ring-orange-500 border-none">🔥 Version cash</button>
+        </div>
+
               <h4 className="text-sm font-semibold text-gray-800 dark:text-white mb-3 text-center">Que faire maintenant ?</h4>
               <div className="grid grid-cols-3 gap-2">
                 <button onClick={() => { setAnalysis(null); setAppState("home") }} className="py-3 bg-gray-50 dark:bg-gray-700 rounded-xl text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex flex-col items-center gap-1"><span className="text-xl">🚫</span><span className="text-gray-600 dark:text-gray-300">Ignorer</span></button>
