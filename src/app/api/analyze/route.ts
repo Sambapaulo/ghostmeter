@@ -334,6 +334,8 @@ Reponds UNIQUEMENT avec un JSON valide (sans markdown, sans backticks):
 
     const responseContent = completion.choices[0]?.message?.content;
     if (!responseContent) throw new Error('Pas de reponse');
+
+    let analysis: AnalysisResult = JSON.parse(responseContent);
     analysis.interestScore = Math.max(0, Math.min(100, Number(analysis.interestScore) ?? 50));
     analysis.manipulationScore = Math.max(0, Math.min(100, Number(analysis.manipulationScore) || 0));
     analysis.ghostingScore = Math.max(0, Math.min(100, Number(analysis.ghostingScore) || 0));
