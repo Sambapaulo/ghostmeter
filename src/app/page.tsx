@@ -1715,7 +1715,7 @@ export default function Home() {
       const match = m.match(pattern)
       return match ? match[1].trim() : null
     }).filter(Boolean))]
-    return names.length >= 2 ? names : null
+    return names.length >= 2 ? names as string[] : null
   }
 
   const handleAnalyze = async () => {
