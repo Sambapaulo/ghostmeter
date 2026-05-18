@@ -3225,7 +3225,7 @@ export default function Home() {
   if (appState === 'analyzing') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex flex-col items-center justify-center p-8">
-        <img src="/logo.png" alt="GhostMeter" className="w-28 h-28 object-contain ghost-float" />
+        <div className="ghost-float"><GhostLogo size={112} /></div>
         <p className="text-xl mt-6 text-white/70 font-medium">Analyse en cours
           <span className="inline-block w-1.5 h-1.5 bg-purple-400 rounded-full mx-0.5 animate-bounce" style={{ animationDelay: "0s" }}></span>
           <span className="inline-block w-1.5 h-1.5 bg-purple-400 rounded-full mx-0.5 animate-bounce" style={{ animationDelay: "0.2s" }}></span>
