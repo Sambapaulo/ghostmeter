@@ -5,7 +5,7 @@ const config = {
   webDir: 'www',
   server: {
     androidScheme: 'https',
-    url: 'https://ghostmeter.vercel.app?from=apk',
+    url: 'https://ghostmeter.vercel.app?from=apk&v=2',
     cleartext: true
   },
   plugins: {
