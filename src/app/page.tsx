@@ -2344,7 +2344,7 @@ export default function Home() {
       <div className="absolute inset-0 bg-black/50" onClick={() => setShowMenu(false)} />
       <div className={`absolute left-0 top-0 h-full w-72 bg-white dark:bg-gray-900 shadow-2xl transition-transform ${showMenu ? 'translate-x-0' : '-translate-x-full'} flex flex-col`}>
         <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3"><GhostLogo size={40} /><span className="font-bold text-lg text-gray-800 dark:text-white">GhostMeter</span></div>
+          <div className="flex items-center gap-3"><span className="text-4xl">👻</span><span className="font-bold text-lg text-gray-800 dark:text-white">GhostMeter</span></div>
           <button onClick={() => setShowMenu(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"><X className="w-5 h-5 text-gray-600 dark:text-gray-300" /></button>
         </div>
         
@@ -3049,7 +3049,7 @@ export default function Home() {
         <div className="fixed top-0 left-0 right-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-100 dark:border-gray-700">
           <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
             <button onClick={() => setShowMenu(true)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"><Menu className="w-5 h-5 text-gray-700 dark:text-gray-200" /></button>
-            <div className="flex items-center gap-2"><GhostLogo size={32} /><span className="font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">GhostMeter</span></div>
+            <div className="flex items-center gap-2"><span className="text-3xl">👻</span><span className="font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">GhostMeter</span></div>
             <div className="flex items-center gap-2">
               <button 
                 onClick={() => setDarkMode(!darkMode)} 
