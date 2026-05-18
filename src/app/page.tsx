@@ -275,7 +275,7 @@ const replyTypes = [
   { id: 'soft_ghost', name: 'Ghosting doux', icon: '👻', description: 'Réponse courte pour disparaître' },
 ]
 
-// Ghost Logo
+// Ghost Logo - Matches the app icon
 function GhostLogo({ size = 80, animate = false }: { size?: number; animate?: boolean }) {
   return (
     <div className={animate ? 'w-full overflow-hidden' : ''}>
@@ -287,25 +287,24 @@ function GhostLogo({ size = 80, animate = false }: { size?: number; animate?: bo
         style={animate ? { animation: 'ghost-dance 8s linear infinite' } : {}}
       >
         <defs>
-          <linearGradient id="ghostGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#a855f7" />
-            <stop offset="50%" stopColor="#ec4899" />
-            <stop offset="100%" stopColor="#8b5cf6" />
+          <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#1A0033" />
+            <stop offset="50%" stopColor="#2D004D" />
+            <stop offset="100%" stopColor="#1A0033" />
           </linearGradient>
         </defs>
-        <path d="M50 10 C25 10 15 35 15 55 L15 85 C15 85 20 80 25 85 C30 90 35 85 40 85 C45 85 45 90 50 85 C55 80 55 85 60 85 C65 85 70 90 75 85 C80 80 85 85 85 85 L85 55 C85 35 75 10 50 10 Z" fill="url(#ghostGradient)" />
-        <ellipse cx="35" cy="45" rx="8" ry="10" fill="white" />
-        <ellipse cx="65" cy="45" rx="8" ry="10" fill="white" />
-        <circle cx="37" cy="47" r="4" fill="#1a1a2e" />
-        <circle cx="67" cy="47" r="4" fill="#1a1a2e" />
-        <ellipse cx="25" cy="60" rx="6" ry="3" fill="#f472b6" opacity="0.6" />
-        <ellipse cx="75" cy="60" rx="6" ry="3" fill="#f472b6" opacity="0.6" />
-        <path d="M40 65 Q50 75 60 65" stroke="#1a1a2e" strokeWidth="3" fill="none" strokeLinecap="round" />
+        <circle cx="50" cy="50" r="48" fill="url(#bgGradient)" />
+        <path d="M50 12 C30 12 20 28 20 45 L20 70 C20 70 25 65 30 70 C35 75 40 70 45 70 C50 70 50 75 55 70 C60 65 65 70 70 70 C75 75 80 70 80 70 L80 45 C80 28 70 12 50 12 Z" fill="#FFFFFF" stroke="#000000" strokeWidth="2.5" />
+        <path d="M20 42 Q10 45 12 55" fill="none" stroke="#000000" strokeWidth="2.5" strokeLinecap="round" />
+        <path d="M80 42 Q90 45 88 55" fill="none" stroke="#000000" strokeWidth="2.5" strokeLinecap="round" />
+        <circle cx="38" cy="38" r="5" fill="#000000" />
+        <circle cx="62" cy="38" r="5" fill="#000000" />
+        <ellipse cx="50" cy="55" rx="10" ry="7" fill="#000000" />
+        <ellipse cx="50" cy="60" rx="5" ry="6" fill="#FF0000" />
       </svg>
     </div>
   )
 }
-
 // Score Circle with animation
 function ScoreCircle({ score, label, icon, color, isDominant }: { score: number; label: string; icon: string; color: string; isDominant?: boolean }) {
   const [animatedScore, setAnimatedScore] = useState(0)
