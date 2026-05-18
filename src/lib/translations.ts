@@ -253,7 +253,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'notifications.test_error': 'Erreur lors de l\'envoi de la notification de test.',
 
     // Home Page
-    'home.subtitle_short': 'L\'art de décrypter les messages',,
+    'home.subtitle_short': 'L\'art de décrypter les messages',
     'home.paste_conversation': 'Colle ta conversation',
     'home.relationship_type': 'Type de relation :',
     'home.paste_here': 'Colle ta conversation ici...',
