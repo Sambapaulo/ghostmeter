@@ -3083,7 +3083,6 @@ export default function Home() {
           {/* Animated Ghost Logo that slides across the screen */}
           {/* GhostMeter Logo floating in background */}
           <div className="fixed inset-0 pointer-events-none z-0 flex items-center justify-center">
-          <div className="fixed inset-0 pointer-events-none z-0 flex items-center justify-center">
             <div className="ghost-float opacity-15"><GhostLogo size={80} animate /></div>
           </div>
           <div className="text-center mb-6 flex flex-col items-center mt-16">
