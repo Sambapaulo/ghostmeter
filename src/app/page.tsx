@@ -3089,6 +3089,7 @@ export default function Home() {
           </div>
           <div className="text-center mb-6 flex flex-col items-center mt-16">
             <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-500 via-pink-500 to-violet-500 bg-clip-text text-transparent">GhostMeter</h1>
+          <div className="fixed top-1 right-1 bg-red-600 text-white text-xs p-1 rounded z-50">V3-2024</div>
             <p className="text-gray-500 dark:text-gray-400 mt-1">{t('home.subtitle_short', language)}</p>
           </div>
 
