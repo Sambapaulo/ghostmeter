@@ -61,12 +61,12 @@ export default function Walkthrough({ onComplete, language }: WalkthroughProps) 
             />
           ))}
         </div>
-        <div className="text-6xl mb-4">{steps[currentStep].icon.startsWith("/") ? <img src={steps[currentStep].icon} alt="" className="w-16 h-16 rounded-full" /> : steps[currentStep].icon}</div>
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-3">
-          {steps[currentStep].title}
-        </h2>
-        <p className="text-gray-600 dark:text-gray-300 mb-8">{steps[currentStep].description}</p>
-        <div className="flex gap-3">
+        <div className="text-6xl mb-4 flex justify-center">
+          {steps[currentStep].icon.startsWith("/")
+            ? <img src={steps[currentStep].icon} alt="" className="w-20 h-20 rounded-full object-cover" />
+            : steps[currentStep].icon
+          }
+        </div>
           <button
             onClick={onComplete}
             className="flex-1 py-3 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
