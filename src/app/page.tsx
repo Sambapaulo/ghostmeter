@@ -2344,7 +2344,7 @@ export default function Home() {
       <div className="absolute inset-0 bg-black/50" onClick={() => setShowMenu(false)} />
       <div className={`absolute left-0 top-0 h-full w-72 bg-white dark:bg-gray-900 shadow-2xl transition-transform ${showMenu ? 'translate-x-0' : '-translate-x-full'} flex flex-col`}>
         <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between shrink-0">
-<div className="flex items-center gap-3"><GhostLogo size={36} /><span className="font-bold text-lg text-gray-800 dark:text-white">GhostMeter</span></div>
+<div className="flex items-center gap-3"><span className="text-4xl">👻</span><span className="font-bold text-lg text-gray-800 dark:text-white">GhostMeter</span></div>
           <button onClick={() => setShowMenu(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"><X className="w-5 h-5 text-gray-600 dark:text-gray-300" /></button>
         </div>
         
@@ -2657,7 +2657,7 @@ export default function Home() {
       <div className="absolute inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
         <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-6 text-white text-center relative">
           <button onClick={() => setShowAbout(false)} className="absolute top-3 right-3 p-1 hover:bg-white/20 rounded-full"><X className="w-5 h-5" /></button>
-          <GhostLogo size={60} />
+<span className="text-6xl">👻</span>
           <h2 className="text-xl font-bold mt-3">GhostMeter</h2>
           <p className="text-white/80 text-sm">Version 1.25.0</p>
         </div>
@@ -3049,7 +3049,7 @@ export default function Home() {
         <div className="fixed top-0 left-0 right-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-100 dark:border-gray-700">
           <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
             <button onClick={() => setShowMenu(true)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"><Menu className="w-5 h-5 text-gray-700 dark:text-gray-200" /></button>
-<div className="flex items-center gap-2"><GhostLogo size={28} /><span className="font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">GhostMeter</span></div>
+<div className="flex items-center gap-2"><span className="text-3xl">👻</span><span className="font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">GhostMeter</span></div>
             <div className="flex items-center gap-2">
               <button 
                 onClick={() => setDarkMode(!darkMode)} 
@@ -3083,8 +3083,8 @@ export default function Home() {
           {/* Animated Ghost Logo that slides across the screen */}
           {/* GhostMeter Logo floating in background */}
           <div className="fixed inset-0 pointer-events-none z-0 flex items-center justify-center">
-            <div className="ghost-float opacity-15"><GhostLogo size={80} animate /></div>
-          </div>
+            <div className="ghost-float opacity-15"><span className="text-8xl">👻</span></div>
+            <div className="ghost-float opacity-15"><span className="text-8xl">👻</span></div>
           <div className="text-center mb-6 flex flex-col items-center mt-16">
             <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-500 via-pink-500 to-violet-500 bg-clip-text text-transparent">GhostMeter</h1>
             <p className="text-gray-500 dark:text-gray-400 mt-1">{t('home.subtitle_short', language)}</p>
@@ -3223,8 +3223,8 @@ export default function Home() {
   if (appState === 'analyzing') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex flex-col items-center justify-center p-8">
-        <div className="ghost-float"><GhostLogo size={112} /></div>
-        <p className="text-xl mt-6 text-white/70 font-medium">Analyse en cours
+        <div className="ghost-float"><span className="text-8xl">👻</span></div>
+<div className="ghost-float"><span className="text-8xl">👻</span></div>
           <span className="inline-block w-1.5 h-1.5 bg-purple-400 rounded-full mx-0.5 animate-bounce" style={{ animationDelay: "0s" }}></span>
           <span className="inline-block w-1.5 h-1.5 bg-purple-400 rounded-full mx-0.5 animate-bounce" style={{ animationDelay: "0.2s" }}></span>
           <span className="inline-block w-1.5 h-1.5 bg-purple-400 rounded-full mx-0.5 animate-bounce" style={{ animationDelay: "0.4s" }}></span>
