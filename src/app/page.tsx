@@ -3084,7 +3084,7 @@ export default function Home() {
           {/* GhostMeter Logo floating in background */}
           <div className="fixed inset-0 pointer-events-none z-0 flex items-center justify-center">
             <div className="ghost-float opacity-15"><span className="text-8xl">👻</span></div>
-            <div className="ghost-float opacity-15"><span className="text-8xl">👻</span></div>
+          </div>
           <div className="text-center mb-6 flex flex-col items-center mt-16">
             <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-500 via-pink-500 to-violet-500 bg-clip-text text-transparent">GhostMeter</h1>
             <p className="text-gray-500 dark:text-gray-400 mt-1">{t('home.subtitle_short', language)}</p>
