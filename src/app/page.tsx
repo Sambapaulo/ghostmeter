@@ -2977,7 +2977,6 @@ export default function Home() {
   //     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex items-center justify-center p-4">
   //       <div className="text-center max-w-md">
   //         <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-<div className="flex items-center gap-3"><img src="/ghostmeter_icon_fixed.webp" alt="" className="w-8 h-8 rounded-full" /><span className="font-bold text-lg text-gray-800 dark:text-white">GhostMeter</span></div>
   //         </div>
   //         <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">GhostMeter</h1>
   //         <div className="w-16 h-1 bg-gradient-to-r from-purple-500 to-pink-500 mx-auto mb-6 rounded-full"></div>
