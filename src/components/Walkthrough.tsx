@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { Language } from '@/lib/translations'
@@ -17,7 +17,7 @@ export default function Walkthrough({ onComplete, language }: WalkthroughProps) 
       description: language === 'fr' 
         ? "L'application qui détecte le ghosting avant qu'il ne soit trop tard."
         : "The app that detects ghosting before it's too late.",
-      icon: "👻",
+      icon: "/ghostmeter_icon_fixed.webp",
     },
     {
       title: language === 'fr' ? "Analyse tes conversations" : "Analyze your conversations",
@@ -61,7 +61,7 @@ export default function Walkthrough({ onComplete, language }: WalkthroughProps) 
             />
           ))}
         </div>
-        <div className="text-6xl mb-4">{steps[currentStep].icon}</div>
+        <div className="text-6xl mb-4">{steps[currentStep].icon.startsWith("/") ? <img src={steps[currentStep].icon} alt="" className="w-16 h-16 rounded-full" /> : steps[currentStep].icon}</div>
         <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-3">
           {steps[currentStep].title}
         </h2>
