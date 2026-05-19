@@ -3224,7 +3224,7 @@ export default function Home() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex flex-col items-center justify-center p-8">
         <div className="ghost-float"><span className="text-8xl">👻</span></div>
-<div className="ghost-float"><span className="text-8xl">👻</span></div>
+        <p className="text-xl mt-6 text-white/70 font-medium">Analyse en cours
           <span className="inline-block w-1.5 h-1.5 bg-purple-400 rounded-full mx-0.5 animate-bounce" style={{ animationDelay: "0s" }}></span>
           <span className="inline-block w-1.5 h-1.5 bg-purple-400 rounded-full mx-0.5 animate-bounce" style={{ animationDelay: "0.2s" }}></span>
           <span className="inline-block w-1.5 h-1.5 bg-purple-400 rounded-full mx-0.5 animate-bounce" style={{ animationDelay: "0.4s" }}></span>
