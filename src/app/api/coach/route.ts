@@ -203,6 +203,10 @@ export async function POST(request: NextRequest) {
     // Message utilisateur brut — c'est LA question posée par l'utilisateur, sans préambule figé
     messages.push({ role: 'user', content: message });
 
+    // Modèle Groq configurable via env var — défaut: llama-3.1-8b-instant (disponible sur free tier)
+    // Alternatives: llama3-70b-8192 (plus puissant mais peut être payant), gemma2-9b-it
+    const groqModel = process.env.GROQ_MODEL || 'llama-3.1-8b-instant';
+
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -210,7 +214,7 @@ export async function POST(request: NextRequest) {
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        model: groqModel,
         messages: messages,
         temperature: 0.9,
         max_tokens: 800,
