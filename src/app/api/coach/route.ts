@@ -148,6 +148,53 @@ EJEMPLOS DE CONSEJOS:
 IMPORTANTE: Responde SIEMPRE en español.`
 };
 
+export async function GET() {
+  // Endpoint de diagnostic : GET /api/coach
+  // Retourne la liste des modèles disponibles pour la clé GROQ_API_KEY configurée.
+  // Utile pour debugger quand le coach tombe toujours dans le fallback.
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) {
+    return NextResponse.json({
+      configured: false,
+      error: 'GROQ_API_KEY is not set in environment variables.'
+    });
+  }
+
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/models', {
+      headers: { 'Authorization': `Bearer ${apiKey}` }
+    });
+
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      return NextResponse.json({
+        configured: true,
+        auth_ok: false,
+        status: res.status,
+        error: body.substring(0, 500)
+      });
+    }
+
+    const data = await res.json();
+    const models: Array<{ id: string; owned_by?: string; active?: boolean }> = data.data || [];
+    const activeModels = models.filter(m => m.active !== false).map(m => m.id);
+
+    return NextResponse.json({
+      configured: true,
+      auth_ok: true,
+      total_models: models.length,
+      active_models: activeModels,
+      all_models: models.map(m => ({ id: m.id, active: m.active, owned_by: m.owned_by }))
+    });
+  } catch (err: any) {
+    return NextResponse.json({
+      configured: true,
+      auth_ok: false,
+      error: `Network error: ${err?.message || String(err)}`
+    });
+  }
+}
+
 export async function POST(request: NextRequest) {
   // Déclarer ces variables AVANT le try pour qu'elles soient accessibles dans le catch
   let message: string = '';
@@ -203,73 +250,100 @@ export async function POST(request: NextRequest) {
     // Message utilisateur brut — c'est LA question posée par l'utilisateur, sans préambule figé
     messages.push({ role: 'user', content: message });
 
-    // Liste de modèles Groq à essayer en cascade.
-    // Si GROQ_MODEL est défini dans l'environnement, on l'essaie en priorité.
-    // Puis on essaie d'autres modèles connus pour être disponibles sur le free tier.
-    const groqModels = [
-      process.env.GROQ_MODEL,
-      'llama-3.3-70b-versatile',
-      'llama-3.1-8b-instant',
-      'llama3-70b-8192',
-      'llama3-8b-8192',
-      'gemma2-9b-it',
-    ].filter(Boolean) as string[];
-
-    let response: Response | null = null;
-    let lastErrorBody = '';
-    let usedModel = '';
-
-    for (const model of groqModels) {
-      console.log(`[coach] Trying model: ${model}`);
+    // Étape 1: Lister les modèles réellement disponibles pour cette clé via l'API Groq.
+    // Cela évite de deviner des noms de modèles qui peuvent être dépréciés ou inaccessibles.
+    let chosenModel = process.env.GROQ_MODEL || '';
+    
+    if (!chosenModel) {
+      console.log('[coach] Querying Groq /models endpoint to discover available models...');
       try {
-        response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-          },
-          body: JSON.stringify({
-            model: model,
-            messages: messages,
-            temperature: 0.9,
-            max_tokens: 800,
-            presence_penalty: 0.6,
-            frequency_penalty: 0.4
-          })
+        const modelsRes = await fetch('https://api.groq.com/openai/v1/models', {
+          headers: { 'Authorization': `Bearer ${apiKey}` }
         });
 
-        if (response.ok) {
-          usedModel = model;
-          console.log(`[coach] OK with model: ${model}`);
-          break;
+        if (!modelsRes.ok) {
+          const errBody = await modelsRes.text().catch(() => '');
+          console.error(`[coach] Cannot list models (${modelsRes.status}): ${errBody.substring(0, 300)}`);
+          return NextResponse.json({ 
+            success: true, 
+            reply: getFallbackCoachReply(message, context, language),
+            fallback: true,
+            fallbackReason: `groq_models_list_${modelsRes.status}`
+          });
         }
 
-        // Capturer le statut et le body AVANT de mettre response à null
-        const failStatus = response.status;
-        lastErrorBody = await response.text().catch(() => '');
-        console.warn(`[coach] Model ${model} failed (${failStatus}): ${lastErrorBody.substring(0, 200)}`);
-        response = null;
-
-        // Si ce n'est PAS une 404 (modèle non trouvé) ou 400 (modèle invalide),
-        // c'est probablement une erreur côté serveur Groq — pas la peine d'essayer les autres modèles
-        if (failStatus !== 404 && failStatus !== 400) {
-          // Pour 401 (clé invalide), 429 (quota), 500, 503 — on sort direct
-          break;
+        const modelsData = await modelsRes.json();
+        const availableModelIds: string[] = (modelsData.data || [])
+          .filter((m: any) => m.active !== false)
+          .map((m: any) => m.id);
+        
+        console.log(`[coach] Available models: ${availableModelIds.join(', ')}`);
+        
+        // Ordre de préférence — on prend le premier qui est dispo
+        const preferredOrder = [
+          'llama-3.3-70b-versatile',
+          'llama-3.1-8b-instant',
+          'llama3-70b-8192',
+          'llama3-8b-8192',
+          'gemma2-9b-it',
+          'mixtral-8x7b-32768',
+        ];
+        
+        chosenModel = preferredOrder.find(m => availableModelIds.includes(m)) || '';
+        
+        // Si aucun de nos préférés n'est dispo, prendre le premier disponible tout court
+        if (!chosenModel && availableModelIds.length > 0) {
+          chosenModel = availableModelIds[0];
+          console.log(`[coach] No preferred model available, using first available: ${chosenModel}`);
         }
-      } catch (fetchErr) {
-        console.warn(`[coach] Fetch error with model ${model}:`, fetchErr);
-        response = null;
+        
+        if (!chosenModel) {
+          console.error('[coach] No models available for this API key (empty list).');
+          return NextResponse.json({ 
+            success: true, 
+            reply: getFallbackCoachReply(message, context, language),
+            fallback: true,
+            fallbackReason: 'no_models_available'
+          });
+        }
+      } catch (modelsErr) {
+        console.error('[coach] Error querying /models:', modelsErr);
+        return NextResponse.json({ 
+          success: true, 
+          reply: getFallbackCoachReply(message, context, language),
+          fallback: true,
+          fallbackReason: 'models_endpoint_network_error'
+        });
       }
     }
 
-    // Aucun modèle n'a marché
-    if (!response || !response.ok) {
-      console.error(`[coach] All models failed. Last error: ${lastErrorBody.substring(0, 500)}`);
+    // Étape 2: Appeler le chat completion avec le modèle choisi
+    console.log(`[coach] Using model: ${chosenModel}`);
+    
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: chosenModel,
+        messages: messages,
+        temperature: 0.9,
+        max_tokens: 800,
+        presence_penalty: 0.6,
+        frequency_penalty: 0.4
+      })
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text().catch(() => '');
+      console.error(`[coach] Groq error ${response.status} with model ${chosenModel}: ${errorBody.substring(0, 500)}`);
       return NextResponse.json({ 
         success: true, 
         reply: getFallbackCoachReply(message, context, language),
         fallback: true,
-        fallbackReason: 'all_groq_models_failed'
+        fallbackReason: `groq_error_${response.status}`
       });
     }
 
@@ -277,7 +351,7 @@ export async function POST(request: NextRequest) {
     let reply = data.choices?.[0]?.message?.content?.trim() || '';
 
     if (!reply || reply.length < 10) {
-      console.warn(`[coach] Empty or too-short LLM reply from model ${usedModel}, falling back.`);
+      console.warn(`[coach] Empty or too-short LLM reply from model ${chosenModel}, falling back.`);
       return NextResponse.json({ 
         success: true, 
         reply: getFallbackCoachReply(message, context, language),
@@ -286,7 +360,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    console.log(`[coach] Success with model ${usedModel}, reply length: ${reply.length} chars`);
+    console.log(`[coach] Success with model ${chosenModel}, reply length: ${reply.length} chars`);
 
     // Log la question coach dans le journal utilisateur
     if (email) {
