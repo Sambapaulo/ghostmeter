@@ -203,34 +203,72 @@ export async function POST(request: NextRequest) {
     // Message utilisateur brut — c'est LA question posée par l'utilisateur, sans préambule figé
     messages.push({ role: 'user', content: message });
 
-    // Modèle Groq configurable via env var — défaut: llama-3.1-8b-instant (disponible sur free tier)
-    // Alternatives: llama3-70b-8192 (plus puissant mais peut être payant), gemma2-9b-it
-    const groqModel = process.env.GROQ_MODEL || 'llama-3.1-8b-instant';
+    // Liste de modèles Groq à essayer en cascade.
+    // Si GROQ_MODEL est défini dans l'environnement, on l'essaie en priorité.
+    // Puis on essaie d'autres modèles connus pour être disponibles sur le free tier.
+    const groqModels = [
+      process.env.GROQ_MODEL,
+      'llama-3.3-70b-versatile',
+      'llama-3.1-8b-instant',
+      'llama3-70b-8192',
+      'llama3-8b-8192',
+      'gemma2-9b-it',
+    ].filter(Boolean) as string[];
 
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: groqModel,
-        messages: messages,
-        temperature: 0.9,
-        max_tokens: 800,
-        presence_penalty: 0.6,
-        frequency_penalty: 0.4
-      })
-    });
+    let response: Response | null = null;
+    let lastErrorBody = '';
+    let usedModel = '';
 
-    if (!response.ok) {
-      const errorBody = await response.text().catch(() => '');
-      console.error(`[coach] Groq error ${response.status}: ${errorBody.substring(0, 500)}`);
+    for (const model of groqModels) {
+      console.log(`[coach] Trying model: ${model}`);
+      try {
+        response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: model,
+            messages: messages,
+            temperature: 0.9,
+            max_tokens: 800,
+            presence_penalty: 0.6,
+            frequency_penalty: 0.4
+          })
+        });
+
+        if (response.ok) {
+          usedModel = model;
+          console.log(`[coach] OK with model: ${model}`);
+          break;
+        }
+
+        // Si on a une 404 (modèle introuvable), on log et on essaie le suivant
+        lastErrorBody = await response.text().catch(() => '');
+        console.warn(`[coach] Model ${model} failed (${response.status}): ${lastErrorBody.substring(0, 200)}`);
+        response = null;
+
+        // Si ce n'est PAS une 404 (modèle non trouvé) ou 400 (modèle invalide),
+        // c'est probablement une erreur côté serveur Groq — pas la peine d'essayer les autres modèles
+        if (response?.status !== 404 && response?.status !== 400 && response?.status !== null && response?.status !== undefined) {
+          // Pour 401 (clé invalide), 429 (quota), 500, 503 — on sort direct
+          break;
+        }
+      } catch (fetchErr) {
+        console.warn(`[coach] Fetch error with model ${model}:`, fetchErr);
+        response = null;
+      }
+    }
+
+    // Aucun modèle n'a marché
+    if (!response || !response.ok) {
+      console.error(`[coach] All models failed. Last error: ${lastErrorBody.substring(0, 500)}`);
       return NextResponse.json({ 
         success: true, 
         reply: getFallbackCoachReply(message, context, language),
         fallback: true,
-        fallbackReason: `groq_error_${response.status}`
+        fallbackReason: 'all_groq_models_failed'
       });
     }
 
@@ -238,7 +276,7 @@ export async function POST(request: NextRequest) {
     let reply = data.choices?.[0]?.message?.content?.trim() || '';
 
     if (!reply || reply.length < 10) {
-      console.warn('[coach] Empty or too-short LLM reply, falling back.');
+      console.warn(`[coach] Empty or too-short LLM reply from model ${usedModel}, falling back.`);
       return NextResponse.json({ 
         success: true, 
         reply: getFallbackCoachReply(message, context, language),
@@ -246,6 +284,8 @@ export async function POST(request: NextRequest) {
         fallbackReason: 'empty_llm_reply'
       });
     }
+
+    console.log(`[coach] Success with model ${usedModel}, reply length: ${reply.length} chars`);
 
     // Log la question coach dans le journal utilisateur
     if (email) {
