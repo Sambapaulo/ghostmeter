@@ -280,11 +280,22 @@ export async function POST(request: NextRequest) {
         console.log(`[coach] Available models: ${availableModelIds.join(', ')}`);
         
         // Ordre de préférence — on prend le premier qui est dispo
+        // Liste mise à jour pour inclure les modèles récents (gpt-oss, compound, qwen3, allam)
+        // qui remplacent peu à peu les anciens Llama/Gemma sur le free tier Groq.
         const preferredOrder = [
+          // Gros modèles performants (priorité haute)
+          'openai/gpt-oss-120b',
+          'groq/compound',
           'llama-3.3-70b-versatile',
-          'llama-3.1-8b-instant',
           'llama3-70b-8192',
+          'qwen/qwen3.6-27b',
+          'qwen/qwen3.8-27b',
+          // Modèles plus légers (fallback)
+          'openai/gpt-oss-20b',
+          'groq/compound-mini',
+          'llama-3.1-8b-instant',
           'llama3-8b-8192',
+          'allam-2-7b',
           'gemma2-9b-it',
           'mixtral-8x7b-32768',
         ];
