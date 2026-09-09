@@ -149,9 +149,18 @@ IMPORTANTE: Responde SIEMPRE en español.`
 };
 
 export async function POST(request: NextRequest) {
+  // Déclarer ces variables AVANT le try pour qu'elles soient accessibles dans le catch
+  let message: string = '';
+  let context: CoachRequest['context'] | undefined;
+  let language: string = 'fr';
+  
   try {
     const body: CoachRequest & { email?: string } = await request.json();
-    const { message, conversationHistory = [], context, language = 'fr', email } = body;
+    message = body.message || '';
+    const conversationHistory = body.conversationHistory || [];
+    context = body.context;
+    language = body.language || 'fr';
+    const email = body.email;
 
     if (!message || message.trim().length < 2) {
       return NextResponse.json({ error: 'Message trop court' }, { status: 400 });
@@ -248,7 +257,7 @@ export async function POST(request: NextRequest) {
     console.error('[coach] Unhandled error:', error);
     return NextResponse.json({ 
       success: true, 
-      reply: getFallbackCoachReply(message || '', context || {}, language || 'fr'),
+      reply: getFallbackCoachReply(message, context, language),
       fallback: true,
       fallbackReason: 'unhandled_exception'
     });
