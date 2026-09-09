@@ -244,14 +244,15 @@ export async function POST(request: NextRequest) {
           break;
         }
 
-        // Si on a une 404 (modèle introuvable), on log et on essaie le suivant
+        // Capturer le statut et le body AVANT de mettre response à null
+        const failStatus = response.status;
         lastErrorBody = await response.text().catch(() => '');
-        console.warn(`[coach] Model ${model} failed (${response.status}): ${lastErrorBody.substring(0, 200)}`);
+        console.warn(`[coach] Model ${model} failed (${failStatus}): ${lastErrorBody.substring(0, 200)}`);
         response = null;
 
         // Si ce n'est PAS une 404 (modèle non trouvé) ou 400 (modèle invalide),
         // c'est probablement une erreur côté serveur Groq — pas la peine d'essayer les autres modèles
-        if (response?.status !== 404 && response?.status !== 400 && response?.status !== null && response?.status !== undefined) {
+        if (failStatus !== 404 && failStatus !== 400) {
           // Pour 401 (clé invalide), 429 (quota), 500, 503 — on sort direct
           break;
         }
